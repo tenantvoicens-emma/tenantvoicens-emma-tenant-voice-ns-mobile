@@ -64,11 +64,13 @@ function ReviewRatingGroup({
   return (
     <section className="space-y-2 border-t border-[#DEDCD5] pt-3">
       <h3 className="text-sm font-semibold text-[#2F4F46]">{title}</h3>
-      <ul className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+      <ul className="divide-y divide-[#EEECE6] text-sm">
         {ratings.map((rating) => (
-          <li key={rating.id} className="flex items-center justify-between gap-2">
-            <span>{rating.category}</span>
-            <RatingMeter score={rating.score} />
+          <li key={rating.id} className="flex items-center justify-between gap-3 py-1.5">
+            <span className="min-w-0 text-gray-700">{rating.category}</span>
+            <span className="shrink-0">
+              <RatingMeter score={rating.score} />
+            </span>
           </li>
         ))}
       </ul>

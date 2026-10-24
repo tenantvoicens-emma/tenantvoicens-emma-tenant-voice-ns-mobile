@@ -32,7 +32,7 @@ export default function RatingMeter({ score }: RatingMeterProps) {
           return <Star key={index} className="h-4 w-4" />;
         })}
       </span>
-      <span className="text-sm font-medium text-gray-700">
+      <span className="whitespace-nowrap text-sm font-medium text-gray-700">
         {clampedScore.toFixed(1)} / 5
       </span>
     </span>
