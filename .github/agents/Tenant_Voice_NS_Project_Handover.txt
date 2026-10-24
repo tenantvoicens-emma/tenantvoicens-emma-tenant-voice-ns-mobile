@@ -1,0 +1,198 @@
+TENANT VOICE NS
+
+PROJECT STATUS
+
+- Active Development
+- Current Phase: Spring 12 - Supabase Integration
+
+MISSION
+
+Tenant Voice NS exists to answer:
+
+"What's it actually like to live there?"
+
+Most rental platforms focus on:
+
+- Advertisements
+- Photos
+- Landlord marketing
+
+Tenant Voice NS focuses on:
+
+- Tenant experiences
+- Structured review data
+- Property management quality
+- Long-term renter insight
+
+Core philosophy:
+
+Reliable Rental Intelligence
+
+--------------------------------------------------
+
+PRODUCT PRINCIPLES
+
+Property First
+
+Users generally search for properties, not landlords.
+
+Example:
+
+Search:
+Quest Towers
+
+Not:
+Quest Property Management
+
+The application should always prioritize property discovery.
+
+Reduce User Friction
+
+Use:
+
+- Autocomplete
+- Dropdowns
+- Predefined ranges
+
+Avoid:
+
+- Users typing identifiers
+- Exact dates
+- Free-form relationships
+
+Trustworthy Data Over Maximum Data
+
+If users don't know the answer:
+
+Allow N/A
+
+Bad data is worse than missing data.
+
+--------------------------------------------------
+
+CORE DATA MODEL
+
+Landlord
+↓
+Property
+↓
+Review
+↓
+Property Ratings
+Landlord Ratings
+
+--------------------------------------------------
+
+ENTITIES
+
+LANDLORD
+
+Represents:
+
+- Property management companies
+- Private landlords
+
+Fields:
+
+- id
+- slug
+- name
+- type
+
+PROPERTY
+
+Primary object users search for.
+
+Fields:
+
+- id
+- slug
+- name
+- address
+- city
+- landlord_id
+
+REVIEW
+
+Represents a tenant experience.
+
+Fields:
+
+- id
+- property_id
+- review_text
+- occupancy_duration
+- would_live_again
+- created_at
+
+--------------------------------------------------
+
+CURRENT NEXT STEP
+
+Spring 12 Floor 4
+
+Connect:
+
+Next.js
+↓
+Supabase
+
+Tasks:
+
+- Install Supabase client
+- Configure .env.local
+- Create Supabase client
+- Query properties table
+- Display results in app
+
+--------------------------------------------------
+
+FINAL PHILOSOPHY
+
+Do not ask users for information they do not naturally know.
+
+Examples:
+
+- Property autocomplete
+- Occupancy duration ranges
+- N/A ratings
+- Property-first search
+- Structured scoring
+
+Goal:
+
+Collect reliable rental intelligence with the least possible user friction.
+
+--------------------------------------------------
+
+PLANNED UX BACKLOG
+
+1. Working back navigation with preserved search state
+
+- Replace placeholder "Back to ..." controls with working navigation.
+- Preserve the Discover search term, results, and scroll position when returning from a property page.
+- Support direct visits to a property page with a sensible fallback to Discover.
+- Verify the search-to-property-to-back flow on mobile.
+
+2. Functional navigation on every page
+
+- Show the shared navigation at the top of every page and use real links rather than inactive buttons.
+- Link Discover to `/` and Review to `/submit-review`.
+- Property detail pages use `/properties/[slug]`.
+- Decide what the Profiles navigation item should open. There is no generic Profiles page yet; landlord profiles are on the future roadmap. Do not leave this item pointing to a missing route.
+- Check all navigation destinations and active states across the app.
+
+3. Read-only star rating meters
+
+- Show read-only star meters alongside the property and landlord summary scores near the top of each property page.
+- Add read-only star meters for the property and landlord category ratings on each individual review card.
+- Keep property ratings and landlord ratings visually distinct.
+- Calculate summary scores from approved reviews: average numeric category scores within each review, then average those review scores; exclude N/A and reviews with no numeric ratings.
+- Show the contributing review count and use "Not rated yet" when no numeric ratings are available.
+- Display N/A as text, never as a zero-star score.
+
+--------------------------------------------------
+
+SPECIAL RISK REGISTER
+
+The Harbourview Ghost remains at large and is believed to be attempting unauthorized access to the Quest Towers elevator control system. 👻🛗🌷

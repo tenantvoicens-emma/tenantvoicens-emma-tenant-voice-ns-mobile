@@ -1,0 +1,544 @@
+TENANT VOICE NS - FULL PROJECT ARCHIVE
+
+VERSION
+Full Archival Handover
+Project Status: Active Development
+Current Phase: Spring 12 - Supabase Integration
+
+==================================================
+MISSION
+==================================================
+
+Tenant Voice NS exists to answer:
+
+"What is it actually like to live there?"
+
+Most rental platforms focus on:
+- Advertisements
+- Photos
+- Rent prices
+- Landlord marketing
+
+Tenant Voice NS focuses on:
+- Tenant experience
+- Structured review information
+- Property management quality
+- Long-term renter insight
+- Trustworthy rental intelligence
+
+Core philosophy:
+Reliable Rental Intelligence
+
+==================================================
+PRODUCT PRINCIPLES
+==================================================
+
+1. PROPERTY FIRST
+
+Users search for properties first.
+
+Typical user:
+"I found an apartment listing."
+"Tell me about this building."
+
+Property remains the primary object.
+Landlord information appears as supporting context.
+
+--------------------------------------------------
+
+2. REDUCE USER FRICTION
+
+Use:
+- Autocomplete
+- Dropdowns
+- Clickable selections
+- Predefined ranges
+
+Avoid:
+- Exact dates
+- Free-text identifiers
+- Users having to remember details precisely
+
+--------------------------------------------------
+
+3. TRUSTWORTHY DATA OVER MAXIMUM DATA
+
+Bad data is worse than missing data.
+
+Examples:
+- N/A allowed for ratings.
+- Property selection uses autocomplete.
+- Category responsibilities are clearly separated.
+
+--------------------------------------------------
+
+4. EXPERIENCE OVER ACCUSATION
+
+The platform collects experiences.
+Not investigations.
+Not legal findings.
+
+==================================================
+CORE DATA MODEL
+==================================================
+
+Landlord
+    ↓
+Property
+    ↓
+Review
+    ↓
+Property Ratings
+Landlord Ratings
+
+==================================================
+ENTITY DEFINITIONS
+==================================================
+
+LANDLORD
+
+Purpose:
+- Property management companies
+- Private landlords
+
+Fields:
+- id
+- slug
+- name
+- type
+
+Examples:
+- Quest Property Management
+- Greenwood Residential
+- Private landlords
+
+--------------------------------------------------
+
+PROPERTY
+
+Primary searchable object.
+
+Fields:
+- id
+- slug
+- name
+- address
+- city
+- landlord_id
+
+Examples:
+- Quest Towers
+- Dragon Heights
+- Greenwood Towers
+- Harbourview Apartments
+
+--------------------------------------------------
+
+REVIEW
+
+Represents one tenant experience.
+
+Fields:
+- id
+- property_id
+- review_text
+- occupancy_duration
+- would_live_again
+- created_at
+
+==================================================
+PROPERTY RATINGS
+==================================================
+
+Categories:
+- cleanliness
+- safety
+- common_areas
+- noise_levels
+- parking
+- amenities
+- building_condition
+- pet_friendliness
+
+Reasoning:
+These measure the property itself.
+
+==================================================
+LANDLORD RATINGS
+==================================================
+
+Categories:
+- communication
+- repair_speed
+- professionalism
+- lease_transparency
+- move_in_experience
+
+Reasoning:
+These measure management quality.
+
+==================================================
+WHY PROPERTY AND LANDLORD RATINGS ARE SEPARATE
+==================================================
+
+Rejected:
+One giant ratings system.
+
+Problem:
+Users would conflate building quality with management quality.
+
+Example:
+Building quiet.
+Management unresponsive.
+
+Solution:
+Separate rating systems.
+
+==================================================
+RATING VALUES
+==================================================
+
+Allowed:
+- na
+- 1
+- 2
+- 3
+- 4
+- 5
+
+Reason:
+Users should not be forced to answer categories they cannot assess.
+
+==================================================
+OCCUPANCY DURATION
+==================================================
+
+Rejected:
+- Move-in dates
+- Move-out dates
+
+Reason:
+Users frequently do not remember accurately.
+
+Implemented:
+- Less than 1 year
+- 1 to 3 years
+- 4 to 6 years
+- 7 to 10 years
+- More than 10 years
+
+Database values:
+- less_than_1_year
+- 1_to_3_years
+- 4_to_6_years
+- 7_to_10_years
+- more_than_10_years
+
+==================================================
+SEARCH PHILOSOPHY
+==================================================
+
+Search is property-first.
+
+Examples:
+- quest → Quest Towers
+- green → Greenwood Towers
+
+Autocomplete enabled.
+Clickable suggestions enabled.
+
+Future:
+Searching for a landlord should show managed properties.
+
+==================================================
+PROPERTY CREATION STRATEGY
+==================================================
+
+Rejected:
+Moderator approval before posting.
+
+Reason:
+Too much friction.
+
+Accepted:
+- Search for property.
+- Select property if found.
+- Create/request property if not found.
+- Moderate later.
+
+==================================================
+TECH STACK
+==================================================
+
+Frontend:
+- Next.js
+- React
+- TypeScript
+- Tailwind
+
+Backend:
+- Supabase
+
+Deployment:
+- Vercel
+
+Source Control:
+- GitHub
+
+==================================================
+DATABASE SCHEMA
+==================================================
+
+TABLE: landlords
+
+Fields:
+- id
+- slug
+- name
+- type
+
+Constraints:
+- unique slug
+- landlord type validation
+
+--------------------------------------------------
+
+TABLE: properties
+
+Fields:
+- id
+- slug
+- name
+- address
+- city
+- landlord_id
+
+Constraints:
+- unique slug
+
+Relationship:
+landlord_id -> landlords.id
+
+--------------------------------------------------
+
+TABLE: reviews
+
+Fields:
+- id
+- property_id
+- review_text
+- occupancy_duration
+- would_live_again
+- created_at
+
+Constraints:
+- occupancy duration validation
+- would live again validation
+
+--------------------------------------------------
+
+TABLE: property_ratings
+
+Fields:
+- id
+- review_id
+- category
+- score
+
+Constraints:
+- category validation
+- score validation
+- unique(review_id, category)
+
+--------------------------------------------------
+
+TABLE: landlord_ratings
+
+Fields:
+- id
+- review_id
+- category
+- score
+
+Constraints:
+- category validation
+- score validation
+- unique(review_id, category)
+
+==================================================
+DEVELOPMENT HISTORY
+==================================================
+
+Spring 1
+- Project setup
+- GitHub
+- Vercel
+- Next.js
+
+Spring 2
+- Design system
+- Components
+- UI foundations
+
+Spring 3
+- Property profile page
+
+Spring 3.5
+- UX improvements
+
+Spring 4
+- Data models
+
+Spring 5
+- Data-driven discover page
+
+Spring 6
+- Dynamic routes
+- /properties/[slug]
+
+Spring 7
+- Reviews become data
+
+Spring 8
+- Ratings become data
+
+Spring 9
+- Search functionality
+
+Spring 9.5
+- Autocomplete
+
+Spring 10
+- Review submission UI
+
+Spring 11
+- Review submission state
+
+Spring 11.5
+- Property autocomplete selection
+
+Spring 11.9
+- Property/Landlord architecture planning
+
+Spring 12
+- Supabase foundation
+- Schema design
+- Relationships
+- Constraints
+- SQL learning
+
+==================================================
+KNOWN PROJECT LORE
+==================================================
+
+The Ghost of Harbourview Past
+
+Cause:
+A legacy route:
+app/properties/harbourview/page.tsx
+
+overrode:
+app/properties/[slug]/page.tsx
+
+Lesson:
+Always check for competing routes.
+
+--------------------------------------------------
+
+Ghost-Induced Schema Drift
+
+Fictional threat mitigated through:
+- Foreign keys
+- Constraints
+- Validation
+- Unique indexes
+
+--------------------------------------------------
+
+Quest Towers
+
+Canonically associated with:
+- Haunted elevators
+- Dragon-related maintenance incidents
+- Questionable Dragon Defense ratings
+
+==================================================
+CURRENT PROJECT STATUS
+==================================================
+
+Completed:
+- Dynamic property pages
+- Dynamic reviews
+- Dynamic ratings
+- Search
+- Autocomplete
+- Review submission workflow
+- Complete MVP schema
+- Supabase project
+- SQL schema implemented
+
+Current Next Step:
+Spring 12 Floor 4
+
+Connect:
+Next.js
+↓
+Supabase
+
+Tasks:
+- Configure environment variables
+- Create Supabase client
+- Query properties from Supabase
+- Render Supabase data in app
+
+==================================================
+FUTURE ROADMAP
+==================================================
+
+Spring 13
+- Read property data from Supabase
+
+Spring 14
+- Save reviews to Supabase
+
+Spring 15
+- Save ratings to Supabase
+
+Spring 16
+- Moderation queue
+
+Future:
+- Landlord profiles
+- Property requests
+- Admin dashboard
+- Trust & Safety pages
+- Analytics
+
+==================================================
+FINAL PHILOSOPHY
+==================================================
+
+Do not ask users for information they do not naturally know.
+
+Examples:
+- Property autocomplete
+- Occupancy duration ranges
+- N/A ratings
+- Property-first search
+- Structured rating systems
+
+Goal:
+Collect reliable rental intelligence with the least possible user friction.
+
+==================================================
+STATUS SUMMARY
+==================================================
+
+Project Health: Excellent
+Architecture: Stable
+Schema: Stable
+Mission: Clear
+Next Major Milestone:
+First successful Supabase query from Next.js
+
+The Harbourview Ghost remains at large and is believed to be attempting unauthorized access to the Quest Towers elevator control system.
