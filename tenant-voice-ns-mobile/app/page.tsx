@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import PropertyPreviewCard from "@/components/profile/PropertyPreviewCard";
+import ReviewCard from "@/components/profile/ReviewCard";
 import Button from "@/components/ui/Button";
 import PageContainer from "@/components/ui/PageContainer";
 import SearchBar from "@/components/ui/SearchBar";
@@ -294,7 +295,7 @@ function mapDiscoverRatings(
   propertySlug: string
 ): Rating[] {
   return (ratings ?? []).map((rating) => ({
-    id: rating.id,
+    id: String(rating.id),
     propertySlug,
     category: rating.category
       .replaceAll("_", " ")
