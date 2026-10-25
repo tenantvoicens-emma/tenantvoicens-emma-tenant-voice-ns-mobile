@@ -1,5 +1,6 @@
 import Card from "@/components/ui/Card";
 import { Rating } from "@/types/rating";
+import { formatRatingScore } from "@/lib/format-rating";
 
 type CategoryRatingsProps = {
   ratings: Rating[];
@@ -43,7 +44,9 @@ function RatingRow({
   return (
     <div className="flex justify-between border-b pb-2">
       <span>{label}</span>
-      <span className="font-semibold">{score === null ? "N/A" : score}</span>
+      <span className="font-semibold tabular-nums">
+        {score === null ? "N/A" : `${formatRatingScore(score)}/5`}
+      </span>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { Star, StarHalf } from "lucide-react";
+import { formatRatingScore } from "@/lib/format-rating";
 
 type RatingMeterProps = {
   score: number | null;
@@ -16,7 +17,7 @@ export default function RatingMeter({ score }: RatingMeterProps) {
   return (
     <span
       role="img"
-      aria-label={`${clampedScore.toFixed(1)} out of 5`}
+      aria-label={`${formatRatingScore(clampedScore)} out of 5`}
       className="inline-flex items-center gap-2"
     >
       <span className="inline-flex text-amber-600" aria-hidden="true">
@@ -32,8 +33,8 @@ export default function RatingMeter({ score }: RatingMeterProps) {
           return <Star key={index} className="h-4 w-4" />;
         })}
       </span>
-      <span className="whitespace-nowrap text-sm font-medium text-gray-700">
-        {clampedScore.toFixed(1)} / 5
+      <span className="min-w-[2.75rem] whitespace-nowrap text-right text-sm font-medium tabular-nums text-gray-700">
+        {formatRatingScore(clampedScore)}/5
       </span>
     </span>
   );

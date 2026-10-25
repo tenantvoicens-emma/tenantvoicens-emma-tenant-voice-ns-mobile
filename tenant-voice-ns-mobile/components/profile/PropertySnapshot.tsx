@@ -1,5 +1,6 @@
 import Card from "@/components/ui/Card";
 import RatingMeter from "@/components/profile/RatingMeter";
+import { formatRatingScore } from "@/lib/format-rating";
 
 type PropertySnapshotProps = {
   propertyRating: RatingSummary;
@@ -38,7 +39,7 @@ function RatingSummary({
       <p className="text-3xl font-bold text-[#2F4F46]">
         {summary.average === null
           ? "Not rated yet"
-          : `${summary.average.toFixed(1)} / 5`}
+          : `${formatRatingScore(summary.average)}/5`}
       </p>
       <RatingMeter score={summary.average} />
       <p className="text-sm text-gray-500">
