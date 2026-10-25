@@ -7,17 +7,21 @@ type SearchBarProps = {
   onChange: (value: string) => void;
 
   suggestions: PropertyListing[];
+  id?: string;
 };
 
 export default function SearchBar({
   value,
   onChange,
   suggestions,
+  id,
 }: SearchBarProps) {
   return (
     <div className="relative">
       <input
+        id={id}
         type="text"
+        aria-label="Search properties or addresses"
         value={value}
         onChange={(event) =>
           onChange(event.target.value)

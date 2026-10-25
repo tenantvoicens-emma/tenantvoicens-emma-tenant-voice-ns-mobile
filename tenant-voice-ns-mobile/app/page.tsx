@@ -37,7 +37,14 @@ type DiscoverReviewRow = {
   }[] | null;
 };
 
+const SEARCH_INPUT_ID = "property-search";
 
+// Brings the search box into view and puts the cursor in it, ready to type.
+function focusSearch() {
+  const input = document.getElementById(SEARCH_INPUT_ID);
+  input?.scrollIntoView({ block: "center" });
+  input?.focus({ preventScroll: true });
+}
 
 export default function Home() {
   return (
@@ -185,6 +192,7 @@ function DiscoverPage() {
         />
 
         <SearchBar
+          id={SEARCH_INPUT_ID}
           value={searchTerm}
           onChange={setSearchTerm}
           suggestions={filteredProperties}
@@ -264,7 +272,7 @@ function DiscoverPage() {
           </div>
         )}
 
-        <Button text="Explore renter experiences" />
+        <Button text="Explore renter experiences" onClick={focusSearch} />
 
         <TrustCard />
       
