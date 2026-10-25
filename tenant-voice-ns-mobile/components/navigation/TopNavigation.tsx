@@ -3,7 +3,14 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 
-export default function TopNavigation() {
+type NavigationProps = {
+  // Each copy needs its own label so screen readers can tell them apart.
+  label?: string;
+};
+
+export default function TopNavigation({
+  label = "Main navigation",
+}: NavigationProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchTerm = searchParams.get("q")?.trim() ?? "";
@@ -15,7 +22,7 @@ export default function TopNavigation() {
   const isOnAccountPage = pathname === "/account";
 
   return (
-    <nav aria-label="Main navigation" className="flex flex-wrap gap-2">
+    <nav aria-label={label} className="flex flex-wrap gap-2">
       <Link
         href={discoverHref}
         aria-current={pathname === "/" ? "page" : undefined}
@@ -51,9 +58,11 @@ export default function TopNavigation() {
   );
 }
 
-export function TopNavigationFallback() {
+export function TopNavigationFallback({
+  label = "Main navigation",
+}: NavigationProps) {
   return (
-    <nav aria-label="Main navigation" className="flex flex-wrap gap-2">
+    <nav aria-label={label} className="flex flex-wrap gap-2">
       <StaticNavigationLink href="/">Discover</StaticNavigationLink>
       <StaticNavigationLink href="/submit-review">Review</StaticNavigationLink>
       <StaticNavigationLink href="/policies">Policies</StaticNavigationLink>

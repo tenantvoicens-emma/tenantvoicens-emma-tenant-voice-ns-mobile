@@ -1,10 +1,14 @@
 import Card from "@/components/ui/Card";
 import Link from "next/link";
 import RatingMeter from "@/components/profile/RatingMeter";
+import StarScore from "@/components/profile/StarScore";
 import { Review } from "@/types/review";
 
 type ReviewCardProps = {
   review: Review;
+  // Compact cards swap the per-category breakdown for one overall
+  // property score and one landlord score.
+  compact?: boolean;
 };
 
 // Placeholder values the pages use when a reviewer skipped a question.
@@ -12,6 +16,7 @@ const UNANSWERED = ["Not specified", "Not answered"];
 
 export default function ReviewCard({
   review,
+  compact = false,
 }: ReviewCardProps) {
   const reviewDate = review.createdAt ? new Date(review.createdAt) : null;
   const formattedDate = reviewDate && !Number.isNaN(reviewDate.getTime())
@@ -66,15 +71,34 @@ export default function ReviewCard({
           {review.reviewText}
         </p>
 
-        {review.propertyRatings && review.propertyRatings.length > 0 && (
-          <ReviewRatingGroup title="Property" ratings={review.propertyRatings} />
-        )}
-        {review.landlordRatings && review.landlordRatings.length > 0 && (
-          <ReviewRatingGroup title="Landlord" ratings={review.landlordRatings} />
+        {compact ? (
+          <div className="space-y-1.5 border-t border-[#DEDCD5] pt-3">
+            <StarScore label="Property rating" score={averageScore(review.propertyRatings)} />
+            <StarScore label="Landlord rating" score={averageScore(review.landlordRatings)} />
+          </div>
+        ) : (
+          <>
+            {review.propertyRatings && review.propertyRatings.length > 0 && (
+              <ReviewRatingGroup title="Property" ratings={review.propertyRatings} />
+            )}
+            {review.landlordRatings && review.landlordRatings.length > 0 && (
+              <ReviewRatingGroup title="Landlord" ratings={review.landlordRatings} />
+            )}
+          </>
         )}
       </article>
     </Card>
   );
+}
+
+function averageScore(ratings: Review["propertyRatings"]) {
+  const scores = (ratings ?? [])
+    .map((rating) => rating.score)
+    .filter((score): score is number => score !== null);
+
+  return scores.length === 0
+    ? null
+    : scores.reduce((total, score) => total + score, 0) / scores.length;
 }
 
 const detailTones = {

@@ -19,4 +19,6 @@ export type PropertyListing = Omit<
 > & {
   id: number;
   reviewCount?: number;
+  propertyRating?: number | null;
+  landlordRating?: number | null;
 };

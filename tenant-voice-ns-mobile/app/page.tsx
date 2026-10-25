@@ -81,7 +81,7 @@ function DiscoverPage() {
               .limit(5),
             supabase
               .from("discover_top_properties")
-              .select("id, slug, name, address, city, review_count")
+              .select("id, slug, name, address, city, review_count, property_rating, landlord_rating")
               .order("review_count", { ascending: false })
               .order("name")
               .limit(5),
@@ -124,6 +124,8 @@ function DiscoverPage() {
               address: property.address ?? "",
               city: property.city ?? "",
               reviewCount: Number(property.review_count),
+              propertyRating: parseRatingScore(property.property_rating),
+              landlordRating: parseRatingScore(property.landlord_rating),
             }))
           );
         }
@@ -226,7 +228,7 @@ function DiscoverPage() {
               ) : recentReviews.length > 0 ? (
                 <div className="space-y-4">
                   {recentReviews.map((review) => (
-                    <ReviewCard key={review.id} review={review} />
+                    <ReviewCard key={review.id} review={review} compact />
                   ))}
                 </div>
               ) : !isLoading ? (

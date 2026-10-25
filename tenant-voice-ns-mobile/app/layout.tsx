@@ -34,6 +34,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </Suspense>
         </div>
         {children}
+        <div className="mx-auto mt-auto w-full max-w-md px-5 pb-8">
+          <div className="border-t border-[#DEDCD5] pt-4">
+            <Suspense fallback={<TopNavigationFallback label="Footer navigation" />}>
+              <TopNavigation label="Footer navigation" />
+            </Suspense>
+          </div>
+        </div>
       </body>
     </html>
   );
