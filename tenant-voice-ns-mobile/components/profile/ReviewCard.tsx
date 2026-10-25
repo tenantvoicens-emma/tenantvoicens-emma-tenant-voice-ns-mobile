@@ -2,6 +2,8 @@ import Card from "@/components/ui/Card";
 import Link from "next/link";
 import RatingMeter from "@/components/profile/RatingMeter";
 import LabeledRating from "@/components/profile/LabeledRating";
+import ClampedReviewText from "@/components/profile/ClampedReviewText";
+import { getPropertyHref } from "@/lib/navigation";
 import { Review } from "@/types/review";
 
 type ReviewCardProps = {
@@ -33,18 +35,27 @@ export default function ReviewCard({
     ? review.wouldLiveAgain
     : null;
 
-  return (
+  // Compact cards link, as a whole, to this review on its property page.
+  const fullReviewHref = compact && review.propertySlug
+    ? `${getPropertyHref(review.propertySlug, "")}#${reviewAnchorId(review.id)}`
+    : null;
+
+  const card = (
     <Card>
       <article className="space-y-4">
         <header className="space-y-1">
           {review.propertyName && (
-            <h3 className="font-bold">
-              <Link
-                href={`/properties/${review.propertySlug}`}
-                className="text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4 hover:decoration-[#2F4F46]"
-              >
-                {review.propertyName}
-              </Link>
+            <h3 className="font-bold text-[#2F4F46]">
+              {fullReviewHref ? (
+                review.propertyName
+              ) : (
+                <Link
+                  href={`/properties/${review.propertySlug}`}
+                  className="underline decoration-[#2F4F46]/30 underline-offset-4 hover:decoration-[#2F4F46]"
+                >
+                  {review.propertyName}
+                </Link>
+              )}
             </h3>
           )}
           <p className="text-sm text-[#66706B]">
@@ -67,9 +78,13 @@ export default function ReviewCard({
           </div>
         )}
 
-        <p className="whitespace-pre-line leading-relaxed text-gray-800">
-          {review.reviewText}
-        </p>
+        {compact ? (
+          <ClampedReviewText text={review.reviewText} />
+        ) : (
+          <p className="whitespace-pre-line leading-relaxed text-gray-800">
+            {review.reviewText}
+          </p>
+        )}
 
         {compact ? (
           <div className="space-y-1.5 border-t border-[#DEDCD5] pt-3">
@@ -89,6 +104,29 @@ export default function ReviewCard({
       </article>
     </Card>
   );
+
+  if (fullReviewHref) {
+    return (
+      <Link href={fullReviewHref} className="block rounded-3xl">
+        {card}
+      </Link>
+    );
+  }
+
+  // Full cards carry an anchor so Discover can link straight to them;
+  // HighlightLinkedReview outlines the linked one.
+  return (
+    <div
+      id={reviewAnchorId(review.id)}
+      className="scroll-mt-6 rounded-3xl data-[highlighted=true]:ring-2 data-[highlighted=true]:ring-[#4CAF50]"
+    >
+      {card}
+    </div>
+  );
+}
+
+function reviewAnchorId(id: Review["id"]) {
+  return `review-${id}`;
 }
 
 function averageScore(ratings: Review["propertyRatings"]) {

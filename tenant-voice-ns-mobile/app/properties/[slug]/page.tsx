@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
 import CategoryRatings from "@/components/profile/CategoryRatings";
+import HighlightLinkedReview from "@/components/profile/HighlightLinkedReview";
 import LeaveReviewCTA from "@/components/profile/LeaveReviewCTA";
 import PropertyHeader from "@/components/profile/PropertyHeader";
 import PropertySnapshot from "@/components/profile/PropertySnapshot";
@@ -108,6 +109,8 @@ async function PropertyContent({
     reviewText: review.review_text ?? "",
     wouldLiveAgain: formatWouldLiveAgain(review.would_live_again),
     createdAt: review.created_at,
+    propertyRatings: mapRatings([review], "property_ratings", slug),
+    landlordRatings: mapRatings([review], "landlord_ratings", slug),
   }));
 
   const propertyRatings = mapRatings(
@@ -151,6 +154,7 @@ async function PropertyContent({
         ) : (
           reviews.map((review) => <ReviewCard key={review.id} review={review} />)
         )}
+        <HighlightLinkedReview />
 
         <CategoryRatings title="Property Ratings" ratings={propertyRatings} />
         <CategoryRatings title="Landlord Ratings" ratings={landlordRatings} />
@@ -204,6 +208,10 @@ function formatWouldLiveAgain(value: string | null) {
 
   if (["na", "n/a", "not_applicable"].includes(normalizedValue ?? "")) {
     return "N/A";
+  }
+
+  if (normalizedValue === "unsure") {
+    return "Unsure";
   }
 
   return value ? value.replaceAll("_", " ") : "Not answered";
