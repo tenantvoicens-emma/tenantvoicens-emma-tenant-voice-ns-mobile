@@ -35,16 +35,8 @@ export default function PropertyPreviewCard({
 
           {(property.propertyRating !== undefined || property.landlordRating !== undefined) && (
             <div className="space-y-1.5">
-              <LabeledRating
-                label="Property"
-                score={property.propertyRating ?? null}
-                labelClassName="text-xs font-semibold uppercase tracking-wide text-[#66706B]"
-              />
-              <LabeledRating
-                label="Landlord"
-                score={property.landlordRating ?? null}
-                labelClassName="text-xs font-semibold uppercase tracking-wide text-[#66706B]"
-              />
+              <LabeledRating label="Property" score={property.propertyRating ?? null} />
+              <LabeledRating label="Landlord" score={property.landlordRating ?? null} />
             </div>
           )}
 

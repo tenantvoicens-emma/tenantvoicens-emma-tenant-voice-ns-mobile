@@ -73,8 +73,8 @@ export default function ReviewCard({
 
         {compact ? (
           <div className="space-y-1.5 border-t border-[#DEDCD5] pt-3">
-            <LabeledRating label="Property rating" score={averageScore(review.propertyRatings)} />
-            <LabeledRating label="Landlord rating" score={averageScore(review.landlordRatings)} />
+            <LabeledRating label="Property" score={averageScore(review.propertyRatings)} />
+            <LabeledRating label="Landlord" score={averageScore(review.landlordRatings)} />
           </div>
         ) : (
           <>
