@@ -3,9 +3,10 @@ import { formatRatingScore } from "@/lib/format-rating";
 
 type RatingMeterProps = {
   score: number | null;
+  showScore?: boolean;
 };
 
-export default function RatingMeter({ score }: RatingMeterProps) {
+export default function RatingMeter({ score, showScore = true }: RatingMeterProps) {
   if (score === null || !Number.isFinite(score)) {
     return <span className="text-sm text-gray-500">N/A</span>;
   }
@@ -33,9 +34,11 @@ export default function RatingMeter({ score }: RatingMeterProps) {
           return <Star key={index} className="h-4 w-4" />;
         })}
       </span>
-      <span className="min-w-[2.75rem] whitespace-nowrap text-right text-sm font-medium tabular-nums text-gray-700">
-        {formatRatingScore(clampedScore)}/5
-      </span>
+      {showScore && (
+        <span className="min-w-[2.75rem] whitespace-nowrap text-right text-sm font-medium tabular-nums text-gray-700">
+          {formatRatingScore(clampedScore)}/5
+        </span>
+      )}
     </span>
   );
 }

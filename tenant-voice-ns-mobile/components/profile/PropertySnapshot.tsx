@@ -41,7 +41,7 @@ function RatingSummary({
           ? "Not rated yet"
           : `${formatRatingScore(summary.average)}/5`}
       </p>
-      <RatingMeter score={summary.average} />
+      <RatingMeter score={summary.average} showScore={false} />
       <p className="text-sm text-gray-500">
         Based on {summary.reviewCount} {summary.reviewCount === 1 ? "review" : "reviews"}
       </p>
