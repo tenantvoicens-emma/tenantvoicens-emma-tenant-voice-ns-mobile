@@ -1,7 +1,7 @@
 import Card from "@/components/ui/Card";
 import Link from "next/link";
 import RatingMeter from "@/components/profile/RatingMeter";
-import StarScore from "@/components/profile/StarScore";
+import LabeledRating from "@/components/profile/LabeledRating";
 import { Review } from "@/types/review";
 
 type ReviewCardProps = {
@@ -73,8 +73,8 @@ export default function ReviewCard({
 
         {compact ? (
           <div className="space-y-1.5 border-t border-[#DEDCD5] pt-3">
-            <StarScore label="Property rating" score={averageScore(review.propertyRatings)} />
-            <StarScore label="Landlord rating" score={averageScore(review.landlordRatings)} />
+            <LabeledRating label="Property rating" score={averageScore(review.propertyRatings)} />
+            <LabeledRating label="Landlord rating" score={averageScore(review.landlordRatings)} />
           </div>
         ) : (
           <>

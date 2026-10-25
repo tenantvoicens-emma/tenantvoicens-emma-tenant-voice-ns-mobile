@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Card from "@/components/ui/Card";
-import StarScore from "@/components/profile/StarScore";
+import LabeledRating from "@/components/profile/LabeledRating";
 import { getPropertyHref } from "@/lib/navigation";
 import { PropertyListing } from "@/types/property";
 
@@ -14,7 +14,7 @@ export default function PropertyPreviewCard({
   searchTerm,
 }: PropertyPreviewCardProps) {
   return (
-    <Link href={getPropertyHref(property.slug, searchTerm)}>
+    <Link href={getPropertyHref(property.slug, searchTerm)} className="block">
       <Card>
         <div className="space-y-3">
           <div>
@@ -34,13 +34,13 @@ export default function PropertyPreviewCard({
           </div>
 
           {(property.propertyRating !== undefined || property.landlordRating !== undefined) && (
-            <div className="flex flex-wrap gap-x-6 gap-y-1">
-              <StarScore
+            <div className="space-y-1.5">
+              <LabeledRating
                 label="Property"
                 score={property.propertyRating ?? null}
                 labelClassName="text-xs font-semibold uppercase tracking-wide text-[#66706B]"
               />
-              <StarScore
+              <LabeledRating
                 label="Landlord"
                 score={property.landlordRating ?? null}
                 labelClassName="text-xs font-semibold uppercase tracking-wide text-[#66706B]"

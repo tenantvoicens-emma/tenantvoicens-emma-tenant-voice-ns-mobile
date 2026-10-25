@@ -12,8 +12,11 @@ export default function RatingMeter({ score, showScore = true }: RatingMeterProp
   }
 
   const clampedScore = Math.min(5, Math.max(0, score));
-  const fullStars = Math.floor(clampedScore);
-  const hasHalfStar = clampedScore - fullStars >= 0.25;
+  // Stars round to the nearest half (3.9 shows four stars, 3.7 three and a
+  // half); the number beside them stays exact.
+  const starScore = Math.round(clampedScore * 2) / 2;
+  const fullStars = Math.floor(starScore);
+  const hasHalfStar = starScore > fullStars;
 
   return (
     <span
