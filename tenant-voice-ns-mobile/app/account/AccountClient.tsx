@@ -76,12 +76,9 @@ export default function AccountClient() {
     setErrorMessage("");
 
     if (isPasswordReset) {
-      if (password.length < 8) {
-        setErrorMessage("Choose a password with at least 8 characters.");
-        return;
-      }
-      if (password !== confirmPassword) {
-        setErrorMessage("The passwords do not match.");
+      const problem = newPasswordProblem(password, confirmPassword);
+      if (problem) {
+        setErrorMessage(problem);
         return;
       }
 
@@ -96,6 +93,14 @@ export default function AccountClient() {
       }
       setIsSubmitting(false);
       return;
+    }
+
+    if (mode === "create-account") {
+      const problem = newPasswordProblem(password, confirmPassword);
+      if (problem) {
+        setErrorMessage(problem);
+        return;
+      }
     }
 
     if (!captchaToken || !turnstileSiteKey || isSubmitting) {
@@ -182,7 +187,7 @@ export default function AccountClient() {
       <section className="space-y-5">
         <header className="space-y-2">
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">Choose a new password</h1>
-          <p className="text-lg text-[#66706B]">Use at least 8 characters.</p>
+          <p className="text-lg text-[#66706B]">Use at least {MIN_PASSWORD_LENGTH} characters.</p>
         </header>
         <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6">
           <PasswordField
@@ -190,12 +195,14 @@ export default function AccountClient() {
             label="New password"
             value={password}
             onChange={setPassword}
+            isNew
           />
           <PasswordField
             id="confirm-password"
             label="Confirm new password"
             value={confirmPassword}
             onChange={setConfirmPassword}
+            isNew
           />
           <button
             type="submit"
@@ -292,6 +299,12 @@ export default function AccountClient() {
             label="Password"
             value={password}
             onChange={setPassword}
+            isNew={mode === "create-account"}
+            hint={
+              mode === "create-account"
+                ? `At least ${MIN_PASSWORD_LENGTH} characters. A short phrase is easy to remember.`
+                : undefined
+            }
           />
         )}
 
@@ -301,6 +314,7 @@ export default function AccountClient() {
             label="Confirm password"
             value={confirmPassword}
             onChange={setConfirmPassword}
+            isNew
           />
         )}
 
@@ -362,27 +376,51 @@ export default function AccountClient() {
   );
 }
 
+// Matches the minimum length set in Supabase Auth. Only new passwords are
+// held to it, so older, shorter passwords can still sign in.
+const MIN_PASSWORD_LENGTH = 10;
+
+function newPasswordProblem(password: string, confirmPassword: string) {
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return `Choose a password with at least ${MIN_PASSWORD_LENGTH} characters.`;
+  }
+  if (password !== confirmPassword) {
+    return "The passwords do not match.";
+  }
+  return "";
+}
+
 function PasswordField({
   id,
   label,
   value,
   onChange,
+  isNew = false,
+  hint,
 }: {
   id: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
+  isNew?: boolean;
+  hint?: string;
 }) {
   return (
     <div className="space-y-2">
       <label htmlFor={id} className="block text-lg font-medium text-[#4A5A52]">
         {label}
       </label>
+      {hint && (
+        <p id={`${id}-hint`} className="text-[#66706B]">
+          {hint}
+        </p>
+      )}
       <input
         id={id}
         type="password"
-        autoComplete={label.includes("new") ? "new-password" : "current-password"}
-        minLength={8}
+        autoComplete={isNew ? "new-password" : "current-password"}
+        minLength={isNew ? MIN_PASSWORD_LENGTH : undefined}
+        aria-describedby={hint ? `${id}-hint` : undefined}
         required
         value={value}
         onChange={(event) => onChange(event.target.value)}
