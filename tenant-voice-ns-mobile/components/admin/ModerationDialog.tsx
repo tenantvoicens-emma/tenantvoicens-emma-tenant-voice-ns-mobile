@@ -127,9 +127,9 @@ export default function ModerationDialog({
               maxLength={NOTE_LIMIT}
               rows={3}
               placeholder={copy.placeholder}
-              className="w-full rounded-2xl border border-[#D9D6CE] bg-white p-3 outline-none focus:border-[#08873A]"
+              className="w-full rounded-2xl border border-[#D9D6CE] bg-white p-3 focus:border-[#08873A]"
             />
-            <p className="text-right text-xs text-[#66706B]">
+            <p className="text-right text-sm text-[#66706B]">
               {note.length}/{NOTE_LIMIT}
             </p>
           </div>

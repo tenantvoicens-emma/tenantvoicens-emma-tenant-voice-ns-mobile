@@ -133,40 +133,53 @@ async function PropertyContent({
   );
 
   return (
-    <PageContainer>
-      <div className="space-y-8">
-        <PropertyHeader
-          property={property}
-          backFallback={{
-            url: discoverHref(searchTerm),
-            label: searchTerm.trim() ? "search results" : "Discover",
-          }}
-          reviewCount={reviews.length}
-        />
-        <PropertySnapshot
-          propertyRating={propertyRatingSummary}
-          landlordRating={landlordRatingSummary}
-        />
+    <PageContainer width="wide">
+      {/* On large screens: the building and its summary ratings on the left,
+          individual reviews on the right. Phones keep one column. */}
+      <div className="space-y-8 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start lg:gap-10 lg:space-y-0">
+        <div className="space-y-8">
+          <PropertyHeader
+            property={property}
+            backFallback={{
+              url: discoverHref(searchTerm),
+              label: searchTerm.trim() ? "search results" : "Discover",
+            }}
+            reviewCount={reviews.length}
+          />
+          <PropertySnapshot
+            propertyRating={propertyRatingSummary}
+            landlordRating={landlordRatingSummary}
+          />
 
-        <CategoryRatings
-          propertyAverages={propertyCategoryAverages}
-          landlordAverages={landlordCategoryAverages}
-          reviewCount={reviews.length}
-        />
+          <CategoryRatings
+            propertyAverages={propertyCategoryAverages}
+            landlordAverages={landlordCategoryAverages}
+            reviewCount={reviews.length}
+          />
 
-        <ReviewsSection reviewCount={reviews.length} />
-        {reviewError ? (
-          <p className="text-gray-600" role="alert">
-            Reviews could not be loaded. Please try again later.
-          </p>
-        ) : reviews.length === 0 ? (
-          <p className="text-gray-600">No reviews yet.</p>
-        ) : (
-          reviews.map((review) => <ReviewCard key={review.id} review={review} />)
-        )}
-        <HighlightLinkedReview />
+          <div className="hidden lg:block">
+            <LeaveReviewCTA propertySlug={property.slug} />
+          </div>
+        </div>
 
-        <LeaveReviewCTA propertySlug={property.slug} />
+        <div className="space-y-8">
+          <ReviewsSection reviewCount={reviews.length} />
+          {reviewError ? (
+            <p className="text-gray-600" role="alert">
+              Reviews could not be loaded. Please try again later.
+            </p>
+          ) : reviews.length === 0 ? (
+            <p className="text-gray-600">No reviews yet.</p>
+          ) : (
+            reviews.map((review) => <ReviewCard key={review.id} review={review} />)
+          )}
+          <HighlightLinkedReview />
+
+          {/* On phones the prompt comes after the reviews. */}
+          <div className="lg:hidden">
+            <LeaveReviewCTA propertySlug={property.slug} />
+          </div>
+        </div>
       </div>
     </PageContainer>
   );

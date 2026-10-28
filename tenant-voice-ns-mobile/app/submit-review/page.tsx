@@ -332,7 +332,7 @@ function ReviewForm() {
   }
 
   return (
-    <main className="px-5 py-6">
+    <main className="mx-auto w-full max-w-md px-5 py-6 md:max-w-none lg:max-w-2xl">
       <div className="space-y-6">
         <BackLink
           fallback={
@@ -682,7 +682,7 @@ function ReviewForm() {
 
 const formCard = "space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6";
 const formField =
-  "w-full rounded-2xl border border-[#D9D6CE] bg-white p-4 text-lg outline-none focus:border-[#08873A]";
+  "w-full rounded-2xl border border-[#D9D6CE] bg-white p-4 text-lg focus:border-[#08873A]";
 
 type RatingGroupProps = {
   title: string;

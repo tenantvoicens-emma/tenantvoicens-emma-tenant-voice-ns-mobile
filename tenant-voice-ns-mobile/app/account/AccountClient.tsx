@@ -282,7 +282,7 @@ export default function AccountClient() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="min-h-12 w-full rounded-2xl border border-[#D9D6CE] bg-white px-4 text-lg outline-none focus:border-[#08873A]"
+            className="min-h-12 w-full rounded-2xl border border-[#D9D6CE] bg-white px-4 text-lg focus:border-[#08873A]"
           />
         </div>
 
@@ -386,7 +386,7 @@ function PasswordField({
         required
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="min-h-12 w-full rounded-2xl border border-[#D9D6CE] bg-white px-4 text-lg outline-none focus:border-[#08873A]"
+        className="min-h-12 w-full rounded-2xl border border-[#D9D6CE] bg-white px-4 text-lg focus:border-[#08873A]"
       />
     </div>
   );

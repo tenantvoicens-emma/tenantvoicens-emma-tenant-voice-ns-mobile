@@ -49,7 +49,8 @@ const SEARCH_RESULTS_ID = "search-results-heading";
 function showSearchResults() {
   const results = document.getElementById(SEARCH_RESULTS_ID);
   if (results) {
-    results.scrollIntoView({ block: "start", behavior: "smooth" });
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    results.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
     return;
   }
   const input = document.getElementById(SEARCH_INPUT_ID);
@@ -167,40 +168,46 @@ function DiscoverPage() {
   const search = usePropertySearch(searchTerm);
 
   return (
-    <PageContainer>
+    <PageContainer width="wide">
       <div className="space-y-8">
         <BackLink />
 
-        <div className="space-y-4">
-          <p className="text-lg font-medium uppercase tracking-wide text-[#5B7A68]">
-            Your next home starts with knowledge
-          </p>
-          <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
-            Renting is personal. Your research should be, too.
-          </h1>
-          <p className="text-lg text-[#66706B]">
-            Explore renter experiences with properties across Nova Scotia.
-          </p>
+        {/* Side by side on large screens: the welcome and search on the
+            left, the trust card on the right. */}
+        <div className="space-y-8 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-end lg:gap-10 lg:space-y-0">
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <p className="text-lg font-medium uppercase tracking-wide text-[#5B7A68]">
+                Your next home starts with knowledge
+              </p>
+              <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
+                Renting is personal. Your research should be, too.
+              </h1>
+              <p className="text-lg text-[#66706B]">
+                Explore renter experiences with properties across Nova Scotia.
+              </p>
+            </div>
+
+            <form
+              role="search"
+              className="space-y-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                showSearchResults();
+              }}
+            >
+              <SearchBar
+                id={SEARCH_INPUT_ID}
+                label="Find a property"
+                value={searchTerm}
+                onChange={setSearchTerm}
+                suggestions={search.results}
+              />
+            </form>
+          </div>
+
+          <TrustCard />
         </div>
-
-        <form
-          role="search"
-          className="space-y-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            showSearchResults();
-          }}
-        >
-          <SearchBar
-            id={SEARCH_INPUT_ID}
-            label="Find a property"
-            value={searchTerm}
-            onChange={setSearchTerm}
-            suggestions={search.results}
-          />
-        </form>
-
-        <TrustCard />
 
         {search.status !== "idle" ? (
           <section className="space-y-4" aria-labelledby={SEARCH_RESULTS_ID}>
@@ -228,16 +235,18 @@ function DiscoverPage() {
                 .
               </p>
             )}
-            {search.results.map((property) => (
-              <PropertyPreviewCard
-                key={property.id}
-                property={property}
-                searchTerm={searchTerm}
-              />
-            ))}
+            <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
+              {search.results.map((property) => (
+                <PropertyPreviewCard
+                  key={property.id}
+                  property={property}
+                  searchTerm={searchTerm}
+                />
+              ))}
+            </div>
           </section>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-10 lg:space-y-0">
             <section className="space-y-4" aria-labelledby="recent-reviews-heading">
               <h2 id="recent-reviews-heading" className="text-3xl font-bold tracking-tight text-[#294B3A]">
                 Recent reviews

@@ -252,7 +252,7 @@ export default function AdminPage() {
 
   return (
     <main>
-      <PageContainer>
+      <PageContainer width="wide">
         <div className="space-y-6">
           <BackLink fallback={{ url: "/", label: "Discover" }} />
           <header className="space-y-2">
@@ -306,19 +306,21 @@ export default function AdminPage() {
                 </button>
               </div>
 
-              <SegmentedControl
-                label="Review status"
-                options={reviewStatuses.map((status) => ({
-                  value: status,
-                  label: capitalize(status),
-                }))}
-                value={reviewStatus}
-                onChange={(status) => {
-                  setReviewStatus(status);
-                  setMessage("");
-                  setErrorMessage("");
-                }}
-              />
+              <div className="lg:max-w-md">
+                <SegmentedControl
+                  label="Review status"
+                  options={reviewStatuses.map((status) => ({
+                    value: status,
+                    label: capitalize(status),
+                  }))}
+                  value={reviewStatus}
+                  onChange={(status) => {
+                    setReviewStatus(status);
+                    setMessage("");
+                    setErrorMessage("");
+                  }}
+                />
+              </div>
 
               <h2 className="text-3xl font-bold tracking-tight text-[#294B3A]">
                 {capitalize(reviewStatus)} reviews ({reviews.length})
@@ -335,104 +337,107 @@ export default function AdminPage() {
                     : `No ${reviewStatus} reviews are archived yet.`}
                 </p>
               ) : (
-                reviews.map((review) => (
-                  <article
-                    key={review.id}
-                    className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6"
-                  >
-                    <header className="space-y-1">
-                      {review.properties && !review.properties.is_listed && (
-                        <p className="mb-2 rounded-2xl bg-[#FFF4D6] px-3 py-2 text-sm text-[#6B4E00]">
-                          <span className="font-semibold">New building</span>, added by
-                          this reviewer and not yet on the site. Check the address:
-                          approving this review publishes the building too.
-                        </p>
-                      )}
-                      <h3 className="text-xl font-bold text-[#294B3A]">
-                        {review.properties?.name ?? "Unknown property"}
-                      </h3>
-                      {review.properties &&
-                        review.properties.address !== review.properties.name && (
-                          <p className="text-[#4A5A52]">{review.properties.address}</p>
-                        )}
-                      {review.properties?.city && (
-                        <p className="text-[#4A5A52]">{review.properties.city}</p>
-                      )}
-                      <p className="text-sm text-[#66706B]">
-                        Submitted {new Date(review.created_at).toLocaleString()}
-                      </p>
-                    </header>
-
-                    <div className="flex flex-wrap gap-2">
-                      <ReviewDetail
-                        label="Lived here"
-                        value={formatOccupancy(review.occupancy_duration)}
-                      />
-                      <ReviewDetail
-                        label="Would live here again"
-                        value={capitalize(review.would_live_again)}
-                      />
-                    </div>
-
-                    <p className="whitespace-pre-wrap leading-relaxed text-gray-800">
-                      {review.review_text}
-                    </p>
-
-                    <RatingList
-                      title="Property ratings"
-                      ratings={review.property_ratings}
-                    />
-                    <RatingList
-                      title="Landlord ratings"
-                      ratings={review.landlord_ratings}
-                    />
-
-                    {reviewStatus !== "pending" && (
-                      <ModerationHistory
-                        events={history ? history[review.id] ?? [] : null}
-                      />
-                    )}
-
-                    <div
-                      className={`gap-3 border-t border-[#EEECE6] pt-4 ${reviewStatus === "pending" ? "grid grid-cols-2" : "flex"}`}
+                // Two cards per row on large screens.
+                <div className="space-y-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5 lg:space-y-0">
+                  {reviews.map((review) => (
+                    <article
+                      key={review.id}
+                      className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6"
                     >
-                      {reviewStatus !== "approved" && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            askToModerate(
-                              reviewStatus === "pending" ? "approve" : "approve-after-all",
-                              review
-                            )
-                          }
-                          disabled={isSaving}
-                          className="min-h-12 flex-1 rounded-full bg-[#08873A] px-5 text-lg font-medium text-white disabled:opacity-60"
-                        >
-                          {reviewStatus !== "pending"
-                            ? "Approve after all"
-                            : savingReviewId === review.id
-                              ? "Saving..."
-                              : "Approve"}
-                        </button>
+                      <header className="space-y-1">
+                        {review.properties && !review.properties.is_listed && (
+                          <p className="mb-2 rounded-2xl bg-[#FFF4D6] px-3 py-2 text-sm text-[#6B4E00]">
+                            <span className="font-semibold">New building</span>, added by
+                            this reviewer and not yet on the site. Check the address:
+                            approving this review publishes the building too.
+                          </p>
+                        )}
+                        <h3 className="text-xl font-bold text-[#294B3A]">
+                          {review.properties?.name ?? "Unknown property"}
+                        </h3>
+                        {review.properties &&
+                          review.properties.address !== review.properties.name && (
+                            <p className="text-[#4A5A52]">{review.properties.address}</p>
+                          )}
+                        {review.properties?.city && (
+                          <p className="text-[#4A5A52]">{review.properties.city}</p>
+                        )}
+                        <p className="text-sm text-[#66706B]">
+                          Submitted {new Date(review.created_at).toLocaleString()}
+                        </p>
+                      </header>
+
+                      <div className="flex flex-wrap gap-2">
+                        <ReviewDetail
+                          label="Lived here"
+                          value={formatOccupancy(review.occupancy_duration)}
+                        />
+                        <ReviewDetail
+                          label="Would live here again"
+                          value={capitalize(review.would_live_again)}
+                        />
+                      </div>
+
+                      <p className="whitespace-pre-wrap leading-relaxed text-gray-800">
+                        {review.review_text}
+                      </p>
+
+                      <RatingList
+                        title="Property ratings"
+                        ratings={review.property_ratings}
+                      />
+                      <RatingList
+                        title="Landlord ratings"
+                        ratings={review.landlord_ratings}
+                      />
+
+                      {reviewStatus !== "pending" && (
+                        <ModerationHistory
+                          events={history ? history[review.id] ?? [] : null}
+                        />
                       )}
-                      {reviewStatus !== "rejected" && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            askToModerate(
-                              reviewStatus === "pending" ? "reject" : "unpublish",
-                              review
-                            )
-                          }
-                          disabled={isSaving}
-                          className="min-h-12 flex-1 rounded-full border border-[#E0C4BC] bg-white px-5 text-lg font-medium text-[#8A3B2B] disabled:opacity-60"
-                        >
-                          {reviewStatus === "pending" ? "Reject" : "Unpublish"}
-                        </button>
-                      )}
-                    </div>
-                  </article>
-                ))
+
+                      <div
+                        className={`gap-3 border-t border-[#EEECE6] pt-4 ${reviewStatus === "pending" ? "grid grid-cols-2" : "flex"}`}
+                      >
+                        {reviewStatus !== "approved" && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              askToModerate(
+                                reviewStatus === "pending" ? "approve" : "approve-after-all",
+                                review
+                              )
+                            }
+                            disabled={isSaving}
+                            className="min-h-12 flex-1 rounded-full bg-[#08873A] px-5 text-lg font-medium text-white disabled:opacity-60"
+                          >
+                            {reviewStatus !== "pending"
+                              ? "Approve after all"
+                              : savingReviewId === review.id
+                                ? "Saving..."
+                                : "Approve"}
+                          </button>
+                        )}
+                        {reviewStatus !== "rejected" && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              askToModerate(
+                                reviewStatus === "pending" ? "reject" : "unpublish",
+                                review
+                              )
+                            }
+                            disabled={isSaving}
+                            className="min-h-12 flex-1 rounded-full border border-[#E0C4BC] bg-white px-5 text-lg font-medium text-[#8A3B2B] disabled:opacity-60"
+                          >
+                            {reviewStatus === "pending" ? "Reject" : "Unpublish"}
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  ))}
+                </div>
               )}
             </section>
           )}
@@ -464,7 +469,7 @@ function RatingList({
 }) {
   return (
     <section className="space-y-1 border-t border-[#EEECE6] pt-3">
-      <h4 className="text-xs font-semibold uppercase tracking-wide text-[#5B7A68]">
+      <h4 className="text-sm font-semibold uppercase tracking-wide text-[#5B7A68]">
         {title}
       </h4>
       {ratings.length === 0 ? (
@@ -495,7 +500,7 @@ const statusLabels: Record<ReviewStatus, string> = {
 function ModerationHistory({ events }: { events: HistoryEvent[] | null }) {
   return (
     <section className="space-y-2 rounded-2xl bg-[#F6F6EE] p-4">
-      <h4 className="text-xs font-semibold uppercase tracking-wide text-[#5B7A68]">
+      <h4 className="text-sm font-semibold uppercase tracking-wide text-[#5B7A68]">
         Moderation history
       </h4>
       {events === null ? (

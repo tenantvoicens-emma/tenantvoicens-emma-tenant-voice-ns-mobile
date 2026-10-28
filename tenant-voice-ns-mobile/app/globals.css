@@ -17,3 +17,21 @@ body {
     ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
 }
+
+/* A clear, thick outline on whatever has keyboard focus, so people who
+   navigate with a keyboard can always see where they are. */
+:focus-visible {
+  outline: 3px solid #08873a;
+  outline-offset: 3px;
+}
+
+/* Honour the system "reduce motion" setting. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
