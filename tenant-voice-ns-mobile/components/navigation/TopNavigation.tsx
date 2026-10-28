@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { startFreshReview } from "@/lib/review-draft";
+import StartReviewLink from "@/components/navigation/StartReviewLink";
 
 type NavigationProps = {
   // Each copy needs its own label so screen readers can tell them apart.
@@ -28,14 +28,19 @@ export default function TopNavigation({
         Discover
       </Link>
 
-      <Link
-        href="/submit-review"
-        onClick={isOnReviewPage ? undefined : startFreshReview}
-        aria-current={isOnReviewPage ? "page" : undefined}
-        className={navigationPill(isOnReviewPage)}
-      >
-        Review
-      </Link>
+      {isOnReviewPage ? (
+        <Link
+          href="/submit-review"
+          aria-current="page"
+          className={navigationPill(true)}
+        >
+          Review
+        </Link>
+      ) : (
+        <StartReviewLink className={navigationPill(false)}>
+          Review
+        </StartReviewLink>
+      )}
 
       <Link
         href="/policies"

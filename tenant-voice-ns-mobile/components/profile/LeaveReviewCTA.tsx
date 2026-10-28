@@ -1,8 +1,4 @@
-"use client";
-
-import Link from "next/link";
-import { startFreshReview } from "@/lib/review-draft";
-import Button from "@/components/ui/Button";
+import StartReviewLink from "@/components/navigation/StartReviewLink";
 
 type LeaveReviewCTAProps = {
   propertySlug: string;
@@ -20,13 +16,12 @@ export default function LeaveReviewCTA({ propertySlug }: LeaveReviewCTAProps) {
         your experience.
       </p>
 
-      <Link
-        href={`/submit-review?property=${encodeURIComponent(propertySlug)}`}
-        onClick={startFreshReview}
+      <StartReviewLink
+        propertySlug={propertySlug}
+        className="flex w-full items-center justify-center rounded-full bg-[#08873A] py-4 text-lg font-medium text-white transition hover:brightness-95"
       >
-        <Button text="Share Your Experience" />
-      </Link>
-
+        Share Your Experience
+      </StartReviewLink>
     </div>
   );
 }

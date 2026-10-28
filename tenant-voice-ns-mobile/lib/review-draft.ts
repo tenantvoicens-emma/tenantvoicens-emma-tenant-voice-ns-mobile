@@ -1,7 +1,8 @@
 // The unfinished review form, saved as the renter types so leaving and
 // coming back (a "Back to your review" link, Back, or a reload) picks up
 // where they left off. Links that start a review on purpose (the Review
-// pill, "Share Your Experience") call startFreshReview() to clear it.
+// pill, "Share Your Experience") go through StartReviewLink, which asks
+// before discarding a draft with anything typed or rated in it.
 
 export type ReviewDraft = {
   propertySlug: string | null;
@@ -36,6 +37,19 @@ export function writeDraft(draft: ReviewDraft | null) {
   }
 }
 
-export function startFreshReview() {
-  writeDraft(null);
+// True when the draft holds the renter's own work, not just a property
+// picked for them by the link that opened the form.
+export function hasUnsavedWork(draft: ReviewDraft | null): draft is ReviewDraft {
+  if (!draft) {
+    return false;
+  }
+  const hasRating = (ratings: Record<string, string>) =>
+    Object.values(ratings ?? {}).some((value) => value !== "");
+  return (
+    draft.reviewText.trim() !== "" ||
+    draft.occupancyDuration !== "" ||
+    draft.wouldLiveAgain !== "" ||
+    hasRating(draft.propertyRatings) ||
+    hasRating(draft.landlordRatings)
+  );
 }
