@@ -104,16 +104,23 @@ export default function PoliciesPage() {
               How ratings work
             </h2>
             <p className="text-gray-700">
-              Ratings are structured by category. Choose N/A if a category
+              Each review can give one overall star rating for the building
+              and one for the landlord or property manager. A building&apos;s
+              overall scores are the average of its reviews. If a reviewer
+              skipped an overall rating, the average of their detailed ratings
+              is used instead.
+            </p>
+            <p className="text-gray-700">
+              Detailed ratings are optional. Choose N/A if a category
               doesn’t apply or you’re not sure, or just skip it. N/A and
               skipped categories are left out of the score, not counted as
               zero.
             </p>
-            <h3 className="font-semibold text-[#294B3A]">Property ratings</h3>
+            <h3 className="font-semibold text-[#294B3A]">Detailed property ratings</h3>
             <ul className="list-disc space-y-1 pl-6 text-gray-700">
               {propertyRatings.map((rating) => <li key={rating}>{rating}</li>)}
             </ul>
-            <h3 className="font-semibold text-[#294B3A]">Landlord ratings</h3>
+            <h3 className="font-semibold text-[#294B3A]">Detailed landlord ratings</h3>
             <ul className="list-disc space-y-1 pl-6 text-gray-700">
               {landlordRatings.map((rating) => <li key={rating}>{rating}</li>)}
             </ul>

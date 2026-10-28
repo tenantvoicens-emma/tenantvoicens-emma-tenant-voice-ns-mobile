@@ -12,6 +12,12 @@ import Card from "@/components/ui/Card";
 import PageContainer from "@/components/ui/PageContainer";
 import SearchBar from "@/components/ui/SearchBar";
 import TrustCard from "@/components/ui/TrustCard";
+import {
+  detailedRatings,
+  formatCategory,
+  overallScore,
+  parseRatingScore,
+} from "@/lib/ratings";
 import { supabase } from "@/lib/supabase";
 import { usePropertySearch } from "@/lib/use-property-search";
 import { PropertyListing } from "@/types/property";
@@ -331,6 +337,8 @@ function mapDiscoverReview(row: DiscoverReviewRow): Review {
     createdAt: row.created_at,
     propertyRatings: mapDiscoverRatings(row.property_ratings, propertySlug),
     landlordRatings: mapDiscoverRatings(row.landlord_ratings, propertySlug),
+    propertyOverall: overallScore(row.property_ratings),
+    landlordOverall: overallScore(row.landlord_ratings),
   };
 }
 
@@ -338,12 +346,10 @@ function mapDiscoverRatings(
   ratings: DiscoverReviewRow["property_ratings"],
   propertySlug: string
 ): Rating[] {
-  return (ratings ?? []).map((rating) => ({
+  return detailedRatings(ratings).map((rating) => ({
     id: String(rating.id),
     propertySlug,
-    category: rating.category
-      .replaceAll("_", " ")
-      .replace(/\b\w/g, (letter) => letter.toUpperCase()),
+    category: formatCategory(rating.category),
     score: parseRatingScore(rating.score),
   }));
 }
@@ -367,17 +373,6 @@ function formatWouldLiveAgain(value: string | null) {
     na: "N/A",
   };
   return value ? labels[value.toLowerCase()] ?? value : "Not answered";
-}
-
-function parseRatingScore(value: string | number | null) {
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? value : null;
-  }
-  if (!value || ["na", "n/a"].includes(value.trim().toLowerCase())) {
-    return null;
-  }
-  const score = Number(value);
-  return Number.isFinite(score) ? score : null;
 }
 
 function DiscoverLoadingFallback() {

@@ -12,6 +12,7 @@ import BackLink from "@/components/navigation/BackLink";
 import FormMessages from "@/components/ui/FormMessages";
 import PageContainer from "@/components/ui/PageContainer";
 import SegmentedControl from "@/components/ui/SegmentedControl";
+import { formatCategory, OVERALL_CATEGORY } from "@/lib/ratings";
 import { supabase } from "@/lib/supabase";
 
 const ADMIN_EMAIL = "tenantvoicens@gmail.com";
@@ -476,9 +477,17 @@ function RatingList({
         <p className="text-sm text-[#66706B]">No ratings provided.</p>
       ) : (
         <ul className="divide-y divide-[#EEECE6] text-sm">
-          {ratings.map((rating) => (
+          {overallFirst(ratings).map((rating) => (
             <li key={rating.id} className="flex justify-between gap-3 py-2">
-              <span className="text-gray-700">{formatCategory(rating.category)}</span>
+              <span
+                className={
+                  rating.category === OVERALL_CATEGORY
+                    ? "font-semibold text-gray-800"
+                    : "text-gray-700"
+                }
+              >
+                {formatCategory(rating.category)}
+              </span>
               <span className="font-semibold tabular-nums text-[#294B3A]">
                 {rating.score.toLowerCase() === "na" ? "N/A" : `${rating.score}/5`}
               </span>
@@ -487,6 +496,13 @@ function RatingList({
         </ul>
       )}
     </section>
+  );
+}
+
+function overallFirst(ratings: RatingRow[]) {
+  return [...ratings].sort(
+    (a, b) =>
+      Number(b.category === OVERALL_CATEGORY) - Number(a.category === OVERALL_CATEGORY)
   );
 }
 
@@ -564,11 +580,6 @@ function formatOccupancy(value: string) {
   return capitalize(labels[value] ?? value.replaceAll("_", " "));
 }
 
-function formatCategory(value: string) {
-  return value
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);

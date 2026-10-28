@@ -4,7 +4,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Star } from "lucide-react";
+import { ChevronDown, Star } from "lucide-react";
 
 import BackLink from "@/components/navigation/BackLink";
 import { propertyLocation } from "@/lib/property-display";
@@ -17,6 +17,7 @@ import {
   writeDraft,
   type NewBuilding,
 } from "@/lib/review-draft";
+import { OVERALL_CATEGORY } from "@/lib/ratings";
 import { usePropertySearch } from "@/lib/use-property-search";
 import { supabase } from "@/lib/supabase";
 import { PropertyListing } from "@/types/property";
@@ -91,6 +92,9 @@ function ReviewForm() {
   const [landlordRatings, setLandlordRatings] = useState<Record<string, string>>(
     {}
   );
+  // Null until the renter opens or closes the detailed ratings; until then
+  // they show only if a restored draft already has some.
+  const [detailsOpen, setDetailsOpen] = useState<boolean | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] =
     useState<SubmissionStatus>(null);
@@ -221,6 +225,9 @@ function ReviewForm() {
     10
   );
   const hasBuilding = Boolean(selectedProperty) || isNewBuildingComplete(newBuilding);
+  const hasDetailedRatings = [...Object.entries(propertyRatings), ...Object.entries(landlordRatings)]
+    .some(([category, value]) => category !== OVERALL_CATEGORY && value !== "");
+  const showDetails = detailsOpen ?? hasDetailedRatings;
   const buildingLabel = selectedProperty
     ? selectedProperty.name
     : newBuilding
@@ -551,6 +558,27 @@ function ReviewForm() {
                 </select>
               </div>
 
+              <p id="overall-scale" className="text-[#66706B]">
+                1 is poor and 5 is excellent. Choose N/A if it doesn&apos;t apply,
+                or skip it.
+              </p>
+              <StarRatingField
+                name="property-overall"
+                label="Overall, how would you rate the building?"
+                value={propertyRatings[OVERALL_CATEGORY] ?? ""}
+                onChange={(value) => updateRating("property", OVERALL_CATEGORY, value)}
+                describedBy="overall-scale"
+                emphasis
+              />
+              <StarRatingField
+                name="landlord-overall"
+                label="Overall, how would you rate the landlord or property manager?"
+                value={landlordRatings[OVERALL_CATEGORY] ?? ""}
+                onChange={(value) => updateRating("landlord", OVERALL_CATEGORY, value)}
+                describedBy="overall-scale"
+                emphasis
+              />
+
               <div className="space-y-2">
                 <label htmlFor="review-text" className="block text-lg font-medium text-[#4A5A52]">
                   What would you like other renters to know?
@@ -578,27 +606,54 @@ function ReviewForm() {
               </div>
             </section>
 
-            <RatingGroup
-              title="Property ratings"
-              description="Rate the building and shared spaces. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
-              categories={propertyRatingCategories}
-              values={propertyRatings}
-              onChange={(category, value) =>
-                updateRating("property", category, value)
-              }
-              idPrefix="property-rating"
-            />
+            <section className={formCard} aria-labelledby="details-heading">
+              <h2 id="details-heading" className="text-xl font-bold text-[#294B3A]">
+                Detailed ratings{" "}
+                <span className="font-normal text-[#66706B]">(optional)</span>
+              </h2>
+              <p className="text-[#4A5A52]">
+                Rate things like cleanliness, safety, repair speed and
+                communication. It takes about a minute and helps other renters
+                compare buildings.
+              </p>
+              <button
+                type="button"
+                aria-expanded={showDetails}
+                aria-controls="detailed-ratings"
+                onClick={() => setDetailsOpen(!showDetails)}
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-[#2F4F46] py-3 text-lg font-medium text-[#2F4F46]"
+              >
+                {showDetails ? "Hide detailed ratings" : "Add detailed ratings"}
+                <ChevronDown
+                  className={`h-5 w-5 ${showDetails ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                />
+              </button>
+            </section>
 
-            <RatingGroup
-              title="Landlord ratings"
-              description="Rate the property manager or landlord. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
-              categories={landlordRatingCategories}
-              values={landlordRatings}
-              onChange={(category, value) =>
-                updateRating("landlord", category, value)
-              }
-              idPrefix="landlord-rating"
-            />
+            <div id="detailed-ratings" hidden={!showDetails} className="space-y-8">
+              <RatingGroup
+                title="Property ratings"
+                description="Rate the building and shared spaces. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
+                categories={propertyRatingCategories}
+                values={propertyRatings}
+                onChange={(category, value) =>
+                  updateRating("property", category, value)
+                }
+                idPrefix="property-rating"
+              />
+
+              <RatingGroup
+                title="Landlord ratings"
+                description="Rate the property manager or landlord. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
+                categories={landlordRatingCategories}
+                values={landlordRatings}
+                onChange={(category, value) =>
+                  updateRating("landlord", category, value)
+                }
+                idPrefix="landlord-rating"
+              />
+            </div>
 
             <section className={formCard} aria-labelledby="submit-heading">
               <h2 id="submit-heading" className="text-xl font-bold text-[#294B3A]">
@@ -616,12 +671,16 @@ function ReviewForm() {
                   value={getWouldLiveAgainLabel(wouldLiveAgain)}
                 />
                 <SummaryRow
-                  label="Property ratings"
-                  value={answeredLabel(propertyRatings, propertyRatingCategories)}
+                  label="Building overall"
+                  value={overallLabel(propertyRatings[OVERALL_CATEGORY])}
                 />
                 <SummaryRow
-                  label="Landlord ratings"
-                  value={answeredLabel(landlordRatings, landlordRatingCategories)}
+                  label="Landlord overall"
+                  value={overallLabel(landlordRatings[OVERALL_CATEGORY])}
+                />
+                <SummaryRow
+                  label="Detailed ratings"
+                  value={detailedLabel(propertyRatings, landlordRatings)}
                 />
               </dl>
 
@@ -710,71 +769,99 @@ function RatingGroup({
       </p>
 
       <div className="space-y-3">
-        {categories.map((category) => {
-          const groupName = `${idPrefix}-${category.value}`;
-          const selectedValue = values[category.value] ?? "";
-          const selectedScore = Number(selectedValue) || 0;
-
-          return (
-            <fieldset
-              key={category.value}
-              className="space-y-2"
-            >
-              <legend className="text-lg font-medium text-[#4A5A52]">
-                {category.label}
-              </legend>
-              <div className="grid grid-cols-5 gap-2">
-                {starRatings.map((score) => (
-                  <label
-                    key={score}
-                    title={`${score} - ${ratingLabels[score]}`}
-                    className="block cursor-pointer"
-                  >
-                    <input
-                      type="radio"
-                      name={groupName}
-                      value={score}
-                      checked={selectedValue === String(score)}
-                      aria-describedby={`${idPrefix}-scale`}
-                      onChange={() =>
-                        onChange(category.value, String(score))
-                      }
-                      className="peer sr-only"
-                    />
-                    <span
-                      aria-hidden="true"
-                      className={`flex flex-col items-center gap-1 rounded-2xl py-3 text-lg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2F4F46] ${score <= selectedScore ? "bg-[#DDEBD8] text-[#2F4F46]" : "bg-[#F3F3E9] text-[#8A938E]"}`}
-                    >
-                      <Star
-                        className="h-6 w-6"
-                        fill={score <= selectedScore ? "currentColor" : "none"}
-                      />
-                      {score}
-                    </span>
-                    <span className="sr-only">
-                      {score} out of 5, {ratingLabels[score]}
-                    </span>
-                  </label>
-                ))}
-              </div>
-              <label className="inline-block cursor-pointer">
-                <input
-                  type="radio"
-                  name={groupName}
-                  value="na"
-                  checked={selectedValue === "na"}
-                  aria-describedby={`${idPrefix}-scale`}
-                  onChange={() => onChange(category.value, "na")}
-                  className="peer sr-only"
-                />
-                <span className="inline-flex min-h-11 items-center rounded-full border border-[#D9D6CE] px-4 text-sm peer-checked:border-[#2F4F46] peer-checked:bg-[#DDEBD8] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2F4F46]">
-                  N/A
-                </span>
-              </label>
-            </fieldset>
-          );
-        })}
+        {categories.map((category) => (
+          <StarRatingField
+            key={category.value}
+            name={`${idPrefix}-${category.value}`}
+            label={category.label}
+            value={values[category.value] ?? ""}
+            onChange={(value) => onChange(category.value, value)}
+            describedBy={`${idPrefix}-scale`}
+          />
+        ))}
       </div>
+    </fieldset>
+  );
+}
+
+type StarRatingFieldProps = {
+  name: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  describedBy: string;
+  emphasis?: boolean;
+};
+
+// Five stars plus N/A, as one radio group. N/A also undoes a star tapped by
+// mistake.
+function StarRatingField({
+  name,
+  label,
+  value,
+  onChange,
+  describedBy,
+  emphasis = false,
+}: StarRatingFieldProps) {
+  const selectedScore = Number(value) || 0;
+
+  return (
+    <fieldset className="space-y-2">
+      <legend
+        className={
+          emphasis
+            ? "text-lg font-semibold text-[#294B3A]"
+            : "text-lg font-medium text-[#4A5A52]"
+        }
+      >
+        {label}
+      </legend>
+      <div className="grid grid-cols-5 gap-2">
+        {starRatings.map((score) => (
+          <label
+            key={score}
+            title={`${score} - ${ratingLabels[score]}`}
+            className="block cursor-pointer"
+          >
+            <input
+              type="radio"
+              name={name}
+              value={score}
+              checked={value === String(score)}
+              aria-describedby={describedBy}
+              onChange={() => onChange(String(score))}
+              className="peer sr-only"
+            />
+            <span
+              aria-hidden="true"
+              className={`flex flex-col items-center gap-1 rounded-2xl py-3 text-lg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2F4F46] ${score <= selectedScore ? "bg-[#DDEBD8] text-[#2F4F46]" : "bg-[#F3F3E9] text-[#8A938E]"}`}
+            >
+              <Star
+                className="h-6 w-6"
+                fill={score <= selectedScore ? "currentColor" : "none"}
+              />
+              {score}
+            </span>
+            <span className="sr-only">
+              {score} out of 5, {ratingLabels[score]}
+            </span>
+          </label>
+        ))}
+      </div>
+      <label className="inline-block cursor-pointer">
+        <input
+          type="radio"
+          name={name}
+          value="na"
+          checked={value === "na"}
+          aria-describedby={describedBy}
+          onChange={() => onChange("na")}
+          className="peer sr-only"
+        />
+        <span className="inline-flex min-h-11 items-center rounded-full border border-[#D9D6CE] px-4 text-sm peer-checked:border-[#2F4F46] peer-checked:bg-[#DDEBD8] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2F4F46]">
+          N/A
+        </span>
+      </label>
     </fieldset>
   );
 }
@@ -788,9 +875,24 @@ function SummaryRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function answeredLabel(values: Record<string, string>, categories: RatingCategory[]) {
-  const answered = categories.filter((category) => values[category.value]).length;
-  return `${answered} of ${categories.length} answered`;
+function overallLabel(value: string | undefined) {
+  if (value === "na") {
+    return "N/A";
+  }
+  return value ? `${value} out of 5` : "Skipped";
+}
+
+function detailedLabel(
+  propertyValues: Record<string, string>,
+  landlordValues: Record<string, string>
+) {
+  const answered = (values: Record<string, string>, categories: RatingCategory[]) =>
+    categories.filter((category) => values[category.value]).length;
+  const total = propertyRatingCategories.length + landlordRatingCategories.length;
+  const count =
+    answered(propertyValues, propertyRatingCategories) +
+    answered(landlordValues, landlordRatingCategories);
+  return count === 0 ? "None (optional)" : `${count} of ${total} answered`;
 }
 
 function getOptionLabel(options: RatingCategory[] | typeof occupancyOptions, value: string) {

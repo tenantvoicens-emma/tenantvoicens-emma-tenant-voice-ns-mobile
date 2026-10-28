@@ -3,6 +3,7 @@ import { isIP } from "node:net";
 import { createClient } from "@supabase/supabase-js";
 
 const propertyRatingCategories = new Set([
+  "overall",
   "cleanliness",
   "safety",
   "common_areas",
@@ -14,6 +15,7 @@ const propertyRatingCategories = new Set([
 ]);
 
 const landlordRatingCategories = new Set([
+  "overall",
   "communication",
   "repair_speed",
   "professionalism",
