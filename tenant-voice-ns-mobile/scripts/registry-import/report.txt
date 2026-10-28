@@ -1,0 +1,401 @@
+Registry: Residential_Rental_Registry_5011327862495338746.csv, 12409 registrations
+Buildings: 10811; kept 1796; skipped {'fewer than 4 units': 8872, 'rented by the room': 17, 'house, duplex or small building': 126}
+Unparseable addresses: 4 ['231-24 HAMMONDS PLAINS RD,BEDFORD,24A 3P3', '65 TREKKER DR,B4B 2K8', '31A LUCIEN DR,DARTMOUTH,2W 2J2', '9,HIGHRIGGER CRESCENT,MIDDLE SACKVILLE,B4E2V5']
+OSM names matched: 340 by address, 57 by location
+  name [address] 'Avia' -> 29 Abbington Avenue, Bedford
+  name [address] 'The Aspen' -> 75 Abbington Avenue, Bedford
+  name [address] 'Luxor West' -> 240 Amesbury Gate, Bedford
+  name [address] 'Crestview Gardens' -> 11 Amin Street, Bedford
+  name [address] '76 Place' -> 76 Armenia Drive, Bedford
+  name [address] 'The Gate' -> 241 Broad Street, Bedford
+  name [address] 'The Broadside' -> 436 Broad Street, Bedford
+  name [address] 'The Birchwood' -> 675 Broad Street, Bedford
+  name [address] 'The Berkeley' -> 2 Convoy Run, Bedford
+  name [address] 'The Madison' -> 24 Farringdon Way, Bedford
+  name [address] 'The Marci' -> 35 Farringdon Way, Bedford
+  name [address] 'Paper Mill Estates' -> 123 Hammonds Plains Road, Bedford
+  name [nearby] 'Brookshire Place' -> 173 Hammonds Plains Road, Bedford
+  name [nearby] 'Brookshire Place' -> 183 Hammonds Plains Road, Bedford
+  name [address] 'Harmony Square' -> 90 Hogan Court, Bedford
+  name [address] 'Innovation Towers' -> 135 Innovation Drive, Bedford
+  name [address] 'Symphony Suites' -> 245 Innovation Drive, Bedford
+  name [address] 'Sky Vistas' -> 246 Innovation Drive, Bedford
+  name [address] 'Sky Vistas 2' -> 300 Innovation Drive, Bedford
+  name [address] 'The View' -> 419 Kearney Lake Road, Bedford
+  name [address] 'The Gardens I' -> 357 Larry Uteck Boulevard, Bedford
+  name [address] 'The Gardens II' -> 361 Larry Uteck Boulevard, Bedford
+  name [address] 'The Gardens III' -> 405 Larry Uteck Boulevard, Bedford
+  name [address] 'The Gardens IV' -> 421 Larry Uteck Boulevard, Bedford
+  name [address] 'Crestview Place' -> 86 Nelsons Landing Boulevard, Bedford
+  name [address] 'The Ravines' -> 120 Southgate Drive, Bedford
+  name [nearby] 'Cedar Court' -> 1109 Cole Harbour Road, Cole Harbour
+  name [address] 'Jennifer Place' -> 1182 Cole Harbour Road, Cole Harbour
+  name [address] 'Sheridan Place' -> 149 Albro Lake Road, Dartmouth
+  name [address] 'The Oaks' -> 169 Albro Lake Road, Dartmouth
+  name [address] 'Imperial Arms' -> 175 Albro Lake Road, Dartmouth
+  name [address] 'The Avery' -> 25 Alderney Drive, Dartmouth
+  name [address] 'Royal Oak Estates' -> 59 Baker Drive, Dartmouth
+  name [address] 'Woodbury Villa' -> 91 Baker Drive, Dartmouth
+  name [address] 'Bellbrook Apartments' -> 74 Bellbrook Crescent, Dartmouth
+  name [address] 'Bridge Pond Apartments' -> 164 Braemar Drive, Dartmouth
+  name [address] 'The Souriquois' -> 26 Brookdale Crescent, Dartmouth
+  name [address] 'Lake Banook Woods' -> 30 Brookdale Crescent, Dartmouth
+  name [address] 'Pine Green Park' -> 14 Churchill Court, Dartmouth
+  name [nearby] 'Belmont Court Apartments' -> 945 Cole Harbour Road, Dartmouth
+  name [nearby] 'Belmont Court Apartments' -> 947 Cole Harbour Road, Dartmouth
+  name [address] 'Harbour Suites' -> 1101 Cole Harbour Road, Dartmouth
+  name [address] 'The Rosebridge' -> 79 Collins Grove, Dartmouth
+  name [address] 'Jennifer Place' -> 10 Crystal Drive, Dartmouth
+  name [address] '3 Dillman Place' -> 3 Dillman Place, Dartmouth
+  name [address] 'Seacoast Tower' -> 22 Dundas Street, Dartmouth
+  name [address] 'Garshan Manor' -> 11 Garshan Road, Dartmouth
+  name [address] 'Westgate Apartments' -> 66 Highfield Park Drive, Dartmouth
+  name [address] 'The Ashton' -> 79 Holtwood Court, Dartmouth
+  name [address] 'The Kensington' -> 80 Holtwood Court, Dartmouth
+  name [address] 'The Horizon' -> 7 Horizon Court, Dartmouth
+  name [address] 'The Summit' -> 10 Horizon Court, Dartmouth
+  name [address] 'GardenStone' -> 11 Horizon Court, Dartmouth
+  name [address] 'The Admiral' -> 14 Jackson Road, Dartmouth
+  name [address] '6 Jamieson Street' -> 6 Jamieson Street, Dartmouth
+  name [address] 'Harbourview Acres' -> 7 Jamieson Street, Dartmouth
+  name [nearby] 'The Willows' -> 17-45 Killkee Gate, Dartmouth
+  name [address] 'Anchorage' -> 15 Kings Wharf Place, Dartmouth
+  name [address] 'Keelson' -> 31 Kings Wharf Place, Dartmouth
+  name [address] 'Killick' -> 49 Kings Wharf Place, Dartmouth
+  name [address] 'Aqua Vista' -> 67 Kings Wharf Place, Dartmouth
+  name [address] 'Lakecrest Terrace' -> 46 Lakecrest Drive, Dartmouth
+  name [address] 'Lakecrest Apartments' -> 79 Lakecrest Drive, Dartmouth
+  name [address] 'Lakecrest Apartments' -> 81 Lakecrest Drive, Dartmouth
+  name [address] 'Aberdeen House' -> 25 Leaman Drive, Dartmouth
+  name [address] 'The Manors' -> 10 Micmac Boulevard, Dartmouth
+  name [address] 'Eagle Hill' -> 216 Nadia Drive, Dartmouth
+  name [address] 'Eagleview Apartments' -> 282 Nadia Drive, Dartmouth
+  name [address] 'One Oak' -> 1 Oak Street, Dartmouth
+  name [address] 'Maplehurst Apartments' -> 7 Parker Street, Dartmouth
+  name [address] 'Regal Luxury Apartments I' -> 435 Portland Hills Drive, Dartmouth
+  name [address] 'Regal Luxury Apartments II' -> 449 Portland Hills Drive, Dartmouth
+  name [nearby] 'Harbour Place' -> 10 Portland Street, Dartmouth
+  name [address] 'The Bright Side' -> 17 Portland Street, Dartmouth
+  name [address] 'Port 357' -> 357 Portland Street, Dartmouth
+  name [address] 'Primrose Plaza' -> 44 Primrose Street, Dartmouth
+  name [address] 'Hampton Court' -> 60 Primrose Street, Dartmouth
+  name [address] 'Bowville Manor' -> 71 Primrose Street, Dartmouth
+  name [address] 'The Emerald' -> 72 Primrose Street, Dartmouth
+  name [address] 'Royal Court' -> 81 Primrose Street, Dartmouth
+  name [address] 'Greenway Mills' -> 27 Prince Albert Road, Dartmouth
+  name [address] 'Admiralty Place' -> 1 Prince Street, Dartmouth
+  name [address] 'The Upside' -> 17 Prince Street, Dartmouth
+  name [nearby] 'Vantage Point' -> 2-16 Princes Margaret Boulevard, Dartmouth
+  name [nearby] 'The Poplars' -> 1-25 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'The Lookout' -> 34-48 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Misty Point' -> 50-64 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Rocky Crest' -> 57-67 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Waterside' -> 66-80 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'The Summit' -> 69-75 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'The Summit' -> 77-87 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Pebble Beach' -> 82-96 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Edge Hill' -> 98-112 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Rock Cliff' -> 107-119 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Sail Past' -> 114-128 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Beachway' -> 133-143 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'The Pines' -> 145-173 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'The Harbour' -> 150-160 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'The Moorings' -> 162-176 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'The Pines' -> 175-201 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Mountview' -> 178-192 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Mountview' -> 194-204 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'The Breezeway' -> 222-248 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Ocean Mist' -> 250-260 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Cliffside' -> 262-288 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Tidal Wave' -> 320-330 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Tidal Wave' -> 354-356 Princess Margaret Boulevard, Dartmouth
+  name [nearby] 'Tidal Wave' -> 368-376 Princess Margaret Boulevard, Dartmouth
+  name [address] '15 Ranya Lane Apartments' -> 15 Ranya Lane, Dartmouth
+  name [address] 'Richmond East' -> 117 Richmond Street, Dartmouth
+  name [address] '24 Roleika Drive' -> 24 Roleika Drive, Dartmouth
+  name [address] 'The Talisman' -> 40 Rose Street, Dartmouth
+  name [address] 'The Linden' -> 100 Royale Boulevard, Dartmouth
+  name [address] 'The Aspen' -> 200 Royale Boulevard, Dartmouth
+  name [address] 'The Willow' -> 300 Royale Boulevard, Dartmouth
+  name [address] 'The Hazelton' -> 39 Seapoint Road, Dartmouth
+  name [address] 'The Bowtie' -> 67 Tacoma Drive, Dartmouth
+  name [address] 'Delshire Manor' -> 228 Victoria Road, Dartmouth
+  name [address] 'Tel Lofts' -> 36 Wentworth Street, Dartmouth
+  name [address] 'Harbourshore Apartments' -> 249 Windmill Road, Dartmouth
+  name [address] 'Harbour Mews' -> 271 Windmill Road, Dartmouth
+  name [address] 'Chebucto Mews' -> 275 Windmill Road, Dartmouth
+  name [address] 'Oceanview Condominiums' -> 281 Windmill Road, Dartmouth
+  name [address] 'The Ambassador' -> 356 Windmill Road, Dartmouth
+  name [address] 'Riviera Apartments' -> 721 Windmill Road, Dartmouth
+  name [address] 'Hornes Brook Apartments' -> 93 Cow Bay Road, Eastern Passage
+  name [address] 'Armdale Place' -> 36 Abbey Road, Halifax
+  name [address] 'Persimmon Properties' -> 2710 Agricola Street, Halifax
+  name [address] 'Allan Studios' -> 6191 Allan Street, Halifax
+  name [address] 'Almon Place Retirement Living' -> 5534 Almon Street, Halifax
+  name [address] 'Jane Apartments' -> 5640 Almon Street, Halifax
+  name [address] 'Almon Apartments' -> 5666 Almon Street, Halifax
+  name [address] 'Heritage Way' -> 5530 Artillery Place, Halifax
+  name [address] 'The Vincent Coleman' -> 3330 Barnstead Lane, Halifax
+  name [address] 'Foundry Place' -> 960 Barrington Street, Halifax
+  name [address] 'Peninsula Place' -> 1015 Barrington Street, Halifax
+  name [address] 'Southport' -> 1065 Barrington Street, Halifax
+  name [address] 'Northbridge Apartments' -> 3150 Barrington Street, Halifax
+  name [address] 'Barrington Narrows' -> 3260 Barrington Street, Halifax
+  name [nearby] 'Bauer Terrace' -> 2083 Bauer Street, Halifax
+  name [address] 'Bayers Park Apartments II' -> 6967 Bayers Road, Halifax
+  name [address] 'Bayers Park Apartments I' -> 6969 Bayers Road, Halifax
+  name [address] 'Icon Bay' -> 50 Bedford Highway, Halifax
+  name [address] 'Woburn Manor' -> 238 Bedford Highway, Halifax
+  name [address] 'Princess Andrea View' -> 246 Bedford Highway, Halifax
+  name [address] 'The Terrace' -> 647 Bedford Highway, Halifax
+  name [address] 'The Wyatt' -> 864 Bedford Highway, Halifax
+  name [address] 'Beaubassin Place' -> 53 Bedros Lane, Halifax
+  name [address] 'The Majestic' -> 64 Bedros Lane, Halifax
+  name [address] 'Searidge Condominium' -> 94 Bedros Lane, Halifax
+  name [address] 'The Johnathan' -> 2600 Beech Street, Halifax
+  name [address] 'The Bently' -> 15 Bently Drive, Halifax
+  name [address] 'The Azure' -> 16 Bently Drive, Halifax
+  name [address] 'Royal View Apartments' -> 35 Bently Drive, Halifax
+  name [nearby] 'Sovereign Building' -> 1488 Birmingham, Halifax
+  name [address] 'The Alexander' -> 5121 Bishop Street, Halifax
+  name [address] 'Charter House' -> 1465 Brenton Street, Halifax
+  name [address] 'The Broadway' -> 325 Broad Street, Halifax
+  name [address] 'The Sterling' -> 451 Broad Street, Halifax
+  name [nearby] 'Grafton Park' -> 1537 Brunswick Street, Halifax
+  name [address] 'Harbour Ridge Apartments' -> 1663 Brunswick Street, Halifax
+  name [address] 'The Plaza' -> 1881 Brunswick Street, Halifax
+  name [address] '19Twenty Apartments' -> 1920 Brunswick Street, Halifax
+  name [address] 'Scotia Tower' -> 1991 Brunswick Street, Halifax
+  name [address] 'The Marley' -> 2128 Brunswick Street, Halifax
+  name [address] 'The Chessvale' -> 25 Camelot Lane, Halifax
+  name [address] 'The Bristol' -> 100 Camelot Lane, Halifax
+  name [address] 'Carrington Place' -> 26 Carrington Place, Halifax
+  name [address] 'Chapter House' -> 1314 Cathedral Lane, Halifax
+  name [address] 'Garden Park' -> 1472 Cathedral Lane, Halifax
+  name [address] 'Caxton Place' -> 4 Caxton Close, Halifax
+  name [address] 'Caxton Arms' -> 5 Caxton Close, Halifax
+  name [address] 'Parkview Place' -> 16 Caxton Close, Halifax
+  name [address] 'Rockliffe Place' -> 21 Chadwick Place, Halifax
+  name [address] 'Tisdall Place' -> 30 Chipstone Close, Halifax
+  name [address] 'Church Hill Apartments' -> 1271 Church Street, Halifax
+  name [address] 'The Mary Ann' -> 5481 Clyde Street, Halifax
+  name [address] 'The Carlyle' -> 6095 Coburg Road, Halifax
+  name [address] 'The Elizabeth Anne' -> 6227 Coburg Road, Halifax
+  name [address] 'Coburg House' -> 6345 Coburg Road, Halifax
+  name [address] 'Coburg Place' -> 6369 Coburg Road, Halifax
+  name [address] 'Corwin Place' -> 6269 Cork Street, Halifax
+  name [address] 'The Jamieson' -> 6306 Cork Street, Halifax
+  name [address] 'Terrace View' -> 41 Cowie Hill Road, Halifax
+  name [address] 'The Craigmore' -> 1 Craigmore Drive, Halifax
+  name [address] 'Armoury Villa' -> 5689 Cunard Street, Halifax
+  name [address] 'Armoury Square' -> 5839 Cunard Street, Halifax
+  name [address] 'Macdonald Apartments' -> 5885 Cunard Street, Halifax
+  name [address] 'Olive Branch' -> 15 Dawn Street, Halifax
+  name [address] 'Long Lake Place' -> 29 Dentith Road, Halifax
+  name [address] 'The Junction' -> 3075 Devonshire Avenue, Halifax
+  name [address] 'The Martello' -> 1550 Dresden Row, Halifax
+  name [address] 'The Edison' -> 3400 Dutch Village Road, Halifax
+  name [address] 'The Eliza' -> 15 Eliza Ritchie Crescent, Halifax
+  name [address] 'Parkview Terrace' -> 64 Fairfax Drive, Halifax
+  name [address] 'Fairfax Ridge' -> 72 Fairfax Drive, Halifax
+  name [address] 'Fairfax Suites' -> 76 Fairfax Drive, Halifax
+  name [nearby] "Gate Keeper's Motorcycle Club" -> 2681 Fern Lane, Halifax
+  name [address] '46 Friesian' -> 46 Friesian Court, Halifax
+  name [address] '49 Friesian' -> 49 Friesian Court, Halifax
+  name [address] 'Domvista Apartments' -> 299 Gary Martin Drive, Halifax
+  name [address] 'The Berkeley' -> 2633 Gladstone Street, Halifax
+  name [address] 'Wellington Court' -> 2677 Gladstone Street, Halifax
+  name [address] 'The Westwood' -> 2717 Gladstone Street, Halifax
+  name [address] 'Gladstone North' -> 2761 Gladstone Street, Halifax
+  name [address] 'The Pearl' -> 1901 Gottingen Street, Halifax
+  name [address] 'Theatre Lofts' -> 2116 Gottingen Street, Halifax
+  name [address] 'Westgate Apartments' -> 2530 Gottingen Street, Halifax
+  name [address] 'Northwood Manor' -> 2630 Gottingen Street, Halifax
+  name [address] 'The Roy' -> 1650 Granville Street, Halifax
+  name [address] 'The Scotian' -> 5222 Green Street, Halifax
+  name [address] 'Terrace Green' -> 5240 Green Street, Halifax
+  name [address] 'John Hugh MacKenzie Housing Co-operative' -> 5293 Green Street, Halifax
+  name [address] 'Forest Hills' -> 28 Greenpark Close, Halifax
+  name [address] 'Kensington Suites' -> 84 Greenpark Close, Halifax
+  name [address] 'The Edgehill' -> 106 Greenpark Close, Halifax
+  name [address] 'Greenpark Suites' -> 109 Greenpark Close, Halifax
+  name [address] 'Hillview Suites' -> 112 Greenpark Close, Halifax
+  name [address] 'Harris East' -> 5677 Harris Street, Halifax
+  name [nearby] 'Twin Peaks' -> 550 Herring Cove Road, Halifax
+  name [nearby] 'Twin Peaks' -> 554 Herring Cove Road, Halifax
+  name [address] 'Soho Halifax' -> 1212 Hollis Street, Halifax
+  name [nearby] 'Alexander McLean House' -> 1325 Hollis Street, Halifax
+  name [nearby] 'Alexander McLean House' -> 1335 Hollis Street, Halifax
+  name [address] 'Prince Matthew’s Palace' -> 1338 Hollis Street, Halifax
+  name [nearby] 'William DeBlois House' -> 1360 Hollis Street, Halifax
+  name [nearby] 'The Governor' -> 1441 Hollis Street, Halifax
+  name [address] 'The Maple' -> 1583 Hollis Street, Halifax
+  name [nearby] 'Hood Street Flat' -> 6325 Hood Street, Halifax
+  name [nearby] 'Knightsbridge' -> 5456 Inglis Street, Halifax
+  name [address] 'The Ingliwood' -> 5523 Inglis Street, Halifax
+  name [address] 'The Camille' -> 2857 Isleville Street, Halifax
+  name [address] 'The Abigail III' -> 51 Jacob Lane, Halifax
+  name [address] 'The Abigail II' -> 56 Jacob Lane, Halifax
+  name [address] 'The Norwest Apartments' -> 3824 Joseph Howe Drive, Halifax
+  name [address] 'The View' -> 419 Kearney Lake Road, Halifax
+  name [nearby] 'Cash House' -> 5219 Kent Street, Halifax
+  name [nearby] 'Cash House' -> 5227 Kent Street, Halifax
+  name [address] 'Mapleridge Condominiums' -> 15 Knightsridge Drive, Halifax
+  name [address] 'The Daylesford' -> 40 Knightsridge Drive, Halifax
+  name [address] 'Ashby Mears' -> 295 Lacewood Drive, Halifax
+  name [address] 'Kinsley Woods' -> 301 Lacewood Drive, Halifax
+  name [address] 'Datchworth' -> 331 Lacewood Drive, Halifax
+  name [address] 'City Centre Terrace' -> 6028 Lady Hammond Road, Halifax
+  name [address] 'Bright Place' -> 6123 Lady Hammond Road, Halifax
+  name [address] 'Langbrae Suites' -> 319 Langbrae Drive, Halifax
+  name [address] 'Carlton Ridge' -> 20 Larry Uteck Boulevard, Halifax
+  name [address] 'The Charles I' -> 230 Larry Uteck Boulevard, Halifax
+  name [address] 'The Mapleview' -> 290 Larry Uteck Boulevard, Halifax
+  name [address] 'The Birchview' -> 324 Larry Uteck Boulevard, Halifax
+  name [address] 'Rockwood Estates' -> 390 Larry Uteck Boulevard, Halifax
+  name [address] 'Rockwood Estates' -> 420 Larry Uteck Boulevard, Halifax
+  name [address] 'Empress Gardens' -> 461 Larry Uteck Boulevard, Halifax
+  name [address] 'Luxor' -> 630 Larry Uteck Boulevard, Halifax
+  name [address] 'Luxor II' -> 635 Larry Uteck Boulevard, Halifax
+  name [address] 'LeMarchant Towers' -> 1521 Lemarchant Street, Halifax
+  name [address] 'Chelsea Place' -> 6265 London Street, Halifax
+  name [address] 'Waterfront Place' -> 1326 Lower Water Street, Halifax
+  name [address] 'Harbour House' -> 1360 Lower Water Street, Halifax
+  name [address] "Bishop's Landing South" -> 1475 Lower Water Street, Halifax
+  name [address] "Bishop's Landing North" -> 1477 Lower Water Street, Halifax
+  name [address] "Bishop's Landing North" -> 1479 Lower Water Street, Halifax
+  name [address] 'Park Plaza' -> 1055 Lucknow Street, Halifax
+  name [address] "Jacob's Manor" -> 37 Main Avenue, Halifax
+  name [address] 'Main Meadows' -> 87 Main Avenue, Halifax
+  name [address] 'King Andrew Tower' -> 290 Main Avenue, Halifax
+  name [address] 'Milestone Apartments' -> 295 Main Avenue, Halifax
+  name [address] 'Palace Royale' -> 333 Main Avenue, Halifax
+  name [address] 'Westgate' -> 1 Margaret Road, Halifax
+  name [nearby] 'The Dillon' -> 1619 Market Street, Halifax
+  name [address] 'Nook' -> 2495 Maynard Street, Halifax
+  name [nearby] 'Maynard Suites' -> 2562 Maynard Street, Halifax
+  name [address] 'Chang’s Property' -> 995 Mclean Street, Halifax
+  name [address] 'The Sheffield' -> 55 Meadowlark Crescent, Halifax
+  name [address] 'Melrose Towers' -> 49 Melrose Avenue, Halifax
+  name [address] 'Letson Court' -> 5234 Morris Street, Halifax
+  name [address] 'Winchester Plaza' -> 5264 Morris Street, Halifax
+  name [address] 'The Westminster' -> 5300 Morris Street, Halifax
+  name [address] 'Del Ray Apartments' -> 5314 Morris Street, Halifax
+  name [address] 'Spice Condominiums' -> 5221 Nora Bernard Street, Halifax
+  name [address] 'Northwood Towers' -> 2641 Northwood Terrace, Halifax
+  name [address] 'Ogilvie on the Park' -> 5651 Ogilvie Street, Halifax
+  name [nearby] 'Brentwood Park Apartments' -> 3000 Olivet Street, Halifax
+  name [address] 'Fort Knox' -> 3025 Olivet Street, Halifax
+  name [address] 'Fort George' -> 3045 Olivet Street, Halifax
+  name [address] 'Fort Lawrence' -> 3065 Olivet Street, Halifax
+  name [address] 'Olivet Gardens' -> 3083 Olivet Street, Halifax
+  name [address] 'Southview Condos' -> 1270 Oxford Street, Halifax
+  name [address] 'Oxford Court' -> 1350 Oxford Street, Halifax
+  name [address] 'Oxford House' -> 1545 Oxford Street, Halifax
+  name [address] 'The Kingsford' -> 1585 Oxford Street, Halifax
+  name [address] 'Deerwood' -> 52 Parkland Drive, Halifax
+  name [address] 'Park Royal' -> 82 Parkland Drive, Halifax
+  name [address] 'The Woodbury' -> 429 Parkland Drive, Halifax
+  name [address] 'Parkridge Place' -> 456 Parkland Drive, Halifax
+  name [address] 'Paxton Place' -> 459 Parkland Drive, Halifax
+  name [address] 'Glenbourne Gate' -> 505 Parkland Drive, Halifax
+  name [address] 'The Wedgewood' -> 767 Parkland Drive, Halifax
+  name [address] 'William Plaza' -> 6058 Pepperell Street, Halifax
+  name [address] 'David Plaza' -> 6080 Pepperell Street, Halifax
+  name [nearby] 'The Berkeley' -> 6240 Pepperell Street, Halifax
+  name [nearby] 'The TED' -> 6323 Pepperell Street, Halifax
+  name [address] 'The Harwick' -> 6409 Pepperell Street, Halifax
+  name [address] 'The Harwick' -> 6415 Pepperell Street, Halifax
+  name [address] 'The Anthony' -> 5426 Portland Place, Halifax
+  name [address] '76 Prestwick Close' -> 76 Prestwick Close, Halifax
+  name [address] '79 Prestwick Close' -> 79 Prestwick Close, Halifax
+  name [address] '85 Prestwick Close' -> 85 Prestwick Close, Halifax
+  name [address] 'Sparton Arms' -> 1135 Queen Street, Halifax
+  name [address] 'Carol Ann Apartments' -> 1143 Queen Street, Halifax
+  name [address] 'Fort Massey Apartments' -> 1263 Queen Street, Halifax
+  name [address] 'Fraser-Mahoney House' -> 1320 Queen Street, Halifax
+  name [address] 'Quinpool Tower' -> 2060 Quingate Place, Halifax
+  name [address] 'Helmsley Gate' -> 291 Radcliffe Drive, Halifax
+  name [address] 'Parkhaven' -> 294 Radcliffe Drive, Halifax
+  name [address] 'Anchor Living Apartments' -> 2 Ramsgate Lane, Halifax
+  name [address] 'Tiara Gardens' -> 10 Regency Park Drive, Halifax
+  name [address] 'Gardens Two' -> 78 Regency Park Drive, Halifax
+  name [address] 'Stratavista Suites' -> 169 Regency Park Drive, Halifax
+  name [address] 'Regency View' -> 247 Regency Park Drive, Halifax
+  name [address] 'The Sherwood' -> 5681 Rhuland Street, Halifax
+  name [address] 'Cedars' -> 42 River Road, Halifax
+  name [address] 'Q Lofts' -> 5662 Roberts Street, Halifax
+  name [nearby] 'MR Apartments' -> 5665 Roberts Street, Halifax
+  name [address] 'Croydon Arms' -> 1244 Robie Street, Halifax
+  name [address] 'The Welsford' -> 2074 Robie Street, Halifax
+  name [address] 'Russell Terrace' -> 5650 Russell Street, Halifax
+  name [address] 'Garrison Watch' -> 5536 Sackville Street, Halifax
+  name [nearby] 'Capitol Suites' -> 1460 Seymour Street, Halifax
+  name [address] 'Sheradon Place Apartments' -> 1 Sheradon Place, Halifax
+  name [address] 'Lincoln Plaza' -> 6071 Shirley Street, Halifax
+  name [address] 'Maran Plaza' -> 6085 Shirley Street, Halifax
+  name [address] 'The Litchfield' -> 137 Solutions Drive, Halifax
+  name [address] 'The Yorkdale' -> 150 Solutions Drive, Halifax
+  name [address] 'The Grainery Lofts' -> 927 South Bland Street, Halifax
+  name [address] 'The Terrace' -> 961 South Bland Street, Halifax
+  name [address] '18 Park' -> 1018 South Park Street, Halifax
+  name [address] 'Somerset Place' -> 1030 South Park Street, Halifax
+  name [address] 'Park Victoria' -> 1333 South Park Street, Halifax
+  name [address] 'The Trillium' -> 1445 South Park Street, Halifax
+  name [address] 'The Paramount' -> 1545 South Park Street, Halifax
+  name [address] 'Curve' -> 1581 South Park Street, Halifax
+  name [address] 'Pavilion' -> 1585 South Park Street, Halifax
+  name [nearby] 'The Hilltop' -> 5315 South Street, Halifax
+  name [nearby] 'The Hilltop' -> 5321 South Street, Halifax
+  name [address] 'South Street Apartments' -> 5650 South Street, Halifax
+  name [address] 'Prince Joe Castle' -> 5778 South Street, Halifax
+  name [address] 'Spinnaker Arms' -> 80 Spinnaker Drive, Halifax
+  name [address] 'The Anchorage' -> 85 Spinnaker Drive, Halifax
+  name [address] 'Spring Garden' -> 5770 Spring Garden Road, Halifax
+  name [address] 'Summer Crest Apartments' -> 5881 Spring Garden Road, Halifax
+  name [address] 'Spring Garden Terrace' -> 5885 Spring Garden Road, Halifax
+  name [address] 'Embassy Towers' -> 5959 Spring Garden Road, Halifax
+  name [address] 'Starboard Place' -> 530 Starboard Drive, Halifax
+  name [address] 'StoneyBrook' -> 27 Stoneybrook Court, Halifax
+  name [address] 'Summer Gardens' -> 1470 Summer Street, Halifax
+  name [address] 'The Boss Plaza 3' -> 15 Supreme Court, Halifax
+  name [address] 'The Boss Plaza 2' -> 51 Supreme Court, Halifax
+  name [address] 'The Boss Plaza' -> 56 Supreme Court, Halifax
+  name [address] 'Casa Bella Apartments' -> 34 Titus Street, Halifax
+  name [address] 'Tobin Terrace Condominiums' -> 5230 Tobin Street, Halifax
+  name [address] 'Skyline Towers' -> 5252 Tobin Street, Halifax
+  name [address] 'Scotia Plaza' -> 5270 Tobin Street, Halifax
+  name [address] 'Belmont Arms' -> 1044 Tower Road, Halifax
+  name [address] 'Tower Arms' -> 1104 Tower Road, Halifax
+  name [address] 'Margaret Ann Manor' -> 1112 Tower Road, Halifax
+  name [address] 'Kingsbury Towers' -> 1119 Tower Road, Halifax
+  name [address] 'Queen Sana Tower' -> 1157 Tower Road, Halifax
+  name [address] 'The Armdale' -> 6941 Tupper Grove, Halifax
+  name [address] 'The Keep' -> 1990 Vernon Street, Halifax
+  name [address] 'Southpoint' -> 5415 Victoria Road, Halifax
+  name [address] 'Hampton House' -> 5444 Victoria Road, Halifax
+  name [address] 'Balmoral' -> 5661 Victoria Road, Halifax
+  name [address] 'South Park Towers' -> 5713 Victoria Road, Halifax
+  name [address] 'Granbury Place' -> 45 Vimy Avenue, Halifax
+  name [address] 'StoneRidge Tower' -> 56 Walter Havill Drive, Halifax
+  name [address] 'The Waterton' -> 60 Walter Havill Drive, Halifax
+  name [address] 'The Roxbury' -> 202 Walter Havill Drive, Halifax
+  name [address] 'The Belgravia' -> 303 Washmill Lake Drive, Halifax
+  name [address] 'Royale Summit' -> 599 Washmill Lake Drive, Halifax
+  name [address] 'Gorsebrook Park' -> 1048 Wellington Street, Halifax
+  name [address] 'Village Plaza' -> 3343 Westerwald Street, Halifax
+  name [address] 'Westridge Manor' -> 20 Westridge Drive, Halifax
+  name [address] 'Forrest Green Apartments' -> 211 Willett Street, Halifax
+  name [nearby] 'Westfield I' -> 235 Willett Street, Halifax
+  name [nearby] 'Westfield II' -> 241 Willett Street, Halifax
+  name [address] 'Willett Place' -> 270 Willett Street, Halifax
+  name [address] 'Lochwood Manor' -> 6230 Windcrest Terrace, Halifax
+  name [address] 'Hampshire Apartments' -> 3034 Windsor Street, Halifax
+  name [address] 'Lord Windsor Apartments' -> 3661 Windsor Street, Halifax
+  name [address] 'Monaghan Square' -> 6140 Young Street, Halifax
+  name [address] 'The Cabernet' -> 170 Appaloosa Run, Hammonds Plains
+  name [address] 'The Malbec' -> 55 Citation Drive, Hammonds Plains
+  name [address] 'The Merlot' -> 67 Citation Drive, Hammonds Plains
+  name [address] 'Carriage Place' -> 30 Old Sackville Road, Lower Sackville
+  name [address] 'Victoria Crossing' -> 24 Sackville Cross Road, Lower Sackville
+  name [address] 'Sunset View' -> 117 Hanwell Drive, Middle Sackville

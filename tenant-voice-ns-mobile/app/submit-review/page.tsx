@@ -7,7 +7,9 @@ import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
 
 import BackLink from "@/components/navigation/BackLink";
-import { readDraft, writeDraft } from "@/lib/review-draft";
+import { propertyLocation } from "@/lib/property-display";
+import { hasUnsavedWork, readDraft, writeDraft } from "@/lib/review-draft";
+import { usePropertySearch } from "@/lib/use-property-search";
 import { supabase } from "@/lib/supabase";
 import { PropertyListing } from "@/types/property";
 
@@ -65,7 +67,6 @@ export default function SubmitReviewPage() {
 }
 
 function ReviewForm() {
-  const [properties, setProperties] = useState<PropertyListing[]>([]);
   const [isLoadingProperties, setIsLoadingProperties] = useState(true);
   const [propertyLoadError, setPropertyLoadError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -99,28 +100,41 @@ function ReviewForm() {
   useEffect(() => {
     let isActive = true;
 
+    // Only the properties this form already knows about: the one in the
+    // link it was opened from and the one in a saved draft. Everything
+    // else is found by searching.
     async function loadProperties() {
       try {
-        const { data, error } = await supabase
-          .from("properties")
-          .select("id, slug, name, address, city")
-          .order("name");
+        const requestedSlug = new URLSearchParams(window.location.search).get(
+          "property"
+        );
+        // A draft with nothing typed or rated (just a building picked) gives
+        // way to the building in the link.
+        const savedDraft = readDraft();
+        const draft =
+          requestedSlug && !hasUnsavedWork(savedDraft) ? null : savedDraft;
+        const slugs = [requestedSlug, draft?.propertySlug].filter(
+          (slug): slug is string => Boolean(slug)
+        );
 
-        if (error) {
-          throw error;
-        }
+        let propertyListings: PropertyListing[] = [];
+        if (slugs.length > 0) {
+          const { data, error } = await supabase
+            .from("properties")
+            .select("id, slug, name, address, city")
+            .in("slug", slugs);
 
-        if (isActive) {
-          const propertyListings = (data ?? []).map((property) => ({
+          if (error) {
+            throw error;
+          }
+          propertyListings = (data ?? []).map((property) => ({
             ...property,
             address: property.address ?? "",
             city: property.city ?? "",
           }));
-          setProperties(propertyListings);
+        }
 
-          const requestedSlug = new URLSearchParams(window.location.search).get(
-            "property"
-          );
+        if (isActive) {
           const requestedProperty = propertyListings.find(
             (property) => property.slug === requestedSlug
           );
@@ -129,7 +143,6 @@ function ReviewForm() {
             setProfileProperty(requestedProperty);
           }
 
-          const draft = readDraft();
           if (draft) {
             setSearchTerm(draft.searchTerm);
             setSelectedProperty(
@@ -191,12 +204,7 @@ function ReviewForm() {
     submissionStatus,
   ]);
 
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const filteredProperties = properties.filter((property) =>
-    [property.name, property.address, property.city].some((value) =>
-      value.toLowerCase().includes(normalizedSearchTerm)
-    )
-  );
+  const search = usePropertySearch(selectedProperty ? "" : searchTerm, 10);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -345,16 +353,15 @@ function ReviewForm() {
                 </p>
               )}
 
-              {normalizedSearchTerm &&
-                !selectedProperty &&
+              {search.status !== "idle" &&
                 !isLoadingProperties &&
                 !propertyLoadError && (
                   <ul
                     id="property-suggestions"
                     className="overflow-hidden rounded-2xl border border-[#E6E3DA] bg-white"
                   >
-                    {filteredProperties.length > 0 ? (
-                      filteredProperties.map((property) => (
+                    {search.results.length > 0 ? (
+                      search.results.map((property) => (
                         <li key={property.id}>
                           <button
                             type="button"
@@ -369,17 +376,24 @@ function ReviewForm() {
                               {property.name}
                             </span>
                             <span className="block text-sm text-gray-500">
-                              {[property.address, property.city]
-                                .filter(Boolean)
-                                .join(", ")}
+                              {propertyLocation(property, ", ")}
                             </span>
                           </button>
                         </li>
                       ))
+                    ) : search.status === "loading" ? (
+                      <li className="p-3 text-sm text-gray-600" role="status">
+                        Searching...
+                      </li>
+                    ) : search.status === "error" ? (
+                      <li className="p-3 text-sm text-red-700" role="alert">
+                        Search isn&apos;t working right now. Please try again in a moment.
+                      </li>
                     ) : (
                       <li className="p-3 text-sm text-gray-600">
-                        No matching property. Property requests are not available
-                        yet.
+                        No matching property. Try just the street name, or the
+                        street number and name. Adding missing buildings isn&apos;t
+                        available yet.
                       </li>
                     )}
                   </ul>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPropertyHref } from "@/lib/navigation";
+import { propertyLocation } from "@/lib/property-display";
 import { PropertyListing } from "@/types/property";
 
 type SearchBarProps = {
@@ -77,7 +78,7 @@ export default function SearchBar({
                 </p>
 
                 <p className="text-sm text-gray-500">
-                  {property.city}
+                  {propertyLocation(property, ", ")}
                 </p>
               </Link>
             ))}

@@ -34,6 +34,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Suspense fallback={<TopNavigationFallback label="Footer navigation" />}>
                 <TopNavigation label="Footer navigation" />
               </Suspense>
+              <p className="mt-4 text-xs leading-relaxed text-[#66706B]">
+                Building list from the Halifax Regional Municipality Residential
+                Rental Registry. Building names ©{" "}
+                <a
+                  href="https://www.openstreetmap.org/copyright"
+                  className="underline underline-offset-2"
+                >
+                  OpenStreetMap contributors
+                </a>
+                .
+              </p>
             </div>
           </div>
         </div>
