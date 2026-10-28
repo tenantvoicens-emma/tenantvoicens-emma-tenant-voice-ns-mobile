@@ -79,7 +79,8 @@ export default function AdminPage() {
   const [pendingAction, setPendingAction] = useState<ModerationAction | null>(
     null
   );
-  const [isSaving, setIsSaving] = useState(false);
+  const [savingReviewId, setSavingReviewId] = useState<number | null>(null);
+  const isSaving = savingReviewId !== null;
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -195,7 +196,7 @@ export default function AdminPage() {
     }
 
     const result = actionResults[action.kind];
-    setIsSaving(true);
+    setSavingReviewId(action.reviewId);
     setMessage("");
     setErrorMessage("");
 
@@ -216,18 +217,27 @@ export default function AdminPage() {
       setMessage(result.message);
     }
 
-    setIsSaving(false);
+    setSavingReviewId(null);
     setPendingAction(null);
   }
 
   function askToModerate(kind: ModerationActionKind, review: PendingReview) {
-    setMessage("");
-    setErrorMessage("");
-    setPendingAction({
+    const action: ModerationAction = {
       kind,
       reviewId: review.id,
       propertyName: review.properties?.name ?? "its property",
-    });
+    };
+
+    // Approving a pending review is the everyday case, so it's one tap.
+    // Everything else confirms first and can carry a note.
+    if (kind === "approve") {
+      void moderateReview(action, "");
+      return;
+    }
+
+    setMessage("");
+    setErrorMessage("");
+    setPendingAction(action);
   }
 
   async function signOut() {
@@ -381,7 +391,11 @@ export default function AdminPage() {
                           disabled={isSaving}
                           className="min-h-12 flex-1 rounded-full bg-[#08873A] px-5 text-lg font-medium text-white disabled:opacity-60"
                         >
-                          {reviewStatus === "pending" ? "Approve" : "Approve after all"}
+                          {reviewStatus !== "pending"
+                            ? "Approve after all"
+                            : savingReviewId === review.id
+                              ? "Saving..."
+                              : "Approve"}
                         </button>
                       )}
                       {reviewStatus !== "rejected" && (

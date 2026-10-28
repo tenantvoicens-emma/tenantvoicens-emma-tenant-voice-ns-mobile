@@ -16,8 +16,9 @@ export type ModerationAction = {
 
 const NOTE_LIMIT = 500;
 
+// Approving a pending review doesn't confirm, so it has no copy here.
 const actionCopy: Record<
-  ModerationActionKind,
+  Exclude<ModerationActionKind, "approve">,
   {
     title: string;
     body: (propertyName: string) => string;
@@ -26,13 +27,6 @@ const actionCopy: Record<
     tone: "primary" | "danger";
   }
 > = {
-  approve: {
-    title: "Approve this review?",
-    body: (name) => `It will be published on the page for ${name}.`,
-    confirm: "Approve and publish",
-    placeholder: "e.g. Checked: no personal details",
-    tone: "primary",
-  },
   reject: {
     title: "Reject this review?",
     body: () =>
@@ -89,7 +83,7 @@ export default function ModerationDialog({
     }
   }, [action]);
 
-  const copy = action ? actionCopy[action.kind] : null;
+  const copy = action && action.kind !== "approve" ? actionCopy[action.kind] : null;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
