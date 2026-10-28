@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Building2, ChevronRight } from "lucide-react";
 import Card from "@/components/ui/Card";
+import IconTile from "@/components/ui/IconTile";
 import LabeledRating from "@/components/profile/LabeledRating";
 import { getPropertyHref } from "@/lib/navigation";
 import { PropertyListing } from "@/types/property";
@@ -13,24 +15,28 @@ export default function PropertyPreviewCard({
   property,
   searchTerm,
 }: PropertyPreviewCardProps) {
+  const location = [property.address, property.city].filter(Boolean).join(" · ");
+
   return (
-    <Link href={getPropertyHref(property.slug, searchTerm)} className="block">
+    <Link href={getPropertyHref(property.slug, searchTerm)} className="block rounded-3xl">
       <Card>
-        <div className="space-y-3">
-          <div>
-            <h3 className="text-xl font-bold text-[#2F4F46]">
-              {property.name}
-            </h3>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <IconTile icon={Building2} tone="peach" />
 
-            {property.address && (
-              <p className="text-sm text-gray-500">
-                {property.address}
-              </p>
-            )}
+            <div className="min-w-0 flex-1">
+              <h3 className="text-xl font-bold text-[#294B3A]">
+                {property.name}
+              </h3>
 
-            <p className="text-sm text-gray-500">
-              {property.city}
-            </p>
+              {location && (
+                <p className="text-[#66706B]">
+                  {location}
+                </p>
+              )}
+            </div>
+
+            <ChevronRight className="h-6 w-6 shrink-0 text-[#2F4F46]" aria-hidden="true" />
           </div>
 
           {(property.propertyRating !== undefined || property.landlordRating !== undefined) && (
@@ -41,7 +47,7 @@ export default function PropertyPreviewCard({
           )}
 
           {property.reviewCount !== undefined && (
-            <p className="text-sm text-gray-600">
+            <p className="text-[#66706B]">
               {property.reviewCount} approved {property.reviewCount === 1 ? "review" : "reviews"}
             </p>
           )}

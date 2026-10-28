@@ -45,7 +45,7 @@ export default function ReviewCard({
       <article className="space-y-4">
         <header className="space-y-1">
           {review.propertyName && (
-            <h3 className="font-bold text-[#2F4F46]">
+            <h3 className="text-xl font-bold text-[#294B3A]">
               {fullReviewHref ? (
                 review.propertyName
               ) : (
@@ -118,7 +118,7 @@ export default function ReviewCard({
   return (
     <div
       id={reviewAnchorId(review.id)}
-      className="scroll-mt-6 rounded-3xl data-[highlighted=true]:ring-2 data-[highlighted=true]:ring-[#4CAF50]"
+      className="scroll-mt-6 rounded-3xl data-[highlighted=true]:ring-2 data-[highlighted=true]:ring-[#08873A]"
     >
       {card}
     </div>
@@ -140,7 +140,7 @@ function averageScore(ratings: Review["propertyRatings"]) {
 }
 
 const detailTones = {
-  positive: "bg-[#EEF5EB] text-[#2F4F46]",
+  positive: "bg-[#C5E8C8] text-[#1C5F31]",
   negative: "bg-[#FBEDE9] text-[#8A3B2B]",
   neutral: "bg-[#F3F2EE] text-[#2F4F46]",
 };

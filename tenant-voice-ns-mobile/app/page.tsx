@@ -1,14 +1,16 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { HeartHandshake } from "lucide-react";
 
+import BackLink from "@/components/navigation/BackLink";
 import PropertyPreviewCard from "@/components/profile/PropertyPreviewCard";
 import ReviewCard from "@/components/profile/ReviewCard";
-import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 import PageContainer from "@/components/ui/PageContainer";
 import SearchBar from "@/components/ui/SearchBar";
-import SectionHeading from "@/components/ui/SectionHeading";
 import TrustCard from "@/components/ui/TrustCard";
 import { supabase } from "@/lib/supabase";
 import { PropertyListing } from "@/types/property";
@@ -39,8 +41,16 @@ type DiscoverReviewRow = {
 
 const SEARCH_INPUT_ID = "property-search";
 
-// Brings the search box into view and puts the cursor in it, ready to type.
-function focusSearch() {
+const SEARCH_RESULTS_ID = "search-results-heading";
+
+// Pressing Enter (the keyboard's Search key on phones) scrolls to the
+// results; with nothing typed, it leaves the cursor in the search box.
+function showSearchResults() {
+  const results = document.getElementById(SEARCH_RESULTS_ID);
+  if (results) {
+    results.scrollIntoView({ block: "start", behavior: "smooth" });
+    return;
+  }
   const input = document.getElementById(SEARCH_INPUT_ID);
   input?.scrollIntoView({ block: "center" });
   input?.focus({ preventScroll: true });
@@ -180,27 +190,42 @@ function DiscoverPage() {
   return (
     <PageContainer>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold text-[#2F4F46]">
-            Tenant Voice NS
+        <BackLink />
+
+        <div className="space-y-4">
+          <p className="text-lg font-medium uppercase tracking-wide text-[#5B7A68]">
+            Your next home starts with knowledge
+          </p>
+          <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
+            Renting is personal. Your research should be, too.
           </h1>
+          <p className="text-lg text-[#66706B]">
+            Explore renter experiences with properties across Nova Scotia.
+          </p>
         </div>
 
-        <SectionHeading
-          title="Renting is personal. Your research should be, too."
-          subtitle="Discover tenant experiences throughout Nova Scotia."
-        />
+        <form
+          role="search"
+          className="space-y-4"
+          onSubmit={(event) => {
+            event.preventDefault();
+            showSearchResults();
+          }}
+        >
+          <SearchBar
+            id={SEARCH_INPUT_ID}
+            label="Find a property"
+            value={searchTerm}
+            onChange={setSearchTerm}
+            suggestions={filteredProperties}
+          />
+        </form>
 
-        <SearchBar
-          id={SEARCH_INPUT_ID}
-          value={searchTerm}
-          onChange={setSearchTerm}
-          suggestions={filteredProperties}
-        />
+        <TrustCard />
 
         {normalizedSearchTerm ? (
-          <section className="space-y-4" aria-labelledby="search-results-heading">
-            <h2 id="search-results-heading" className="text-xl font-bold text-[#2F4F46]">
+          <section className="space-y-4" aria-labelledby={SEARCH_RESULTS_ID}>
+            <h2 id={SEARCH_RESULTS_ID} className="scroll-mt-6 text-3xl font-bold tracking-tight text-[#294B3A]">
               Search results
             </h2>
             {isLoading && <p role="status">Loading properties...</p>}
@@ -223,7 +248,7 @@ function DiscoverPage() {
         ) : (
           <div className="space-y-8">
             <section className="space-y-4" aria-labelledby="recent-reviews-heading">
-              <h2 id="recent-reviews-heading" className="text-xl font-bold text-[#2F4F46]">
+              <h2 id="recent-reviews-heading" className="text-3xl font-bold tracking-tight text-[#294B3A]">
                 Recent reviews
               </h2>
               {isLoading && recentReviews.length === 0 && (
@@ -245,7 +270,7 @@ function DiscoverPage() {
             </section>
 
             <section className="space-y-4" aria-labelledby="top-properties-heading">
-              <h2 id="top-properties-heading" className="text-xl font-bold text-[#2F4F46]">
+              <h2 id="top-properties-heading" className="text-3xl font-bold tracking-tight text-[#294B3A]">
                 Most reviewed properties
               </h2>
               {isLoading && topProperties.length === 0 && (
@@ -272,10 +297,19 @@ function DiscoverPage() {
           </div>
         )}
 
-        <Button text="Explore renter experiences" onClick={focusSearch} />
-
-        <TrustCard />
-      
+        <Link href="/policies#review-guidelines" className="group block rounded-3xl">
+          <Card>
+            <div className="space-y-2">
+              <h2 className="flex items-center gap-3 text-xl font-bold text-[#294B3A]">
+                <HeartHandshake className="h-6 w-6 shrink-0" aria-hidden="true" />
+                A better renting community
+              </h2>
+              <p className="text-lg text-[#66706B]">
+                Learn how reviews can be useful, fair, and safer for everyone.
+              </p>
+            </div>
+          </Card>
+        </Link>
       </div>
     </PageContainer>
   );
@@ -350,7 +384,9 @@ function DiscoverLoadingFallback() {
   return (
     <PageContainer>
       <div className="space-y-8">
-        <h1 className="text-2xl font-bold text-[#2F4F46]">Tenant Voice NS</h1>
+        <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
+          Renting is personal. Your research should be, too.
+        </h1>
         <p className="text-center text-gray-500" role="status">
           Loading properties...
         </p>

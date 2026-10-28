@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import Link from "next/link";
 
+import BackLink from "@/components/navigation/BackLink";
 import PageContainer from "@/components/ui/PageContainer";
 import { supabase } from "@/lib/supabase";
 
@@ -172,6 +173,7 @@ export default function AdminPage() {
     <main>
       <PageContainer>
         <div className="space-y-6">
+          <BackLink fallback={{ url: "/", label: "Discover" }} />
           <div>
             <h1 className="text-2xl font-bold text-[#2F4F46]">
               Review moderation

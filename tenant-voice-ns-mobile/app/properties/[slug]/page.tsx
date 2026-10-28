@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 
-import CategoryRatings from "@/components/profile/CategoryRatings";
+import CategoryRatings, {
+  type CategoryAverage,
+} from "@/components/profile/CategoryRatings";
 import HighlightLinkedReview from "@/components/profile/HighlightLinkedReview";
 import LeaveReviewCTA from "@/components/profile/LeaveReviewCTA";
 import PropertyHeader from "@/components/profile/PropertyHeader";
@@ -113,15 +115,13 @@ async function PropertyContent({
     landlordRatings: mapRatings([review], "landlord_ratings", slug),
   }));
 
-  const propertyRatings = mapRatings(
+  const propertyCategoryAverages = averageByCategory(
     reviewRows,
-    "property_ratings",
-    slug
+    "property_ratings"
   );
-  const landlordRatings = mapRatings(
+  const landlordCategoryAverages = averageByCategory(
     reviewRows,
-    "landlord_ratings",
-    slug
+    "landlord_ratings"
   );
   const propertyRatingSummary = summarizeRatings(
     reviewRows,
@@ -134,17 +134,27 @@ async function PropertyContent({
 
   return (
     <PageContainer>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <PropertyHeader
           property={property}
-          backHref={discoverHref(searchTerm)}
+          backFallback={{
+            url: discoverHref(searchTerm),
+            label: searchTerm.trim() ? "search results" : "Discover",
+          }}
+          reviewCount={reviews.length}
         />
         <PropertySnapshot
           propertyRating={propertyRatingSummary}
           landlordRating={landlordRatingSummary}
         />
 
-        <ReviewsSection />
+        <CategoryRatings
+          propertyAverages={propertyCategoryAverages}
+          landlordAverages={landlordCategoryAverages}
+          reviewCount={reviews.length}
+        />
+
+        <ReviewsSection reviewCount={reviews.length} />
         {reviewError ? (
           <p className="text-gray-600" role="alert">
             Reviews could not be loaded. Please try again later.
@@ -155,9 +165,6 @@ async function PropertyContent({
           reviews.map((review) => <ReviewCard key={review.id} review={review} />)
         )}
         <HighlightLinkedReview />
-
-        <CategoryRatings title="Property Ratings" ratings={propertyRatings} />
-        <CategoryRatings title="Landlord Ratings" ratings={landlordRatings} />
 
         <LeaveReviewCTA propertySlug={property.slug} />
       </div>
@@ -260,6 +267,40 @@ function summarizeRatings(
     average: Math.round(average * 10) / 10,
     reviewCount: reviewAverages.length,
   };
+}
+
+// Averages each category across reviews, skipping N/A and unanswered
+// scores; categories nobody scored are left out.
+function averageByCategory(
+  reviews: SupabaseReviewRow[],
+  ratingGroup: "property_ratings" | "landlord_ratings"
+): CategoryAverage[] {
+  const scoresByCategory = new Map<string, number[]>();
+
+  for (const review of reviews) {
+    for (const rating of review[ratingGroup] ?? []) {
+      const score = parseRatingScore(rating.score);
+      if (score === null) {
+        continue;
+      }
+      const category = formatCategory(rating.category);
+      scoresByCategory.set(category, [
+        ...(scoresByCategory.get(category) ?? []),
+        score,
+      ]);
+    }
+  }
+
+  return [...scoresByCategory]
+    .map(([category, scores]) => ({
+      category,
+      average:
+        Math.round(
+          (scores.reduce((total, score) => total + score, 0) / scores.length) * 10
+        ) / 10,
+      ratingCount: scores.length,
+    }))
+    .sort((a, b) => a.category.localeCompare(b.category));
 }
 
 function formatCategory(value: string) {

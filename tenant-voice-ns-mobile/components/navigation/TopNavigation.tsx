@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
+import StartReviewLink from "@/components/navigation/StartReviewLink";
 
 type NavigationProps = {
   // Each copy needs its own label so screen readers can tell them apart.
@@ -11,12 +12,8 @@ type NavigationProps = {
 export default function TopNavigation({
   label = "Main navigation",
 }: NavigationProps) {
+  // Pills always open a page fresh; "Back to ..." links restore state.
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const searchTerm = searchParams.get("q")?.trim() ?? "";
-  const discoverHref = searchTerm
-    ? `/?q=${encodeURIComponent(searchTerm)}`
-    : "/";
   const isOnReviewPage = pathname === "/submit-review";
   const isOnPoliciesPage = pathname === "/policies";
   const isOnAccountPage = pathname === "/account";
@@ -24,20 +21,26 @@ export default function TopNavigation({
   return (
     <nav aria-label={label} className="flex flex-wrap gap-2">
       <Link
-        href={discoverHref}
+        href="/"
         aria-current={pathname === "/" ? "page" : undefined}
         className={navigationPill(pathname === "/")}
       >
         Discover
       </Link>
 
-      <Link
-        href="/submit-review"
-        aria-current={isOnReviewPage ? "page" : undefined}
-        className={navigationPill(isOnReviewPage)}
-      >
-        Review
-      </Link>
+      {isOnReviewPage ? (
+        <Link
+          href="/submit-review"
+          aria-current="page"
+          className={navigationPill(true)}
+        >
+          Review
+        </Link>
+      ) : (
+        <StartReviewLink className={navigationPill(false)}>
+          Review
+        </StartReviewLink>
+      )}
 
       <Link
         href="/policies"
@@ -81,7 +84,7 @@ function StaticNavigationLink({
   return (
     <Link
       href={href}
-      className="rounded-full border border-[#DEDCD5] px-4 py-2 text-[#2F4F46]"
+      className="rounded-full border border-[#D9D6CE] px-5 py-2 text-lg text-[#4A5A52]"
     >
       {children}
     </Link>
@@ -90,6 +93,6 @@ function StaticNavigationLink({
 
 function navigationPill(isActive: boolean) {
   return isActive
-    ? "rounded-full bg-[#EEF5EB] px-4 py-2 font-medium text-[#2F4F46]"
-    : "rounded-full border border-[#DEDCD5] px-4 py-2 text-[#2F4F46]";
+    ? "rounded-full border border-[#08873A] bg-[#08873A] px-5 py-2 text-lg font-medium text-white"
+    : "rounded-full border border-[#D9D6CE] px-5 py-2 text-lg text-[#4A5A52] hover:bg-white";
 }

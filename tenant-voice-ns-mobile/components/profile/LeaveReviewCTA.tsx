@@ -1,5 +1,4 @@
-import Link from "next/link";
-import Button from "@/components/ui/Button";
+import StartReviewLink from "@/components/navigation/StartReviewLink";
 
 type LeaveReviewCTAProps = {
   propertySlug: string;
@@ -8,19 +7,21 @@ type LeaveReviewCTAProps = {
 export default function LeaveReviewCTA({ propertySlug }: LeaveReviewCTAProps) {
   return (
     <div className="space-y-3">
-      <h3 className="text-xl font-bold text-[#2F4F46]">
+      <h2 className="text-3xl font-bold tracking-tight text-[#294B3A]">
         Lived here?
-      </h3>
+      </h2>
 
-      <p className="text-gray-600">
+      <p className="text-lg text-[#66706B]">
         Help future renters by sharing
         your experience.
       </p>
 
-      <Link href={`/submit-review?property=${encodeURIComponent(propertySlug)}`}>
-        <Button text="Share Your Experience" />
-      </Link>
-
+      <StartReviewLink
+        propertySlug={propertySlug}
+        className="flex w-full items-center justify-center rounded-full bg-[#08873A] py-4 text-lg font-medium text-white transition hover:brightness-95"
+      >
+        Share Your Experience
+      </StartReviewLink>
     </div>
   );
 }
