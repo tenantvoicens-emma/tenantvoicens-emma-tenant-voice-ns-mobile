@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { startFreshReview } from "@/lib/review-draft";
 import Button from "@/components/ui/Button";
 
 type LeaveReviewCTAProps = {
@@ -17,7 +20,10 @@ export default function LeaveReviewCTA({ propertySlug }: LeaveReviewCTAProps) {
         your experience.
       </p>
 
-      <Link href={`/submit-review?property=${encodeURIComponent(propertySlug)}`}>
+      <Link
+        href={`/submit-review?property=${encodeURIComponent(propertySlug)}`}
+        onClick={startFreshReview}
+      >
         <Button text="Share Your Experience" />
       </Link>
 

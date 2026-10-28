@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HeartHandshake, Search } from "lucide-react";
 
+import BackLink from "@/components/navigation/BackLink";
 import PropertyPreviewCard from "@/components/profile/PropertyPreviewCard";
 import ReviewCard from "@/components/profile/ReviewCard";
 import Button from "@/components/ui/Button";
@@ -190,6 +191,8 @@ function DiscoverPage() {
   return (
     <PageContainer>
       <div className="space-y-8">
+        <BackLink />
+
         <div className="space-y-4">
           <p className="text-lg font-medium uppercase tracking-wide text-[#5B7A68]">
             Your next home starts with knowledge

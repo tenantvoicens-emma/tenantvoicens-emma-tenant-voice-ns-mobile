@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
+import { startFreshReview } from "@/lib/review-draft";
 
 type NavigationProps = {
   // Each copy needs its own label so screen readers can tell them apart.
@@ -11,12 +12,8 @@ type NavigationProps = {
 export default function TopNavigation({
   label = "Main navigation",
 }: NavigationProps) {
+  // Pills always open a page fresh; "Back to ..." links restore state.
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const searchTerm = searchParams.get("q")?.trim() ?? "";
-  const discoverHref = searchTerm
-    ? `/?q=${encodeURIComponent(searchTerm)}`
-    : "/";
   const isOnReviewPage = pathname === "/submit-review";
   const isOnPoliciesPage = pathname === "/policies";
   const isOnAccountPage = pathname === "/account";
@@ -24,7 +21,7 @@ export default function TopNavigation({
   return (
     <nav aria-label={label} className="flex flex-wrap gap-2">
       <Link
-        href={discoverHref}
+        href="/"
         aria-current={pathname === "/" ? "page" : undefined}
         className={navigationPill(pathname === "/")}
       >
@@ -33,6 +30,7 @@ export default function TopNavigation({
 
       <Link
         href="/submit-review"
+        onClick={isOnReviewPage ? undefined : startFreshReview}
         aria-current={isOnReviewPage ? "page" : undefined}
         className={navigationPill(isOnReviewPage)}
       >

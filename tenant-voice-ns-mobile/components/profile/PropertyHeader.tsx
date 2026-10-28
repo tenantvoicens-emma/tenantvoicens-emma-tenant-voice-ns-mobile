@@ -1,23 +1,26 @@
 import { Building2 } from "lucide-react";
 import { Property } from "@/types/property";
 import BackLink from "@/components/navigation/BackLink";
+import { PageLabel } from "@/components/navigation/HistoryTracker";
+import type { HistoryEntry } from "@/lib/page-history";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
 
 type PropertyHeaderProps = {
   property: Pick<Property, "name" | "address" | "city">;
-  backHref: string;
+  backFallback: HistoryEntry;
   reviewCount: number;
 };
 
 export default function PropertyHeader({
   property,
-  backHref,
+  backFallback,
   reviewCount,
 }: PropertyHeaderProps) {
   return (
     <div className="space-y-6">
-      <BackLink href={backHref} label="Back to Discover" />
+      <PageLabel label={property.name} />
+      <BackLink fallback={backFallback} />
 
       <Card tone="green">
         <div className="space-y-4">

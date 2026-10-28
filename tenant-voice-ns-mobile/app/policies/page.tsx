@@ -1,6 +1,5 @@
 import Link from "next/link";
 import {
-  ArrowLeft,
   FileText,
   HeartHandshake,
   Mail,
@@ -11,6 +10,7 @@ import {
   UserCheck,
 } from "lucide-react";
 
+import BackLink from "@/components/navigation/BackLink";
 import IconTile from "@/components/ui/IconTile";
 import PageContainer from "@/components/ui/PageContainer";
 
@@ -38,13 +38,7 @@ export default function PoliciesPage() {
     <main>
       <PageContainer>
         <div className="space-y-6">
-          <Link
-            href="/"
-            className="mx-auto flex min-h-11 w-fit items-center gap-3 text-lg font-medium text-[#1F2A24] hover:underline"
-          >
-            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-            Back to Discover
-          </Link>
+          <BackLink fallback={{ url: "/", label: "Discover" }} />
 
           <header className="space-y-3">
             <p className="text-lg font-medium uppercase tracking-wide text-[#5B7A68]">

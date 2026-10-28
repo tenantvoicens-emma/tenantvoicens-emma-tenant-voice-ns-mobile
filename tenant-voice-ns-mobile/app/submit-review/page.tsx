@@ -1,10 +1,13 @@
 "use client";
 
 import { Turnstile } from "@marsidev/react-turnstile";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, Star } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Star } from "lucide-react";
 
+import BackLink from "@/components/navigation/BackLink";
+import { readDraft, writeDraft } from "@/lib/review-draft";
 import { supabase } from "@/lib/supabase";
 import { PropertyListing } from "@/types/property";
 
@@ -54,6 +57,14 @@ const occupancyOptions = [
 const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 export default function SubmitReviewPage() {
+  // Next keeps this page alive in the background after leaving it. Keying on
+  // bfcacheId remounts the form on link navigations, so it reloads from the
+  // saved draft (which fresh-start links clear), while Back keeps it as is.
+  const { bfcacheId } = useRouter();
+  return <ReviewForm key={bfcacheId} />;
+}
+
+function ReviewForm() {
   const [properties, setProperties] = useState<PropertyListing[]>([]);
   const [isLoadingProperties, setIsLoadingProperties] = useState(true);
   const [propertyLoadError, setPropertyLoadError] = useState(false);
@@ -77,9 +88,13 @@ export default function SubmitReviewPage() {
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileError, setTurnstileError] = useState(false);
   const [turnstileResetKey, setTurnstileResetKey] = useState(0);
-  // The profile this form was opened from, for the "Back to profile" link.
+  // The profile this form was opened from, for the back link when this
+  // tab has no earlier page.
   const [profileProperty, setProfileProperty] =
     useState<PropertyListing | null>(null);
+  // Saving starts only after any saved draft has been restored, so the
+  // empty initial form doesn't overwrite it.
+  const isDraftReady = useRef(false);
 
   useEffect(() => {
     let isActive = true;
@@ -112,9 +127,26 @@ export default function SubmitReviewPage() {
 
           if (requestedProperty) {
             setProfileProperty(requestedProperty);
+          }
+
+          const draft = readDraft();
+          if (draft) {
+            setSearchTerm(draft.searchTerm);
+            setSelectedProperty(
+              propertyListings.find(
+                (property) => property.slug === draft.propertySlug
+              ) ?? null
+            );
+            setOccupancyDuration(draft.occupancyDuration);
+            setWouldLiveAgain(draft.wouldLiveAgain);
+            setReviewText(draft.reviewText);
+            setPropertyRatings(draft.propertyRatings);
+            setLandlordRatings(draft.landlordRatings);
+          } else if (requestedProperty) {
             setSelectedProperty(requestedProperty);
             setSearchTerm(requestedProperty.name);
           }
+          isDraftReady.current = true;
         }
       } catch (error) {
         console.error("Failed to load properties for the review form.", error);
@@ -134,6 +166,30 @@ export default function SubmitReviewPage() {
       isActive = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!isDraftReady.current || submissionStatus === "success") {
+      return;
+    }
+    writeDraft({
+      propertySlug: selectedProperty?.slug ?? null,
+      searchTerm,
+      occupancyDuration,
+      wouldLiveAgain,
+      reviewText,
+      propertyRatings,
+      landlordRatings,
+    });
+  }, [
+    selectedProperty,
+    searchTerm,
+    occupancyDuration,
+    wouldLiveAgain,
+    reviewText,
+    propertyRatings,
+    landlordRatings,
+    submissionStatus,
+  ]);
 
   const normalizedSearchTerm = searchTerm.trim().toLowerCase();
   const filteredProperties = properties.filter((property) =>
@@ -211,6 +267,7 @@ export default function SubmitReviewPage() {
       }
 
       setSubmissionStatus("success");
+      writeDraft(null);
     } catch {
       setSubmissionStatus("error");
       setSubmissionError("We couldn’t reach the review service. Please try again.");
@@ -224,15 +281,16 @@ export default function SubmitReviewPage() {
   return (
     <main className="px-5 py-6">
       <div className="space-y-6">
-        {profileProperty && (
-          <Link
-            href={`/properties/${encodeURIComponent(profileProperty.slug)}`}
-            className="mx-auto flex min-h-11 w-fit items-center gap-3 text-lg font-medium text-[#1F2A24] hover:underline"
-          >
-            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
-            Back to profile
-          </Link>
-        )}
+        <BackLink
+          fallback={
+            profileProperty
+              ? {
+                  url: `/properties/${encodeURIComponent(profileProperty.slug)}`,
+                  label: profileProperty.name,
+                }
+              : undefined
+          }
+        />
 
         <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
           Your experience matters
