@@ -17,12 +17,22 @@ export default function PropertySnapshot({
   landlordRating,
 }: PropertySnapshotProps) {
   return (
-    <Card>
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <RatingSummary label="Property rating" summary={propertyRating} />
-        <RatingSummary label="Landlord rating" summary={landlordRating} />
-      </div>
-    </Card>
+    <section aria-labelledby="overall-ratings-heading">
+      <Card>
+        <div className="space-y-5">
+          <h2
+            id="overall-ratings-heading"
+            className="text-2xl font-bold tracking-tight text-[#294B3A]"
+          >
+            Overall ratings
+          </h2>
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <RatingSummary label="Property" summary={propertyRating} />
+            <RatingSummary label="Landlord" summary={landlordRating} />
+          </div>
+        </div>
+      </Card>
+    </section>
   );
 }
 
@@ -35,7 +45,7 @@ function RatingSummary({
 }) {
   return (
     <section className="space-y-1" aria-label={label}>
-      <h2 className="text-sm font-medium text-gray-600">{label}</h2>
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-[#5B7A68]">{label}</h3>
       <p className="text-3xl font-bold text-[#294B3A]">
         {summary.average === null
           ? "Not rated yet"

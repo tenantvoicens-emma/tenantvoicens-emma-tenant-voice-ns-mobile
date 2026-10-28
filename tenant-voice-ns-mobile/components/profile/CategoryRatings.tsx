@@ -32,7 +32,7 @@ export default function CategoryRatings({
               className="flex items-center gap-3 text-2xl font-bold tracking-tight text-[#294B3A]"
             >
               <ChartColumn className="h-6 w-6 shrink-0" aria-hidden="true" />
-              Average by category
+              Overall ratings by category
             </h2>
             <p className="text-[#4A5A52]">
               {reviewCount === 0
