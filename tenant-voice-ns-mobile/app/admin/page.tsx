@@ -4,6 +4,10 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import Link from "next/link";
 
+import ModerationDialog, {
+  type ModerationAction,
+  type ModerationActionKind,
+} from "@/components/admin/ModerationDialog";
 import BackLink from "@/components/navigation/BackLink";
 import FormMessages from "@/components/ui/FormMessages";
 import PageContainer from "@/components/ui/PageContainer";
@@ -35,6 +39,31 @@ type PendingReview = {
 type ModerationStatus = "approved" | "rejected";
 type ReviewStatus = "pending" | "approved" | "rejected";
 
+type HistoryEvent = {
+  review_id: number;
+  from_status: ReviewStatus;
+  to_status: ModerationStatus;
+  note: string | null;
+  created_at: string;
+};
+
+// What each action does to a review, and what to say once it's done.
+const actionResults: Record<
+  ModerationActionKind,
+  { status: ModerationStatus; message: string }
+> = {
+  approve: { status: "approved", message: "Review approved and published." },
+  reject: { status: "rejected", message: "Review rejected." },
+  unpublish: {
+    status: "rejected",
+    message: "Review unpublished. It's no longer on the public site.",
+  },
+  "approve-after-all": {
+    status: "approved",
+    message: "Review approved and published.",
+  },
+};
+
 const reviewStatuses: ReviewStatus[] = ["pending", "approved", "rejected"];
 
 export default function AdminPage() {
@@ -43,9 +72,14 @@ export default function AdminPage() {
   const [reviewStatus, setReviewStatus] = useState<ReviewStatus>("pending");
   const [loadedQueueKey, setLoadedQueueKey] = useState<string | null>(null);
   const [reviews, setReviews] = useState<PendingReview[]>([]);
-  const [moderatingReviewId, setModeratingReviewId] = useState<number | null>(
+  // Logged decisions per review; null when the history couldn't be loaded.
+  const [history, setHistory] = useState<Record<number, HistoryEvent[]> | null>(
+    {}
+  );
+  const [pendingAction, setPendingAction] = useState<ModerationAction | null>(
     null
   );
+  const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -108,14 +142,34 @@ export default function AdminPage() {
         throw error;
       }
 
+      const normalizedReviews = (data ?? []).map((review) => ({
+        ...review,
+        properties: Array.isArray(review.properties)
+          ? review.properties[0] ?? null
+          : review.properties,
+      })) as PendingReview[];
+
+      // Pending reviews have no decisions yet, so only decided ones need
+      // their history. A failure here still shows the reviews.
+      let historyByReview: Record<number, HistoryEvent[]> | null = {};
+      if (reviewStatus !== "pending" && normalizedReviews.length > 0) {
+        const { data: events, error: historyError } = await supabase.rpc(
+          "get_moderation_history",
+          { p_review_ids: normalizedReviews.map((review) => review.id) }
+        );
+        if (historyError) {
+          console.error("Could not load moderation history.", historyError.code);
+          historyByReview = null;
+        } else {
+          for (const event of (events ?? []) as HistoryEvent[]) {
+            (historyByReview[event.review_id] ??= []).push(event);
+          }
+        }
+      }
+
       if (isActive) {
-        const normalizedReviews = (data ?? []).map((review) => ({
-          ...review,
-          properties: Array.isArray(review.properties)
-            ? review.properties[0] ?? null
-            : review.properties,
-        }));
-        setReviews(normalizedReviews as PendingReview[]);
+        setReviews(normalizedReviews);
+        setHistory(historyByReview);
         setLoadedQueueKey(activeKey);
         setErrorMessage("");
       }
@@ -135,33 +189,45 @@ export default function AdminPage() {
     };
   }, [isAdmin, reviewStatus, session?.access_token]);
 
-  async function moderateReview(
-    reviewId: number,
-    status: ModerationStatus
-  ) {
-    if (!isAdmin || moderatingReviewId !== null) {
+  async function moderateReview(action: ModerationAction, note: string) {
+    if (!isAdmin || isSaving) {
       return;
     }
 
-    setModeratingReviewId(reviewId);
+    const result = actionResults[action.kind];
+    setIsSaving(true);
+    setMessage("");
     setErrorMessage("");
 
     const { error } = await supabase.rpc("moderate_review", {
-      p_review_id: reviewId,
-      p_status: status,
+      p_review_id: action.reviewId,
+      p_status: result.status,
+      p_note: note.trim() || null,
     });
 
     if (error) {
       console.error("Could not moderate review.", error.code);
       setErrorMessage("That review could not be updated. Please try again.");
     } else {
+      // It now belongs to the other tab.
       setReviews((reviews) =>
-        reviews.filter((review) => review.id !== reviewId)
+        reviews.filter((review) => review.id !== action.reviewId)
       );
-      setMessage(status === "approved" ? "Review approved." : "Review rejected.");
+      setMessage(result.message);
     }
 
-    setModeratingReviewId(null);
+    setIsSaving(false);
+    setPendingAction(null);
+  }
+
+  function askToModerate(kind: ModerationActionKind, review: PendingReview) {
+    setMessage("");
+    setErrorMessage("");
+    setPendingAction({
+      kind,
+      reviewId: review.id,
+      propertyName: review.properties?.name ?? "its property",
+    });
   }
 
   async function signOut() {
@@ -294,32 +360,46 @@ export default function AdminPage() {
                       ratings={review.landlord_ratings}
                     />
 
-                    {reviewStatus === "pending" ? (
-                      <div className="grid grid-cols-2 gap-3 border-t border-[#EEECE6] pt-4">
-                        <button
-                          type="button"
-                          onClick={() => moderateReview(review.id, "approved")}
-                          disabled={moderatingReviewId !== null}
-                          className="min-h-12 rounded-full bg-[#08873A] px-5 text-lg font-medium text-white disabled:opacity-60"
-                        >
-                          {moderatingReviewId === review.id
-                            ? "Saving..."
-                            : "Approve"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => moderateReview(review.id, "rejected")}
-                          disabled={moderatingReviewId !== null}
-                          className="min-h-12 rounded-full border border-[#E0C4BC] bg-white px-5 text-lg font-medium text-[#8A3B2B] disabled:opacity-60"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <p className="border-t border-[#EEECE6] pt-4 text-sm text-[#66706B]">
-                        Archived as {reviewStatus}. This record is retained.
-                      </p>
+                    {reviewStatus !== "pending" && (
+                      <ModerationHistory
+                        events={history ? history[review.id] ?? [] : null}
+                      />
                     )}
+
+                    <div
+                      className={`gap-3 border-t border-[#EEECE6] pt-4 ${reviewStatus === "pending" ? "grid grid-cols-2" : "flex"}`}
+                    >
+                      {reviewStatus !== "approved" && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            askToModerate(
+                              reviewStatus === "pending" ? "approve" : "approve-after-all",
+                              review
+                            )
+                          }
+                          disabled={isSaving}
+                          className="min-h-12 flex-1 rounded-full bg-[#08873A] px-5 text-lg font-medium text-white disabled:opacity-60"
+                        >
+                          {reviewStatus === "pending" ? "Approve" : "Approve after all"}
+                        </button>
+                      )}
+                      {reviewStatus !== "rejected" && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            askToModerate(
+                              reviewStatus === "pending" ? "reject" : "unpublish",
+                              review
+                            )
+                          }
+                          disabled={isSaving}
+                          className="min-h-12 flex-1 rounded-full border border-[#E0C4BC] bg-white px-5 text-lg font-medium text-[#8A3B2B] disabled:opacity-60"
+                        >
+                          {reviewStatus === "pending" ? "Reject" : "Unpublish"}
+                        </button>
+                      )}
+                    </div>
                   </article>
                 ))
               )}
@@ -328,6 +408,17 @@ export default function AdminPage() {
 
           <FormMessages message={message} errorMessage={errorMessage} />
         </div>
+
+        <ModerationDialog
+          action={pendingAction}
+          isSaving={isSaving}
+          onConfirm={(note) => {
+            if (pendingAction) {
+              void moderateReview(pendingAction, note);
+            }
+          }}
+          onCancel={() => setPendingAction(null)}
+        />
       </PageContainer>
     </main>
   );
@@ -361,6 +452,59 @@ function RatingList({
       )}
     </section>
   );
+}
+
+const statusLabels: Record<ReviewStatus, string> = {
+  pending: "Submitted",
+  approved: "Approved",
+  rejected: "Rejected",
+};
+
+// The private record of decisions on one review, oldest first.
+function ModerationHistory({ events }: { events: HistoryEvent[] | null }) {
+  return (
+    <section className="space-y-2 rounded-2xl bg-[#F6F6EE] p-4">
+      <h4 className="text-xs font-semibold uppercase tracking-wide text-[#5B7A68]">
+        Moderation history
+      </h4>
+      {events === null ? (
+        <p className="text-sm text-[#66706B]">History could not be loaded.</p>
+      ) : events.length === 0 ? (
+        <p className="text-sm text-[#66706B]">
+          Decided before history was recorded.
+        </p>
+      ) : (
+        <ol className="space-y-2 text-sm">
+          {events.map((event, index) => (
+            <li key={index} className="space-y-0.5">
+              <p className="text-[#1F2A24]">
+                <span className="font-semibold">
+                  {describeChange(event)}
+                </span>
+                <span className="text-[#66706B]">
+                  {" · "}
+                  {new Date(event.created_at).toLocaleString()}
+                </span>
+              </p>
+              {event.note && (
+                <p className="whitespace-pre-wrap text-[#4A5A52]">“{event.note}”</p>
+              )}
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  );
+}
+
+function describeChange(event: HistoryEvent) {
+  if (event.from_status === "approved" && event.to_status === "rejected") {
+    return "Unpublished";
+  }
+  if (event.from_status === "rejected" && event.to_status === "approved") {
+    return "Approved after all";
+  }
+  return statusLabels[event.to_status];
 }
 
 function ReviewDetail({ label, value }: { label: string; value: string }) {
