@@ -9,6 +9,7 @@ import { Star } from "lucide-react";
 import BackLink from "@/components/navigation/BackLink";
 import { propertyLocation } from "@/lib/property-display";
 import NewBuildingFields from "@/components/review/NewBuildingFields";
+import ReviewSubmitted from "@/components/review/ReviewSubmitted";
 import {
   hasUnsavedWork,
   isNewBuildingComplete,
@@ -90,7 +91,6 @@ function ReviewForm() {
   const [landlordRatings, setLandlordRatings] = useState<Record<string, string>>(
     {}
   );
-  const [showPreview, setShowPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionStatus, setSubmissionStatus] =
     useState<SubmissionStatus>(null);
@@ -239,13 +239,25 @@ function ReviewForm() {
       hasFourOrMoreUnits: false,
     });
     setSelectedProperty(null);
-    setShowPreview(false);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmissionStatus(null);
-    setShowPreview(true);
+    if (!hasBuilding) {
+      setSubmissionStatus("error");
+      setSubmissionError(
+        "Choose your building from the search results, or finish adding it, before you submit."
+      );
+      return;
+    }
+    if (!turnstileToken) {
+      setSubmissionStatus("error");
+      setSubmissionError(
+        "The security check above isn’t finished yet. Please wait a moment, then press Submit again."
+      );
+      return;
+    }
+    void submitReview();
   }
 
   function updateRating(
@@ -261,7 +273,7 @@ function ReviewForm() {
   }
 
   async function submitReview() {
-    if (!hasBuilding || !turnstileToken || isSubmitting) {
+    if (isSubmitting) {
       return;
     }
 
@@ -349,332 +361,321 @@ function ReviewForm() {
           Your experience matters
         </h1>
 
-        <p className="text-lg text-[#66706B]">
-          A guided review helps other renters understand what day-to-day life
-          can be like.
-        </p>
+        {submissionStatus !== "success" && (
+          <>
+          <p className="text-lg text-[#66706B]">
+            A guided review helps other renters understand what day-to-day life
+            can be like.
+          </p>
 
-        <p className="text-sm text-[#66706B]">
-          You can submit anonymously. If you sign in, your review can be privately
-          linked to your account for future account features; your identity is
-          never shown publicly. <Link className="font-medium text-[#2F4F46] underline" href="/account">Sign in or create an account</Link>.
-        </p>
+          <p className="text-sm text-[#66706B]">
+            You can submit anonymously. If you sign in, your review can be privately
+            linked to your account for future account features; your identity is
+            never shown publicly. <Link className="font-medium text-[#2F4F46] underline" href="/account">Sign in or create an account</Link>.
+          </p>
+          </>
+        )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          <section className={formCard} aria-labelledby="property-heading">
-            <h2 id="property-heading" className="text-xl font-bold text-[#294B3A]">
-              Property
-            </h2>
-            <div className="space-y-2">
-              {newBuilding ? (
-                <NewBuildingFields
-                  building={newBuilding}
-                  onChange={(building) => {
-                    setNewBuilding(building);
-                    setShowPreview(false);
-                  }}
-                  onCancel={() => {
-                    setNewBuilding(null);
-                    setShowPreview(false);
-                  }}
-                  fieldClassName={formField}
-                />
-              ) : (
-                <>
-              <label htmlFor="property-search" className="block text-lg font-medium text-[#4A5A52]">
-                Find the property you lived in
-              </label>
-              <input
-                id="property-search"
-                type="search"
-                required
-                autoComplete="off"
-                value={searchTerm}
-                onChange={(event) => {
-                  setSearchTerm(event.target.value);
-                  setSelectedProperty(null);
-                  setShowPreview(false);
-                }}
-                placeholder="Search by property name, address, or city"
-                aria-autocomplete="list"
-                aria-controls="property-suggestions"
-                className={formField}
-              />
-
-              {isLoadingProperties && (
-                <p className="text-sm text-gray-500" role="status">
-                  Loading properties...
-                </p>
-              )}
-
-              {propertyLoadError && (
-                <p className="text-sm text-red-700" role="alert">
-                  Properties could not be loaded. Please try again later.
-                </p>
-              )}
-
-              {search.status !== "idle" &&
-                !isLoadingProperties &&
-                !propertyLoadError && (
-                  <ul
-                    id="property-suggestions"
-                    className="overflow-hidden rounded-2xl border border-[#E6E3DA] bg-white"
-                  >
-                    {search.results.length > 0 ? (
-                      search.results.map((property) => (
-                        <li key={property.id}>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedProperty(property);
-                              setSearchTerm(property.name);
-                              setShowPreview(false);
-                            }}
-                            className="block w-full border-b border-[#DEDCD5] p-3 text-left last:border-b-0 hover:bg-[#EEF5EB]"
-                          >
-                            <span className="block font-medium">
-                              {property.name}
-                            </span>
-                            <span className="block text-sm text-gray-500">
-                              {propertyLocation(property, ", ")}
-                            </span>
-                          </button>
-                        </li>
-                      ))
-                    ) : search.status === "loading" ? (
-                      <li className="p-3 text-sm text-gray-600" role="status">
-                        Searching...
-                      </li>
-                    ) : search.status === "error" ? (
-                      <li className="p-3 text-sm text-red-700" role="alert">
-                        Search isn&apos;t working right now. Please try again in a moment.
-                      </li>
-                    ) : (
-                      <li className="space-y-2 p-3 text-sm text-gray-600">
-                        <p>
-                          No matching property. Try just the street name, or the
-                          street number and name.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={startNewBuilding}
-                          className="font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
-                        >
-                          My building isn&apos;t listed
-                        </button>
-                      </li>
-                    )}
-                  </ul>
-                )}
-
-                  {!selectedProperty && (
-                    <button
-                      type="button"
-                      onClick={startNewBuilding}
-                      className="text-sm font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
-                    >
-                      Can&apos;t find your building? Add it
-                    </button>
-                  )}
-                </>
-              )}
-
-              {selectedProperty && (
-                <p className="text-sm text-green-700" role="status">
-                  Selected: {selectedProperty.name}
-                </p>
-              )}
-            </div>
-          </section>
-
-          <section className={formCard} aria-labelledby="experience-heading">
-            <h2 id="experience-heading" className="text-xl font-bold text-[#294B3A]">
-              Your experience
-            </h2>
-
-            <div className="space-y-2">
-              <label htmlFor="occupancy-duration" className="block text-lg font-medium text-[#4A5A52]">
-                How long did you live there?
-              </label>
-              <select
-                id="occupancy-duration"
-                required
-                value={occupancyDuration}
-                onChange={(event) => setOccupancyDuration(event.target.value)}
-                className={formField}
-              >
-                <option value="">Choose a time range</option>
-                {occupancyOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="would-live-again" className="block text-lg font-medium text-[#4A5A52]">
-                Would you live there again?
-              </label>
-              <select
-                id="would-live-again"
-                required
-                value={wouldLiveAgain}
-                onChange={(event) => setWouldLiveAgain(event.target.value)}
-                className={formField}
-              >
-                <option value="">Choose an answer</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-                <option value="unsure">Unsure</option>
-              </select>
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="review-text" className="block text-lg font-medium text-[#4A5A52]">
-                What would you like other renters to know?
-              </label>
-              <textarea
-                id="review-text"
-                required
-                value={reviewText}
-                onChange={(event) => setReviewText(event.target.value)}
-                placeholder="Describe your experience without names or private details..."
-                rows={6}
-                className={formField}
-              />
-            </div>
-          </section>
-
-          <RatingGroup
-            title="Property ratings"
-            description="Rate the building and shared spaces. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
-            categories={propertyRatingCategories}
-            values={propertyRatings}
-            onChange={(category, value) =>
-              updateRating("property", category, value)
+        {submissionStatus === "success" ? (
+          <ReviewSubmitted
+            buildingName={
+              selectedProperty?.name ??
+              (newBuilding?.name.trim() || newBuilding?.address.trim() || "your building")
             }
-            idPrefix="property-rating"
+            propertySlug={selectedProperty?.slug ?? null}
           />
-
-          <RatingGroup
-            title="Landlord ratings"
-            description="Rate the property manager or landlord. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
-            categories={landlordRatingCategories}
-            values={landlordRatings}
-            onChange={(category, value) =>
-              updateRating("landlord", category, value)
-            }
-            idPrefix="landlord-rating"
-          />
-
-          <div className="space-y-3">
-            <button
-              type="submit"
-              disabled={!hasBuilding}
-              className="w-full rounded-full bg-[#08873A] py-4 text-lg font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Preview Review
-            </button>
-
-            {showPreview && hasBuilding && (
-              <section
-                className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6"
-                aria-labelledby="review-preview-heading"
-                aria-live="polite"
-              >
-                <div>
-                  <h2
-                    id="review-preview-heading"
-                    className="text-xl font-bold text-[#2F4F46]"
-                  >
-                    Review preview
-                  </h2>
-                  <p className="text-sm text-gray-600">
-                    Check your answers. Submitted reviews are held for moderation.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <p className="font-medium">{buildingLabel}</p>
-                  {!selectedProperty && (
-                    <p className="text-sm text-gray-600">
-                      New building: we&apos;ll check it before it appears on the site.
-                    </p>
-                  )}
-                  <p>
-                    Time lived there: {getOptionLabel(occupancyOptions, occupancyDuration)}
-                  </p>
-                  <p>
-                    Would live there again: {getWouldLiveAgainLabel(wouldLiveAgain)}
-                  </p>
-                  <p className="whitespace-pre-wrap">{reviewText}</p>
-                </div>
-
-                <RatingPreview
-                  title="Property ratings"
-                  categories={propertyRatingCategories}
-                  values={propertyRatings}
-                />
-                <RatingPreview
-                  title="Landlord ratings"
-                  categories={landlordRatingCategories}
-                  values={landlordRatings}
-                />
-
-                {turnstileSiteKey ? (
-                  <Turnstile
-                    key={turnstileResetKey}
-                    siteKey={turnstileSiteKey}
-                    options={{ action: "review_submit", theme: "light" }}
-                    onSuccess={(token) => {
-                      setTurnstileToken(token);
-                      setTurnstileError(false);
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <section className={formCard} aria-labelledby="property-heading">
+              <h2 id="property-heading" className="text-xl font-bold text-[#294B3A]">
+                Property
+              </h2>
+              <div className="space-y-2">
+                {newBuilding ? (
+                  <NewBuildingFields
+                    building={newBuilding}
+                    onChange={(building) => {
+                      setNewBuilding(building);
                     }}
-                    onExpire={() => setTurnstileToken("")}
-                    onError={() => {
-                      setTurnstileToken("");
-                      setTurnstileError(true);
+                    onCancel={() => {
+                      setNewBuilding(null);
                     }}
+                    fieldClassName={formField}
                   />
                 ) : (
+                  <>
+                <label htmlFor="property-search" className="block text-lg font-medium text-[#4A5A52]">
+                  Find the property you lived in
+                </label>
+                <input
+                  id="property-search"
+                  type="search"
+                  required
+                  autoComplete="off"
+                  value={searchTerm}
+                  onChange={(event) => {
+                    setSearchTerm(event.target.value);
+                    setSelectedProperty(null);
+                  }}
+                  placeholder="Search by property name, address, or city"
+                  aria-autocomplete="list"
+                  aria-controls="property-suggestions"
+                  className={formField}
+                />
+
+                {isLoadingProperties && (
+                  <p className="text-sm text-gray-500" role="status">
+                    Loading properties...
+                  </p>
+                )}
+
+                {propertyLoadError && (
                   <p className="text-sm text-red-700" role="alert">
-                    Review submission security is not configured yet.
+                    Properties could not be loaded. Please try again later.
                   </p>
                 )}
 
-                {turnstileError && (
-                  <p className="text-sm text-red-700" role="alert">
-                    The security check failed to load. Please refresh and try again.
-                  </p>
+                {search.status !== "idle" &&
+                  !isLoadingProperties &&
+                  !propertyLoadError && (
+                    <ul
+                      id="property-suggestions"
+                      className="overflow-hidden rounded-2xl border border-[#E6E3DA] bg-white"
+                    >
+                      {search.results.length > 0 ? (
+                        search.results.map((property) => (
+                          <li key={property.id}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedProperty(property);
+                                setSearchTerm(property.name);
+                              }}
+                              className="block w-full border-b border-[#DEDCD5] p-3 text-left last:border-b-0 hover:bg-[#EEF5EB]"
+                            >
+                              <span className="block font-medium">
+                                {property.name}
+                              </span>
+                              <span className="block text-sm text-gray-500">
+                                {propertyLocation(property, ", ")}
+                              </span>
+                            </button>
+                          </li>
+                        ))
+                      ) : search.status === "loading" ? (
+                        <li className="p-3 text-sm text-gray-600" role="status">
+                          Searching...
+                        </li>
+                      ) : search.status === "error" ? (
+                        <li className="p-3 text-sm text-red-700" role="alert">
+                          Search isn&apos;t working right now. Please try again in a moment.
+                        </li>
+                      ) : (
+                        <li className="space-y-2 p-3 text-sm text-gray-600">
+                          <p>
+                            No matching property. Try just the street name, or the
+                            street number and name.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={startNewBuilding}
+                            className="font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
+                          >
+                            My building isn&apos;t listed
+                          </button>
+                        </li>
+                      )}
+                    </ul>
+                  )}
+
+                    {!selectedProperty && (
+                      <button
+                        type="button"
+                        onClick={startNewBuilding}
+                        className="text-sm font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
+                      >
+                        Can&apos;t find your building? Add it
+                      </button>
+                    )}
+                  </>
                 )}
 
-                {submissionStatus === "success" ? (
-                  <p className="text-green-800" role="status">
-                    {selectedProperty
-                      ? "Review submitted. It will appear after moderation approval."
-                      : "Review submitted. It will appear, along with the new building, after moderation approval."}
+                {selectedProperty && (
+                  <p className="text-sm text-green-700" role="status">
+                    Selected: {selectedProperty.name}
                   </p>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={submitReview}
-                    disabled={isSubmitting || !turnstileToken || !turnstileSiteKey}
-                    className="w-full rounded-full bg-[#08873A] py-4 text-lg font-medium text-white disabled:cursor-wait disabled:opacity-60"
-                  >
-                    {isSubmitting ? "Submitting..." : "Submit for moderation"}
-                  </button>
                 )}
+              </div>
+            </section>
 
-                {submissionStatus === "error" && (
-                  <p className="text-red-700" role="alert">
-                    {submissionError || "We couldn’t submit your review. Please try again."}
+            <section className={formCard} aria-labelledby="experience-heading">
+              <h2 id="experience-heading" className="text-xl font-bold text-[#294B3A]">
+                Your experience
+              </h2>
+
+              <div className="space-y-2">
+                <label htmlFor="occupancy-duration" className="block text-lg font-medium text-[#4A5A52]">
+                  How long did you live there?
+                </label>
+                <select
+                  id="occupancy-duration"
+                  required
+                  value={occupancyDuration}
+                  onChange={(event) => setOccupancyDuration(event.target.value)}
+                  className={formField}
+                >
+                  <option value="">Choose a time range</option>
+                  {occupancyOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="would-live-again" className="block text-lg font-medium text-[#4A5A52]">
+                  Would you live there again?
+                </label>
+                <select
+                  id="would-live-again"
+                  required
+                  value={wouldLiveAgain}
+                  onChange={(event) => setWouldLiveAgain(event.target.value)}
+                  className={formField}
+                >
+                  <option value="">Choose an answer</option>
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                  <option value="unsure">Unsure</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="review-text" className="block text-lg font-medium text-[#4A5A52]">
+                  What would you like other renters to know?
+                </label>
+                <div id="review-text-tips" className="space-y-2 text-[#66706B]">
+                  <p>
+                    You might mention repairs and maintenance, heat and hot water,
+                    noise, pests, safety, and how management handled problems.
                   </p>
+                  <p className="font-medium text-[#4A5A52]">
+                    Please don&apos;t include anyone&apos;s name, unit numbers or
+                    other personal details. We can&apos;t publish reviews that do.
+                  </p>
+                </div>
+                <textarea
+                  id="review-text"
+                  required
+                  value={reviewText}
+                  onChange={(event) => setReviewText(event.target.value)}
+                  aria-describedby="review-text-tips"
+                  placeholder="What was it like living there?"
+                  rows={6}
+                  className={formField}
+                />
+              </div>
+            </section>
+
+            <RatingGroup
+              title="Property ratings"
+              description="Rate the building and shared spaces. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
+              categories={propertyRatingCategories}
+              values={propertyRatings}
+              onChange={(category, value) =>
+                updateRating("property", category, value)
+              }
+              idPrefix="property-rating"
+            />
+
+            <RatingGroup
+              title="Landlord ratings"
+              description="Rate the property manager or landlord. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
+              categories={landlordRatingCategories}
+              values={landlordRatings}
+              onChange={(category, value) =>
+                updateRating("landlord", category, value)
+              }
+              idPrefix="landlord-rating"
+            />
+
+            <section className={formCard} aria-labelledby="submit-heading">
+              <h2 id="submit-heading" className="text-xl font-bold text-[#294B3A]">
+                Ready to submit?
+              </h2>
+
+              <dl className="space-y-2 text-[#4A5A52]">
+                <SummaryRow label="Building" value={buildingLabel || "Not chosen yet"} />
+                <SummaryRow
+                  label="Time lived there"
+                  value={getOptionLabel(occupancyOptions, occupancyDuration)}
+                />
+                <SummaryRow
+                  label="Would live there again"
+                  value={getWouldLiveAgainLabel(wouldLiveAgain)}
+                />
+                <SummaryRow
+                  label="Property ratings"
+                  value={answeredLabel(propertyRatings, propertyRatingCategories)}
+                />
+                <SummaryRow
+                  label="Landlord ratings"
+                  value={answeredLabel(landlordRatings, landlordRatingCategories)}
+                />
+              </dl>
+
+              <ul className="list-disc space-y-1 pl-5 text-[#4A5A52]">
+                <li>Your name is never shown publicly, even if you&apos;re signed in.</li>
+                <li>We check every review before it goes up, usually within a day.</li>
+                {newBuilding && (
+                  <li>We&apos;ll also check the building you added before it appears.</li>
                 )}
-              </section>
-            )}
-          </div>
-        </form>
+              </ul>
+
+              {turnstileSiteKey ? (
+                <Turnstile
+                  key={turnstileResetKey}
+                  siteKey={turnstileSiteKey}
+                  options={{ action: "review_submit", theme: "light" }}
+                  onSuccess={(token) => {
+                    setTurnstileToken(token);
+                    setTurnstileError(false);
+                  }}
+                  onExpire={() => setTurnstileToken("")}
+                  onError={() => {
+                    setTurnstileToken("");
+                    setTurnstileError(true);
+                  }}
+                />
+              ) : (
+                <p className="text-red-700" role="alert">
+                  Review submission security is not configured yet.
+                </p>
+              )}
+
+              {turnstileError && (
+                <p className="text-red-700" role="alert">
+                  The security check failed to load. Please refresh and try again.
+                </p>
+              )}
+
+              {submissionStatus === "error" && (
+                <p className="text-red-700" role="alert">
+                  {submissionError || "We couldn’t submit your review. Please try again."}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmitting || !turnstileSiteKey}
+                className="w-full rounded-full bg-[#08873A] py-4 text-lg font-medium text-white disabled:cursor-wait disabled:opacity-60"
+              >
+                {isSubmitting ? "Submitting..." : "Submit review"}
+              </button>
+            </section>
+          </form>
+        )}
       </div>
     </main>
   );
@@ -778,29 +779,18 @@ function RatingGroup({
   );
 }
 
-function RatingPreview({
-  title,
-  categories,
-  values,
-}: {
-  title: string;
-  categories: RatingCategory[];
-  values: Record<string, string>;
-}) {
+function SummaryRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="space-y-2">
-      <h3 className="font-semibold">{title}</h3>
-      <ul className="space-y-1 text-sm text-gray-600">
-        {categories.map((category) => (
-          <li key={category.value}>
-            {category.label}: {values[category.value] === "na"
-              ? "N/A"
-              : values[category.value] || "Skipped"}
-          </li>
-        ))}
-      </ul>
+    <div className="sm:flex sm:gap-2">
+      <dt className="font-medium">{label}:</dt>
+      <dd>{value}</dd>
     </div>
   );
+}
+
+function answeredLabel(values: Record<string, string>, categories: RatingCategory[]) {
+  const answered = categories.filter((category) => values[category.value]).length;
+  return `${answered} of ${categories.length} answered`;
 }
 
 function getOptionLabel(options: RatingCategory[] | typeof occupancyOptions, value: string) {
