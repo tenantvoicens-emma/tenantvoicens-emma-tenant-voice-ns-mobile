@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 
+import FormMessages from "@/components/ui/FormMessages";
+import SegmentedControl from "@/components/ui/SegmentedControl";
 import { supabase } from "@/lib/supabase";
 
 type AccountMode = "sign-in" | "create-account" | "recover-password";
@@ -172,7 +174,7 @@ export default function AccountClient() {
   }
 
   if (isCheckingSession) {
-    return <p className="text-gray-600" role="status">Checking sign-in status...</p>;
+    return <p className="text-[#66706B]" role="status">Checking sign-in status...</p>;
   }
 
   if (isPasswordReset) {
@@ -180,9 +182,9 @@ export default function AccountClient() {
       <section className="space-y-5">
         <header className="space-y-2">
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">Choose a new password</h1>
-          <p className="text-gray-600">Use at least 8 characters.</p>
+          <p className="text-lg text-[#66706B]">Use at least 8 characters.</p>
         </header>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6">
           <PasswordField
             id="new-password"
             label="New password"
@@ -203,7 +205,7 @@ export default function AccountClient() {
             {isSubmitting ? "Updating..." : "Update password"}
           </button>
         </form>
-        <AccountMessages message={message} errorMessage={errorMessage} />
+        <FormMessages message={message} errorMessage={errorMessage} />
       </section>
     );
   }
@@ -213,27 +215,29 @@ export default function AccountClient() {
     return (
       <section className="space-y-5">
         <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">Your account</h1>
-        <p className="text-gray-700">
-          You’re signed in. Reviews you choose to submit while signed in can be
-          privately linked to your account for future account features. Your
-          account identity is not shown on public reviews.
-        </p>
-        {isAdmin && (
-          <Link
-            href="/admin"
-            className="inline-flex min-h-11 items-center font-medium text-[#2F4F46] underline"
+        <div className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+          <p className="text-lg text-[#4A5A52]">
+            You’re signed in. Reviews you choose to submit while signed in can be
+            privately linked to your account for future account features. Your
+            account identity is not shown on public reviews.
+          </p>
+          {isAdmin && (
+            <Link
+              href="/admin"
+              className="flex min-h-12 w-full items-center justify-center rounded-full bg-[#08873A] px-5 text-lg font-medium text-white"
+            >
+              Open moderation queue
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={signOut}
+            className="flex min-h-12 w-full items-center justify-center rounded-full border border-[#D9D6CE] bg-white px-5 text-lg font-medium text-[#2F4F46]"
           >
-            Open moderation queue
-          </Link>
-        )}
-        <button
-          type="button"
-          onClick={signOut}
-          className="block min-h-11 rounded-full border border-[#D9D6CE] px-5 font-medium text-[#2F4F46]"
-        >
-          Sign out
-        </button>
-        <AccountMessages message={message} errorMessage={errorMessage} />
+            Sign out
+          </button>
+        </div>
+        <FormMessages message={message} errorMessage={errorMessage} />
       </section>
     );
   }
@@ -248,32 +252,27 @@ export default function AccountClient() {
               ? "Create an account"
               : "Recover your password"}
         </h1>
-        <p className="text-gray-600">
+        <p className="text-lg text-[#66706B]">
           You can submit reviews without an account. Signed-in reviews are still
           shown anonymously.
         </p>
       </header>
 
       {mode !== "recover-password" && (
-        <div className="inline-flex rounded-lg border border-[#DEDCD5] p-1">
-          <ModeButton
-            active={mode === "sign-in"}
-            onClick={() => changeMode("sign-in")}
-          >
-            Sign in
-          </ModeButton>
-          <ModeButton
-            active={mode === "create-account"}
-            onClick={() => changeMode("create-account")}
-          >
-            Create account
-          </ModeButton>
-        </div>
+        <SegmentedControl
+          label="Account action"
+          options={[
+            { value: "sign-in", label: "Sign in" },
+            { value: "create-account", label: "Create account" },
+          ]}
+          value={mode}
+          onChange={changeMode}
+        />
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6">
         <div className="space-y-2">
-          <label htmlFor="account-email" className="block font-medium">
+          <label htmlFor="account-email" className="block text-lg font-medium text-[#4A5A52]">
             Email
           </label>
           <input
@@ -283,7 +282,7 @@ export default function AccountClient() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="min-h-12 w-full rounded-2xl border border-[#D9D6CE] bg-white px-4 text-lg"
+            className="min-h-12 w-full rounded-2xl border border-[#D9D6CE] bg-white px-4 text-lg outline-none focus:border-[#08873A]"
           />
         </div>
 
@@ -318,7 +317,7 @@ export default function AccountClient() {
             }}
           />
         ) : (
-          <p className="text-sm text-red-700" role="alert">
+          <p className="rounded-2xl bg-[#FBEDE9] px-4 py-3 text-[#8A3B2B]" role="alert">
             Account security is not configured yet.
           </p>
         )}
@@ -342,7 +341,7 @@ export default function AccountClient() {
         <button
           type="button"
           onClick={() => changeMode("recover-password")}
-          className="min-h-11 text-sm font-medium text-[#2F4F46] underline"
+          className="mx-auto block min-h-11 font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4 hover:decoration-[#2F4F46]"
         >
           Forgot password?
         </button>
@@ -352,13 +351,13 @@ export default function AccountClient() {
         <button
           type="button"
           onClick={() => changeMode("sign-in")}
-          className="min-h-11 text-sm font-medium text-[#2F4F46] underline"
+          className="mx-auto block min-h-11 font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4 hover:decoration-[#2F4F46]"
         >
           Back to sign in
         </button>
       )}
 
-      <AccountMessages message={message} errorMessage={errorMessage} />
+      <FormMessages message={message} errorMessage={errorMessage} />
     </section>
   );
 }
@@ -376,7 +375,7 @@ function PasswordField({
 }) {
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="block font-medium">
+      <label htmlFor={id} className="block text-lg font-medium text-[#4A5A52]">
         {label}
       </label>
       <input
@@ -387,44 +386,8 @@ function PasswordField({
         required
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="min-h-12 w-full rounded-2xl border border-[#D9D6CE] bg-white px-4 text-lg"
+        className="min-h-12 w-full rounded-2xl border border-[#D9D6CE] bg-white px-4 text-lg outline-none focus:border-[#08873A]"
       />
     </div>
-  );
-}
-
-function ModeButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: string;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={`min-h-10 rounded-md px-3 text-sm font-medium ${active ? "bg-[#EEF5EB] text-[#2F4F46]" : "text-gray-600"}`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function AccountMessages({
-  message,
-  errorMessage,
-}: {
-  message: string;
-  errorMessage: string;
-}) {
-  return (
-    <>
-      {message && <p className="text-sm text-green-800" role="status">{message}</p>}
-      {errorMessage && <p className="text-sm text-red-700" role="alert">{errorMessage}</p>}
-    </>
   );
 }
