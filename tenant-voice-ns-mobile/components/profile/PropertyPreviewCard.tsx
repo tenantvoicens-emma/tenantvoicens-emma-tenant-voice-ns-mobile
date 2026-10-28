@@ -4,6 +4,7 @@ import Card from "@/components/ui/Card";
 import IconTile from "@/components/ui/IconTile";
 import LabeledRating from "@/components/profile/LabeledRating";
 import { getPropertyHref } from "@/lib/navigation";
+import { propertyLocation } from "@/lib/property-display";
 import { PropertyListing } from "@/types/property";
 
 type PropertyPreviewCardProps = {
@@ -15,7 +16,7 @@ export default function PropertyPreviewCard({
   property,
   searchTerm,
 }: PropertyPreviewCardProps) {
-  const location = [property.address, property.city].filter(Boolean).join(" · ");
+  const location = propertyLocation(property);
 
   return (
     <Link href={getPropertyHref(property.slug, searchTerm)} className="block rounded-3xl">

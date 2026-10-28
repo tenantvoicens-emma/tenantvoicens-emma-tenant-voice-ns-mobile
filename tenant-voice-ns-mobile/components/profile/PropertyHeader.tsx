@@ -31,7 +31,9 @@ export default function PropertyHeader({
           </h1>
 
           <div className="text-xl text-[#4A5A52]">
-            {property.address && <p>{property.address}</p>}
+            {property.address && property.address !== property.name && (
+              <p>{property.address}</p>
+            )}
             {property.city && <p>{property.city}</p>}
           </div>
 

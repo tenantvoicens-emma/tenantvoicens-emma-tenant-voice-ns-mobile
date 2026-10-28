@@ -13,6 +13,7 @@ import PageContainer from "@/components/ui/PageContainer";
 import SearchBar from "@/components/ui/SearchBar";
 import TrustCard from "@/components/ui/TrustCard";
 import { supabase } from "@/lib/supabase";
+import { usePropertySearch } from "@/lib/use-property-search";
 import { PropertyListing } from "@/types/property";
 import { Rating } from "@/types/rating";
 import { Review } from "@/types/review";
@@ -68,11 +69,9 @@ function DiscoverPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlSearchTerm = searchParams.get("q") ?? "";
-  const [properties, setProperties] = useState<PropertyListing[]>([]);
   const [recentReviews, setRecentReviews] = useState<Review[]>([]);
   const [topProperties, setTopProperties] = useState<PropertyListing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
   const [recentReviewsError, setRecentReviewsError] = useState(false);
   const [topPropertiesError, setTopPropertiesError] = useState(false);
   const [searchTerm, setSearchTerm] = useState(urlSearchTerm);
@@ -82,12 +81,8 @@ function DiscoverPage() {
 
     async function loadProperties() {
       try {
-        const [propertiesResult, reviewsResult, topPropertiesResult] =
+        const [reviewsResult, topPropertiesResult] =
           await Promise.all([
-            supabase
-              .from("properties")
-              .select("id, slug, name, address, city")
-              .order("name"),
             supabase
               .from("reviews")
               .select(
@@ -104,21 +99,9 @@ function DiscoverPage() {
               .limit(5),
           ]);
 
-        if (propertiesResult.error) {
-          throw propertiesResult.error;
-        }
-
         if (!isActive) {
           return;
         }
-
-        setProperties(
-          (propertiesResult.data ?? []).map((property) => ({
-            ...property,
-            address: property.address ?? "",
-            city: property.city ?? "",
-          }))
-        );
 
         if (reviewsResult.error) {
           console.error("Failed to load recent approved reviews.", reviewsResult.error.code);
@@ -147,9 +130,10 @@ function DiscoverPage() {
           );
         }
       } catch (error) {
-        console.error("Failed to load properties from Supabase.", error);
+        console.error("Failed to load Discover from Supabase.", error);
         if (isActive) {
-          setLoadError(true);
+          setRecentReviewsError(true);
+          setTopPropertiesError(true);
         }
       } finally {
         if (isActive) {
@@ -180,12 +164,7 @@ function DiscoverPage() {
     return () => window.clearTimeout(timeoutId);
   }, [router, searchTerm, urlSearchTerm]);
 
-  const normalizedSearchTerm = searchTerm.trim().toLowerCase();
-  const filteredProperties = properties.filter((property) =>
-    [property.name, property.address, property.city].some((value) =>
-      value.toLowerCase().includes(normalizedSearchTerm)
-    )
-  );
+  const search = usePropertySearch(searchTerm);
 
   return (
     <PageContainer>
@@ -217,27 +196,31 @@ function DiscoverPage() {
             label="Find a property"
             value={searchTerm}
             onChange={setSearchTerm}
-            suggestions={filteredProperties}
+            suggestions={search.results}
           />
         </form>
 
         <TrustCard />
 
-        {normalizedSearchTerm ? (
+        {search.status !== "idle" ? (
           <section className="space-y-4" aria-labelledby={SEARCH_RESULTS_ID}>
             <h2 id={SEARCH_RESULTS_ID} className="scroll-mt-6 text-3xl font-bold tracking-tight text-[#294B3A]">
               Search results
             </h2>
-            {isLoading && <p role="status">Loading properties...</p>}
-            {loadError && (
-              <p className="text-center text-gray-500" role="alert">
-                Properties could not be loaded. Check the Supabase connection and table access.
+            {search.status === "loading" && search.results.length === 0 && (
+              <p className="text-[#66706B]" role="status">Searching...</p>
+            )}
+            {search.status === "error" && (
+              <p className="text-[#8A3B2B]" role="alert">
+                Search isn&apos;t working right now. Please try again in a moment.
               </p>
             )}
-            {!isLoading && !loadError && filteredProperties.length === 0 && (
-              <p className="text-gray-500">No properties found.</p>
+            {search.status === "done" && search.results.length === 0 && (
+              <p className="text-[#66706B]">
+                No properties found. Try just the street name, or the street number and name.
+              </p>
             )}
-            {filteredProperties.map((property) => (
+            {search.results.map((property) => (
               <PropertyPreviewCard
                 key={property.id}
                 property={property}
