@@ -8,7 +8,14 @@ import { Star } from "lucide-react";
 
 import BackLink from "@/components/navigation/BackLink";
 import { propertyLocation } from "@/lib/property-display";
-import { hasUnsavedWork, readDraft, writeDraft } from "@/lib/review-draft";
+import NewBuildingFields from "@/components/review/NewBuildingFields";
+import {
+  hasUnsavedWork,
+  isNewBuildingComplete,
+  readDraft,
+  writeDraft,
+  type NewBuilding,
+} from "@/lib/review-draft";
 import { usePropertySearch } from "@/lib/use-property-search";
 import { supabase } from "@/lib/supabase";
 import { PropertyListing } from "@/types/property";
@@ -72,6 +79,8 @@ function ReviewForm() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProperty, setSelectedProperty] =
     useState<PropertyListing | null>(null);
+  // Set while the renter is adding a building that isn't listed.
+  const [newBuilding, setNewBuilding] = useState<NewBuilding | null>(null);
   const [occupancyDuration, setOccupancyDuration] = useState("");
   const [wouldLiveAgain, setWouldLiveAgain] = useState("");
   const [reviewText, setReviewText] = useState("");
@@ -150,6 +159,7 @@ function ReviewForm() {
                 (property) => property.slug === draft.propertySlug
               ) ?? null
             );
+            setNewBuilding(draft.newBuilding ?? null);
             setOccupancyDuration(draft.occupancyDuration);
             setWouldLiveAgain(draft.wouldLiveAgain);
             setReviewText(draft.reviewText);
@@ -186,6 +196,7 @@ function ReviewForm() {
     }
     writeDraft({
       propertySlug: selectedProperty?.slug ?? null,
+      newBuilding,
       searchTerm,
       occupancyDuration,
       wouldLiveAgain,
@@ -195,6 +206,7 @@ function ReviewForm() {
     });
   }, [
     selectedProperty,
+    newBuilding,
     searchTerm,
     occupancyDuration,
     wouldLiveAgain,
@@ -204,7 +216,31 @@ function ReviewForm() {
     submissionStatus,
   ]);
 
-  const search = usePropertySearch(selectedProperty ? "" : searchTerm, 10);
+  const search = usePropertySearch(
+    selectedProperty || newBuilding ? "" : searchTerm,
+    10
+  );
+  const hasBuilding = Boolean(selectedProperty) || isNewBuildingComplete(newBuilding);
+  const buildingLabel = selectedProperty
+    ? selectedProperty.name
+    : newBuilding
+      ? [newBuilding.name.trim(), newBuilding.address.trim(), newBuilding.city.trim()]
+          .filter(Boolean)
+          .join(", ")
+      : "";
+
+  function startNewBuilding() {
+    const typed = searchTerm.trim();
+    setNewBuilding({
+      // Keep what they searched for if it looks like a street address.
+      address: /^\d/.test(typed) ? typed : "",
+      city: "",
+      name: "",
+      hasFourOrMoreUnits: false,
+    });
+    setSelectedProperty(null);
+    setShowPreview(false);
+  }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -225,7 +261,7 @@ function ReviewForm() {
   }
 
   async function submitReview() {
-    if (!selectedProperty || !turnstileToken || isSubmitting) {
+    if (!hasBuilding || !turnstileToken || isSubmitting) {
       return;
     }
 
@@ -252,7 +288,16 @@ function ReviewForm() {
         headers,
         body: JSON.stringify({
           turnstileToken,
-          propertyId: selectedProperty.id,
+          ...(selectedProperty
+            ? { propertyId: selectedProperty.id }
+            : {
+                newProperty: {
+                  address: newBuilding?.address.trim(),
+                  city: newBuilding?.city.trim(),
+                  name: newBuilding?.name.trim() || undefined,
+                  hasFourOrMoreUnits: true,
+                },
+              }),
           reviewText,
           occupancyDuration,
           wouldLiveAgain,
@@ -321,6 +366,21 @@ function ReviewForm() {
               Property
             </h2>
             <div className="space-y-2">
+              {newBuilding ? (
+                <NewBuildingFields
+                  building={newBuilding}
+                  onChange={(building) => {
+                    setNewBuilding(building);
+                    setShowPreview(false);
+                  }}
+                  onCancel={() => {
+                    setNewBuilding(null);
+                    setShowPreview(false);
+                  }}
+                  fieldClassName={formField}
+                />
+              ) : (
+                <>
               <label htmlFor="property-search" className="block text-lg font-medium text-[#4A5A52]">
                 Find the property you lived in
               </label>
@@ -390,14 +450,34 @@ function ReviewForm() {
                         Search isn&apos;t working right now. Please try again in a moment.
                       </li>
                     ) : (
-                      <li className="p-3 text-sm text-gray-600">
-                        No matching property. Try just the street name, or the
-                        street number and name. Adding missing buildings isn&apos;t
-                        available yet.
+                      <li className="space-y-2 p-3 text-sm text-gray-600">
+                        <p>
+                          No matching property. Try just the street name, or the
+                          street number and name.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={startNewBuilding}
+                          className="font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
+                        >
+                          My building isn&apos;t listed
+                        </button>
                       </li>
                     )}
                   </ul>
                 )}
+
+                  {!selectedProperty && (
+                    <button
+                      type="button"
+                      onClick={startNewBuilding}
+                      className="text-sm font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
+                    >
+                      Can&apos;t find your building? Add it
+                    </button>
+                  )}
+                </>
+              )}
 
               {selectedProperty && (
                 <p className="text-sm text-green-700" role="status">
@@ -491,13 +571,13 @@ function ReviewForm() {
           <div className="space-y-3">
             <button
               type="submit"
-              disabled={!selectedProperty}
+              disabled={!hasBuilding}
               className="w-full rounded-full bg-[#08873A] py-4 text-lg font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               Preview Review
             </button>
 
-            {showPreview && selectedProperty && (
+            {showPreview && hasBuilding && (
               <section
                 className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6"
                 aria-labelledby="review-preview-heading"
@@ -516,7 +596,12 @@ function ReviewForm() {
                 </div>
 
                 <div className="space-y-2">
-                  <p className="font-medium">{selectedProperty.name}</p>
+                  <p className="font-medium">{buildingLabel}</p>
+                  {!selectedProperty && (
+                    <p className="text-sm text-gray-600">
+                      New building: we&apos;ll check it before it appears on the site.
+                    </p>
+                  )}
                   <p>
                     Time lived there: {getOptionLabel(occupancyOptions, occupancyDuration)}
                   </p>
@@ -566,7 +651,9 @@ function ReviewForm() {
 
                 {submissionStatus === "success" ? (
                   <p className="text-green-800" role="status">
-                    Review submitted. It will appear after moderation approval.
+                    {selectedProperty
+                      ? "Review submitted. It will appear after moderation approval."
+                      : "Review submitted. It will appear, along with the new building, after moderation approval."}
                   </p>
                 ) : (
                   <button

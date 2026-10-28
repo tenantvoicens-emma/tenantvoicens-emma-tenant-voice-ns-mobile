@@ -34,9 +34,19 @@ type RatingInput = {
   score: string;
 };
 
+// A building the renter couldn't find, added when they review it. It
+// stays hidden until the moderator approves the review.
+type NewPropertyInput = {
+  address: string;
+  city: string;
+  name?: string;
+  hasFourOrMoreUnits: true;
+};
+
 type ReviewRequest = {
   turnstileToken: string;
-  propertyId: number;
+  propertyId?: number;
+  newProperty?: NewPropertyInput;
   reviewText: string;
   occupancyDuration: string;
   wouldLiveAgain: string;
@@ -238,8 +248,28 @@ export async function POST(request: Request) {
       );
     }
 
+    let propertyId = body.propertyId;
+    if (body.newProperty) {
+      const { data: suggestedId, error: suggestError } = await adminClient.rpc(
+        "find_or_suggest_property",
+        {
+          p_address: body.newProperty.address,
+          p_city: body.newProperty.city,
+          p_name: body.newProperty.name ?? null,
+        }
+      );
+      if (suggestError || typeof suggestedId !== "number") {
+        console.error("Supabase rejected a suggested building.", suggestError?.code);
+        return Response.json(
+          { error: "Please check the building's address and town." },
+          { status: 400 }
+        );
+      }
+      propertyId = suggestedId;
+    }
+
     const { error } = await adminClient.rpc("submit_review", {
-      p_property_id: body.propertyId,
+      p_property_id: propertyId,
       p_review_text: body.reviewText.trim(),
       p_occupancy_duration: body.occupancyDuration,
       p_would_live_again: body.wouldLiveAgain,
@@ -276,8 +306,10 @@ function isReviewRequest(value: unknown): value is ReviewRequest {
     typeof body.turnstileToken === "string" &&
     body.turnstileToken.length > 0 &&
     body.turnstileToken.length <= 2048 &&
-    Number.isSafeInteger(body.propertyId) &&
-    (body.propertyId as number) > 0 &&
+    // Exactly one of: an existing property, or a new one to add.
+    (body.newProperty === undefined
+      ? Number.isSafeInteger(body.propertyId) && (body.propertyId as number) > 0
+      : body.propertyId === undefined && isNewProperty(body.newProperty)) &&
     typeof body.reviewText === "string" &&
     body.reviewText.trim().length > 0 &&
     body.reviewText.length <= 5000 &&
@@ -286,6 +318,26 @@ function isReviewRequest(value: unknown): value is ReviewRequest {
     ["yes", "no", "unsure"].includes(String(body.wouldLiveAgain)) &&
     isRatingArray(body.propertyRatings, propertyRatingCategories) &&
     isRatingArray(body.landlordRatings, landlordRatingCategories)
+  );
+}
+
+function isNewProperty(value: unknown): value is NewPropertyInput {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const input = value as Record<string, unknown>;
+  return (
+    typeof input.address === "string" &&
+    /^\s*\d/.test(input.address) &&
+    input.address.trim().length >= 3 &&
+    input.address.length <= 120 &&
+    typeof input.city === "string" &&
+    input.city.trim().length >= 2 &&
+    input.city.length <= 60 &&
+    (input.name === undefined ||
+      (typeof input.name === "string" && input.name.length <= 80)) &&
+    input.hasFourOrMoreUnits === true
   );
 }
 

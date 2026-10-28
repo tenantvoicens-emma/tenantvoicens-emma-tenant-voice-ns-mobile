@@ -218,6 +218,14 @@ function DiscoverPage() {
             {search.status === "done" && search.results.length === 0 && (
               <p className="text-[#66706B]">
                 No properties found. Try just the street name, or the street number and name.
+                Lived somewhere that isn&apos;t listed?{" "}
+                <Link
+                  href="/submit-review"
+                  className="font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
+                >
+                  Add it when you write your review
+                </Link>
+                .
               </p>
             )}
             {search.results.map((property) => (
