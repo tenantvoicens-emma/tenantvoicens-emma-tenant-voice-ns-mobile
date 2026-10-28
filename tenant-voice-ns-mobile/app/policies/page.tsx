@@ -3,6 +3,7 @@ import {
   FileText,
   HeartHandshake,
   Mail,
+  MapPin,
   MessagesSquare,
   Scale,
   ShieldCheck,
@@ -205,6 +206,31 @@ export default function PoliciesPage() {
               or remove content that violates them. Do not use the service to
               harass, threaten, expose private information, or submit fabricated
               or duplicate reviews.
+            </p>
+          </section>
+
+          <section id="data-sources" className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+            <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
+              <IconTile icon={MapPin} />
+              Where our building list comes from
+            </h2>
+            <p className="text-gray-700">
+              The rental buildings you can review come from the Halifax
+              Regional Municipality&apos;s Residential Rental Registry, used with
+              credit under its open data licence. Only buildings with four or
+              more registered rental units are listed, so a review can&apos;t
+              single out the one or two tenants of a house or duplex.
+            </p>
+            <p className="text-gray-700">
+              Building names, where we have them, come from{" "}
+              <Link
+                href="https://www.openstreetmap.org/copyright"
+                className="font-medium text-[#2F4F46] underline"
+              >
+                OpenStreetMap
+              </Link>
+              , © OpenStreetMap contributors, available under the Open Database
+              Licence. Buildings without a name are listed by street address.
             </p>
           </section>
 
