@@ -104,9 +104,10 @@ export default function PoliciesPage() {
               How ratings work
             </h2>
             <p className="text-gray-700">
-              Ratings are structured by category. Choose N/A when you cannot
-              assess a category; N/A is not counted as zero. Categories left
-              unanswered are also omitted from the score.
+              Ratings are structured by category. Choose N/A if a category
+              doesn’t apply or you’re not sure, or just skip it. N/A and
+              skipped categories are left out of the score, not counted as
+              zero.
             </p>
             <h3 className="font-semibold text-[#294B3A]">Property ratings</h3>
             <ul className="list-disc space-y-1 pl-6 text-gray-700">

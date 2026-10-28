@@ -548,7 +548,7 @@ function ReviewForm() {
 
           <RatingGroup
             title="Property ratings"
-            description="Rate the building and shared spaces. Choose N/A when you can’t assess a category."
+            description="Rate the building and shared spaces. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
             categories={propertyRatingCategories}
             values={propertyRatings}
             onChange={(category, value) =>
@@ -559,7 +559,7 @@ function ReviewForm() {
 
           <RatingGroup
             title="Landlord ratings"
-            description="Rate the property manager or landlord. Choose N/A when you can’t assess a category."
+            description="Rate the property manager or landlord. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
             categories={landlordRatingCategories}
             values={landlordRatings}
             onChange={(category, value) =>
@@ -713,7 +713,6 @@ function RatingGroup({
           const groupName = `${idPrefix}-${category.value}`;
           const selectedValue = values[category.value] ?? "";
           const selectedScore = Number(selectedValue) || 0;
-          const hasExplicitValue = Object.hasOwn(values, category.value);
 
           return (
             <fieldset
@@ -757,31 +756,20 @@ function RatingGroup({
                   </label>
                 ))}
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                {[
-                  { value: "na", label: "N/A" },
-                  { value: "", label: "Not rated" },
-                ].map((choice) => (
-                  <label key={choice.label} className="cursor-pointer">
-                    <input
-                      type="radio"
-                      name={groupName}
-                      value={choice.value}
-                      checked={
-                        hasExplicitValue && selectedValue === choice.value
-                      }
-                      aria-describedby={`${idPrefix}-scale`}
-                      onChange={() =>
-                        onChange(category.value, choice.value)
-                      }
-                      className="peer sr-only"
-                    />
-                    <span className="inline-flex min-h-11 items-center rounded-full border border-[#D9D6CE] px-4 text-sm peer-checked:border-[#2F4F46] peer-checked:bg-[#DDEBD8] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2F4F46]">
-                      {choice.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
+              <label className="inline-block cursor-pointer">
+                <input
+                  type="radio"
+                  name={groupName}
+                  value="na"
+                  checked={selectedValue === "na"}
+                  aria-describedby={`${idPrefix}-scale`}
+                  onChange={() => onChange(category.value, "na")}
+                  className="peer sr-only"
+                />
+                <span className="inline-flex min-h-11 items-center rounded-full border border-[#D9D6CE] px-4 text-sm peer-checked:border-[#2F4F46] peer-checked:bg-[#DDEBD8] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2F4F46]">
+                  N/A
+                </span>
+              </label>
             </fieldset>
           );
         })}
@@ -807,7 +795,7 @@ function RatingPreview({
           <li key={category.value}>
             {category.label}: {values[category.value] === "na"
               ? "N/A"
-              : values[category.value] || "Not rated"}
+              : values[category.value] || "Skipped"}
           </li>
         ))}
       </ul>
