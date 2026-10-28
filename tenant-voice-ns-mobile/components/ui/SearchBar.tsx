@@ -28,6 +28,7 @@ export default function SearchBar({
       <input
         id={id}
         type="text"
+        enterKeyHint="search"
         aria-label={label && id ? undefined : "Search properties or addresses"}
         value={value}
         onChange={(event) =>

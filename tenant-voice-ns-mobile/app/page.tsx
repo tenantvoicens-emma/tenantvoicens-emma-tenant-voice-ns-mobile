@@ -3,12 +3,11 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { HeartHandshake, Search } from "lucide-react";
+import { HeartHandshake } from "lucide-react";
 
 import BackLink from "@/components/navigation/BackLink";
 import PropertyPreviewCard from "@/components/profile/PropertyPreviewCard";
 import ReviewCard from "@/components/profile/ReviewCard";
-import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import PageContainer from "@/components/ui/PageContainer";
 import SearchBar from "@/components/ui/SearchBar";
@@ -44,8 +43,8 @@ const SEARCH_INPUT_ID = "property-search";
 
 const SEARCH_RESULTS_ID = "search-results-heading";
 
-// With a search term, scrolls to the results; without one, puts the cursor
-// in the search box, ready to type.
+// Pressing Enter (the keyboard's Search key on phones) scrolls to the
+// results; with nothing typed, it leaves the cursor in the search box.
 function showSearchResults() {
   const results = document.getElementById(SEARCH_RESULTS_ID);
   if (results) {
@@ -220,7 +219,6 @@ function DiscoverPage() {
             onChange={setSearchTerm}
             suggestions={filteredProperties}
           />
-          <Button type="submit" text="Explore renter experiences" icon={Search} />
         </form>
 
         <TrustCard />
