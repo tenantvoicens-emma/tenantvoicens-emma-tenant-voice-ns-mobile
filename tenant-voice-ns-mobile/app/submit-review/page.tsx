@@ -3,6 +3,7 @@
 import { Turnstile } from "@marsidev/react-turnstile";
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { ArrowLeft, Star } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
 import { PropertyListing } from "@/types/property";
@@ -76,6 +77,9 @@ export default function SubmitReviewPage() {
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileError, setTurnstileError] = useState(false);
   const [turnstileResetKey, setTurnstileResetKey] = useState(0);
+  // The profile this form was opened from, for the "Back to profile" link.
+  const [profileProperty, setProfileProperty] =
+    useState<PropertyListing | null>(null);
 
   useEffect(() => {
     let isActive = true;
@@ -107,6 +111,7 @@ export default function SubmitReviewPage() {
           );
 
           if (requestedProperty) {
+            setProfileProperty(requestedProperty);
             setSelectedProperty(requestedProperty);
             setSearchTerm(requestedProperty.name);
           }
@@ -217,29 +222,40 @@ export default function SubmitReviewPage() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-5 py-6">
+    <main className="px-5 py-6">
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-[#2F4F46]">
-          Share Your Experience
+        {profileProperty && (
+          <Link
+            href={`/properties/${encodeURIComponent(profileProperty.slug)}`}
+            className="mx-auto flex min-h-11 w-fit items-center gap-3 text-lg font-medium text-[#1F2A24] hover:underline"
+          >
+            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+            Back to profile
+          </Link>
+        )}
+
+        <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
+          Your experience matters
         </h1>
 
-        <p className="text-gray-600">
-          Help future renters make informed decisions.
+        <p className="text-lg text-[#66706B]">
+          A guided review helps other renters understand what day-to-day life
+          can be like.
         </p>
 
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-[#66706B]">
           You can submit anonymously. If you sign in, your review can be privately
           linked to your account for future account features; your identity is
           never shown publicly. <Link className="font-medium text-[#2F4F46] underline" href="/account">Sign in or create an account</Link>.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          <section className="space-y-3" aria-labelledby="property-heading">
-            <h2 id="property-heading" className="text-xl font-bold">
+          <section className={formCard} aria-labelledby="property-heading">
+            <h2 id="property-heading" className="text-xl font-bold text-[#294B3A]">
               Property
             </h2>
             <div className="space-y-2">
-              <label htmlFor="property-search" className="block font-medium">
+              <label htmlFor="property-search" className="block text-lg font-medium text-[#4A5A52]">
                 Find the property you lived in
               </label>
               <input
@@ -256,7 +272,7 @@ export default function SubmitReviewPage() {
                 placeholder="Search by property name, address, or city"
                 aria-autocomplete="list"
                 aria-controls="property-suggestions"
-                className="w-full rounded-xl border border-[#DEDCD5] bg-white p-4"
+                className={formField}
               />
 
               {isLoadingProperties && (
@@ -277,7 +293,7 @@ export default function SubmitReviewPage() {
                 !propertyLoadError && (
                   <ul
                     id="property-suggestions"
-                    className="overflow-hidden rounded-xl border border-[#DEDCD5] bg-white"
+                    className="overflow-hidden rounded-2xl border border-[#E6E3DA] bg-white"
                   >
                     {filteredProperties.length > 0 ? (
                       filteredProperties.map((property) => (
@@ -319,13 +335,13 @@ export default function SubmitReviewPage() {
             </div>
           </section>
 
-          <section className="space-y-3" aria-labelledby="experience-heading">
-            <h2 id="experience-heading" className="text-xl font-bold">
+          <section className={formCard} aria-labelledby="experience-heading">
+            <h2 id="experience-heading" className="text-xl font-bold text-[#294B3A]">
               Your experience
             </h2>
 
             <div className="space-y-2">
-              <label htmlFor="occupancy-duration" className="block font-medium">
+              <label htmlFor="occupancy-duration" className="block text-lg font-medium text-[#4A5A52]">
                 How long did you live there?
               </label>
               <select
@@ -333,7 +349,7 @@ export default function SubmitReviewPage() {
                 required
                 value={occupancyDuration}
                 onChange={(event) => setOccupancyDuration(event.target.value)}
-                className="w-full rounded-xl border border-[#DEDCD5] bg-white p-4"
+                className={formField}
               >
                 <option value="">Choose a time range</option>
                 {occupancyOptions.map((option) => (
@@ -345,7 +361,7 @@ export default function SubmitReviewPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="would-live-again" className="block font-medium">
+              <label htmlFor="would-live-again" className="block text-lg font-medium text-[#4A5A52]">
                 Would you live there again?
               </label>
               <select
@@ -353,7 +369,7 @@ export default function SubmitReviewPage() {
                 required
                 value={wouldLiveAgain}
                 onChange={(event) => setWouldLiveAgain(event.target.value)}
-                className="w-full rounded-xl border border-[#DEDCD5] bg-white p-4"
+                className={formField}
               >
                 <option value="">Choose an answer</option>
                 <option value="yes">Yes</option>
@@ -363,17 +379,17 @@ export default function SubmitReviewPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="review-text" className="block font-medium">
-                What was your experience like?
+              <label htmlFor="review-text" className="block text-lg font-medium text-[#4A5A52]">
+                What would you like other renters to know?
               </label>
               <textarea
                 id="review-text"
                 required
                 value={reviewText}
                 onChange={(event) => setReviewText(event.target.value)}
-                placeholder="Share what future renters should know. Focus on your own experience."
+                placeholder="Describe your experience without names or private details..."
                 rows={6}
-                className="w-full rounded-xl border border-[#DEDCD5] bg-white p-4"
+                className={formField}
               />
             </div>
           </section>
@@ -404,14 +420,14 @@ export default function SubmitReviewPage() {
             <button
               type="submit"
               disabled={!selectedProperty}
-              className="w-full rounded-xl bg-[#4CAF50] py-4 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+              className="w-full rounded-full bg-[#08873A] py-4 text-lg font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
               Preview Review
             </button>
 
             {showPreview && selectedProperty && (
               <section
-                className="space-y-4 rounded-xl border border-[#DEDCD5] p-4"
+                className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6"
                 aria-labelledby="review-preview-heading"
                 aria-live="polite"
               >
@@ -485,7 +501,7 @@ export default function SubmitReviewPage() {
                     type="button"
                     onClick={submitReview}
                     disabled={isSubmitting || !turnstileToken || !turnstileSiteKey}
-                    className="w-full rounded-xl bg-[#4CAF50] py-4 font-medium text-white disabled:cursor-wait disabled:opacity-60"
+                    className="w-full rounded-full bg-[#08873A] py-4 text-lg font-medium text-white disabled:cursor-wait disabled:opacity-60"
                   >
                     {isSubmitting ? "Submitting..." : "Submit for moderation"}
                   </button>
@@ -505,6 +521,10 @@ export default function SubmitReviewPage() {
   );
 }
 
+const formCard = "space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6";
+const formField =
+  "w-full rounded-2xl border border-[#D9D6CE] bg-white p-4 text-lg outline-none focus:border-[#08873A]";
+
 type RatingGroupProps = {
   title: string;
   description: string;
@@ -523,9 +543,9 @@ function RatingGroup({
   idPrefix,
 }: RatingGroupProps) {
   return (
-    <fieldset className="space-y-4">
-      <legend className="text-xl font-bold">{title}</legend>
-      <p id={`${idPrefix}-scale`} className="text-sm text-gray-600">
+    <fieldset className={formCard}>
+      <legend className="float-left w-full text-xl font-bold text-[#294B3A]">{title}</legend>
+      <p id={`${idPrefix}-scale`} className="clear-both text-sm text-[#66706B]">
         {description} Scale: 1 is poor; 5 is excellent.
       </p>
 
@@ -541,15 +561,15 @@ function RatingGroup({
               key={category.value}
               className="space-y-2"
             >
-              <legend className="font-medium">
+              <legend className="text-lg font-medium text-[#4A5A52]">
                 {category.label}
               </legend>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="grid grid-cols-5 gap-2">
                 {starRatings.map((score) => (
                   <label
                     key={score}
                     title={`${score} - ${ratingLabels[score]}`}
-                    className="cursor-pointer"
+                    className="block cursor-pointer"
                   >
                     <input
                       type="radio"
@@ -564,16 +584,21 @@ function RatingGroup({
                     />
                     <span
                       aria-hidden="true"
-                      className={`flex h-11 w-11 items-center justify-center rounded-md text-3xl peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2F4F46] ${score <= selectedScore ? "text-amber-500" : "text-gray-300"}`}
+                      className={`flex flex-col items-center gap-1 rounded-2xl py-3 text-lg peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2F4F46] ${score <= selectedScore ? "bg-[#DDEBD8] text-[#2F4F46]" : "bg-[#F3F3E9] text-[#8A938E]"}`}
                     >
-                      ★
+                      <Star
+                        className="h-6 w-6"
+                        fill={score <= selectedScore ? "currentColor" : "none"}
+                      />
+                      {score}
                     </span>
                     <span className="sr-only">
                       {score} out of 5, {ratingLabels[score]}
                     </span>
                   </label>
                 ))}
-
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
                 {[
                   { value: "na", label: "N/A" },
                   { value: "", label: "Not rated" },
@@ -592,7 +617,7 @@ function RatingGroup({
                       }
                       className="peer sr-only"
                     />
-                    <span className="inline-flex min-h-11 items-center rounded-md border border-[#DEDCD5] px-3 text-sm peer-checked:border-[#2F4F46] peer-checked:bg-[#EEF5EB] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2F4F46]">
+                    <span className="inline-flex min-h-11 items-center rounded-full border border-[#D9D6CE] px-4 text-sm peer-checked:border-[#2F4F46] peer-checked:bg-[#DDEBD8] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#2F4F46]">
                       {choice.label}
                     </span>
                   </label>

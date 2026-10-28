@@ -179,7 +179,7 @@ export default function AccountClient() {
     return (
       <section className="space-y-5">
         <header className="space-y-2">
-          <h1 className="text-3xl font-bold text-[#2F4F46]">Choose a new password</h1>
+          <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">Choose a new password</h1>
           <p className="text-gray-600">Use at least 8 characters.</p>
         </header>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -198,7 +198,7 @@ export default function AccountClient() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="min-h-11 w-full rounded-xl bg-[#2F4F46] px-5 font-medium text-white disabled:opacity-60"
+            className="min-h-12 w-full rounded-full bg-[#08873A] px-5 text-lg font-medium text-white disabled:opacity-60"
           >
             {isSubmitting ? "Updating..." : "Update password"}
           </button>
@@ -212,7 +212,7 @@ export default function AccountClient() {
     const isAdmin = session.user.email?.toLowerCase() === adminEmail;
     return (
       <section className="space-y-5">
-        <h1 className="text-3xl font-bold text-[#2F4F46]">Your account</h1>
+        <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">Your account</h1>
         <p className="text-gray-700">
           You’re signed in. Reviews you choose to submit while signed in can be
           privately linked to your account for future account features. Your
@@ -229,7 +229,7 @@ export default function AccountClient() {
         <button
           type="button"
           onClick={signOut}
-          className="block min-h-11 rounded-xl border border-[#DEDCD5] px-5 font-medium text-[#2F4F46]"
+          className="block min-h-11 rounded-full border border-[#D9D6CE] px-5 font-medium text-[#2F4F46]"
         >
           Sign out
         </button>
@@ -241,7 +241,7 @@ export default function AccountClient() {
   return (
     <section className="space-y-5">
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-[#2F4F46]">
+        <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
           {mode === "sign-in"
             ? "Sign in"
             : mode === "create-account"
@@ -283,7 +283,7 @@ export default function AccountClient() {
             required
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            className="min-h-11 w-full rounded-xl border border-[#DEDCD5] bg-white px-4"
+            className="min-h-12 w-full rounded-2xl border border-[#D9D6CE] bg-white px-4 text-lg"
           />
         </div>
 
@@ -326,7 +326,7 @@ export default function AccountClient() {
         <button
           type="submit"
           disabled={isSubmitting || !captchaToken || !turnstileSiteKey}
-          className="min-h-11 w-full rounded-xl bg-[#2F4F46] px-5 font-medium text-white disabled:opacity-60"
+          className="min-h-12 w-full rounded-full bg-[#08873A] px-5 text-lg font-medium text-white disabled:opacity-60"
         >
           {isSubmitting
             ? "Please wait..."
@@ -387,7 +387,7 @@ function PasswordField({
         required
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="min-h-11 w-full rounded-xl border border-[#DEDCD5] bg-white px-4"
+        className="min-h-12 w-full rounded-2xl border border-[#D9D6CE] bg-white px-4 text-lg"
       />
     </div>
   );

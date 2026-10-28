@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { MouseEvent } from "react";
 
@@ -37,9 +38,10 @@ export default function BackLink({ href, label }: BackLinkProps) {
     <Link
       href={href}
       onClick={handleClick}
-      className="inline-flex min-h-11 items-center text-sm font-medium text-[#4CAF50]"
+      className="mx-auto flex min-h-11 w-fit items-center gap-3 text-lg font-medium text-[#1F2A24] hover:underline"
     >
-      ← {label}
+      <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+      {label}
     </Link>
   );
 }

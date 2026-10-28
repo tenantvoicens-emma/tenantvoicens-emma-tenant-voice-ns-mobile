@@ -81,7 +81,7 @@ function StaticNavigationLink({
   return (
     <Link
       href={href}
-      className="rounded-full border border-[#DEDCD5] px-4 py-2 text-[#2F4F46]"
+      className="rounded-full border border-[#D9D6CE] px-5 py-2 text-lg text-[#4A5A52]"
     >
       {children}
     </Link>
@@ -90,6 +90,6 @@ function StaticNavigationLink({
 
 function navigationPill(isActive: boolean) {
   return isActive
-    ? "rounded-full bg-[#EEF5EB] px-4 py-2 font-medium text-[#2F4F46]"
-    : "rounded-full border border-[#DEDCD5] px-4 py-2 text-[#2F4F46]";
+    ? "rounded-full border border-[#08873A] bg-[#08873A] px-5 py-2 text-lg font-medium text-white"
+    : "rounded-full border border-[#D9D6CE] px-5 py-2 text-lg text-[#4A5A52] hover:bg-white";
 }

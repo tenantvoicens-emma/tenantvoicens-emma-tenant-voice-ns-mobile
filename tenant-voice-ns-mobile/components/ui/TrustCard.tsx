@@ -1,20 +1,20 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, ShieldCheck } from "lucide-react";
 import Card from "./Card";
 
 export default function TrustCard() {
   return (
     <Link href="/policies" className="group block rounded-3xl">
-      <Card>
+      <Card tone="green">
         <div className="space-y-2">
-          <h3 className="font-bold text-[#2F4F46]">
-            Trust & Safety
-          </h3>
+          <h2 className="flex items-center gap-3 text-xl font-bold text-[#294B3A]">
+            <ShieldCheck className="h-6 w-6 shrink-0" aria-hidden="true" />
+            Built around trust
+          </h2>
 
-          <p className="text-sm text-gray-600">
-            Reviews focus on tenant experiences and
-            are moderated to help keep information
-            respectful, informative, and useful.
+          <p className="text-lg text-[#4A5A52]">
+            Anonymous to the public. Thoughtful moderation. Real experiences,
+            presented with context.
           </p>
 
           <p className="inline-flex items-center gap-1 text-sm font-medium text-[#2F4F46] group-hover:underline">

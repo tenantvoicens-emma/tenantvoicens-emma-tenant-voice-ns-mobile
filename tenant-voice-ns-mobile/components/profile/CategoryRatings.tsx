@@ -14,7 +14,7 @@ export default function CategoryRatings({
   return (
     <Card>
       <div className="space-y-4">
-        <h3 className="font-bold text-[#2F4F46]">{title}</h3>
+        <h2 className="text-xl font-bold text-[#294B3A]">{title}</h2>
 
         <div className="space-y-2">
           {ratings.length === 0 ? (
@@ -42,7 +42,7 @@ function RatingRow({
   score: number | null;
 }) {
   return (
-    <div className="flex justify-between border-b pb-2">
+    <div className="flex justify-between border-b border-[#EEECE6] pb-2 last:border-b-0 last:pb-0">
       <span>{label}</span>
       <span className="font-semibold tabular-nums">
         {score === null ? "N/A" : `${formatRatingScore(score)}/5`}

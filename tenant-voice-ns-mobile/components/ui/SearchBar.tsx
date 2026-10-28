@@ -8,6 +8,7 @@ type SearchBarProps = {
 
   suggestions: PropertyListing[];
   id?: string;
+  label?: string;
 };
 
 export default function SearchBar({
@@ -15,13 +16,19 @@ export default function SearchBar({
   onChange,
   suggestions,
   id,
+  label,
 }: SearchBarProps) {
   return (
-    <div className="relative">
+    <div className="relative space-y-3">
+      {label && id && (
+        <label htmlFor={id} className="block text-lg font-medium text-[#4A5A52]">
+          {label}
+        </label>
+      )}
       <input
         id={id}
         type="text"
-        aria-label="Search properties or addresses"
+        aria-label={label && id ? undefined : "Search properties or addresses"}
         value={value}
         onChange={(event) =>
           onChange(event.target.value)
@@ -29,12 +36,16 @@ export default function SearchBar({
         placeholder="Search properties or addresses..."
         className="
           w-full
-          rounded-3xl
+          rounded-full
           border
-          border-[#DEDCD5]
-          bg-white
-          p-4
+          border-[#D9D6CE]
+          bg-[#F6F6EE]
+          px-6
+          py-4
+          text-lg
           outline-none
+          focus:border-[#08873A]
+          focus:bg-white
         "
       />
 
@@ -42,13 +53,11 @@ export default function SearchBar({
         suggestions.length > 0 && (
           <div
             className="
-              mt-2
               overflow-hidden
               rounded-3xl
               border
-              border-[#DEDCD5]
+              border-[#E6E3DA]
               bg-white
-              shadow-sm
             "
           >
             {suggestions.map((property) => (

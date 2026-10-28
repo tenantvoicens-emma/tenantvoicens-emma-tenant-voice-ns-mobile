@@ -134,10 +134,11 @@ async function PropertyContent({
 
   return (
     <PageContainer>
-      <div className="space-y-6">
+      <div className="space-y-8">
         <PropertyHeader
           property={property}
           backHref={discoverHref(searchTerm)}
+          reviewCount={reviews.length}
         />
         <PropertySnapshot
           propertyRating={propertyRatingSummary}
@@ -156,8 +157,8 @@ async function PropertyContent({
         )}
         <HighlightLinkedReview />
 
-        <CategoryRatings title="Property Ratings" ratings={propertyRatings} />
-        <CategoryRatings title="Landlord Ratings" ratings={landlordRatings} />
+        <CategoryRatings title="Property ratings" ratings={propertyRatings} />
+        <CategoryRatings title="Landlord ratings" ratings={landlordRatings} />
 
         <LeaveReviewCTA propertySlug={property.slug} />
       </div>

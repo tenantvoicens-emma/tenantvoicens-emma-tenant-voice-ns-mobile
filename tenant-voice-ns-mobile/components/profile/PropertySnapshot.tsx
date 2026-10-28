@@ -36,7 +36,7 @@ function RatingSummary({
   return (
     <section className="space-y-1" aria-label={label}>
       <h2 className="text-sm font-medium text-gray-600">{label}</h2>
-      <p className="text-3xl font-bold text-[#2F4F46]">
+      <p className="text-3xl font-bold text-[#294B3A]">
         {summary.average === null
           ? "Not rated yet"
           : `${formatRatingScore(summary.average)}/5`}

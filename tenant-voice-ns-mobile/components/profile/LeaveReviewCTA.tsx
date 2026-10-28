@@ -8,11 +8,11 @@ type LeaveReviewCTAProps = {
 export default function LeaveReviewCTA({ propertySlug }: LeaveReviewCTAProps) {
   return (
     <div className="space-y-3">
-      <h3 className="text-xl font-bold text-[#2F4F46]">
+      <h2 className="text-3xl font-bold tracking-tight text-[#294B3A]">
         Lived here?
-      </h3>
+      </h2>
 
-      <p className="text-gray-600">
+      <p className="text-lg text-[#66706B]">
         Help future renters by sharing
         your experience.
       </p>

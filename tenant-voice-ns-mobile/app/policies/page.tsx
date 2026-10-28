@@ -1,5 +1,17 @@
 import Link from "next/link";
+import {
+  ArrowLeft,
+  FileText,
+  HeartHandshake,
+  Mail,
+  MessagesSquare,
+  Scale,
+  ShieldCheck,
+  Star,
+  UserCheck,
+} from "lucide-react";
 
+import IconTile from "@/components/ui/IconTile";
 import PageContainer from "@/components/ui/PageContainer";
 
 const propertyRatings = [
@@ -25,29 +37,37 @@ export default function PoliciesPage() {
   return (
     <main>
       <PageContainer>
-        <div className="space-y-8">
+        <div className="space-y-6">
           <Link
             href="/"
-            className="inline-flex min-h-11 items-center text-sm font-medium text-[#4CAF50]"
+            className="mx-auto flex min-h-11 w-fit items-center gap-3 text-lg font-medium text-[#1F2A24] hover:underline"
           >
-            ← Back to Discover
+            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+            Back to Discover
           </Link>
 
           <header className="space-y-3">
-            <p className="text-sm font-medium uppercase text-[#4CAF50]">
-              Tenant Voice NS
-            </p>
-            <h1 className="text-3xl font-bold text-[#2F4F46]">
+            <p className="text-lg font-medium uppercase tracking-wide text-[#5B7A68]">
               Policies and review guidelines
+            </p>
+            <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
+              Trust is part of the product.
             </h1>
-            <p className="text-sm text-gray-600">
+            <p className="text-lg text-[#66706B]">
+              Tenant Voice NS should protect honest feedback while treating
+              renters and housing providers fairly.
+            </p>
+            <p className="text-sm text-[#66706B]">
               Draft for review. These policies describe the current build and may
               change before public launch.
             </p>
           </header>
 
-          <section className="space-y-3 border-t border-[#DEDCD5] pt-6">
-            <h2 className="text-xl font-bold text-[#2F4F46]">Our mission</h2>
+          <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+            <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
+              <IconTile icon={HeartHandshake} />
+              Our mission
+            </h2>
             <p className="text-gray-700">
               Tenant Voice NS helps Nova Scotia renters understand what it may be
               like to live in a property by sharing structured tenant experiences
@@ -60,8 +80,11 @@ export default function PoliciesPage() {
             </p>
           </section>
 
-          <section className="space-y-3 border-t border-[#DEDCD5] pt-6">
-            <h2 className="text-xl font-bold text-[#2F4F46]">Review guidelines</h2>
+          <section id="review-guidelines" className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+            <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
+              <IconTile icon={MessagesSquare} />
+              Review guidelines
+            </h2>
             <p className="text-gray-700">
               Reviews should describe your own direct rental experience. Focus on
               specific events and observations, and write respectfully. Do not
@@ -80,8 +103,9 @@ export default function PoliciesPage() {
             </p>
           </section>
 
-          <section className="space-y-3 border-t border-[#DEDCD5] pt-6">
-            <h2 className="text-xl font-bold text-[#2F4F46]">
+          <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+            <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
+              <IconTile icon={Star} />
               How ratings work
             </h2>
             <p className="text-gray-700">
@@ -89,11 +113,11 @@ export default function PoliciesPage() {
               assess a category; N/A is not counted as zero. Categories left
               unanswered are also omitted from the score.
             </p>
-            <h3 className="font-semibold text-gray-800">Property ratings</h3>
+            <h3 className="font-semibold text-[#294B3A]">Property ratings</h3>
             <ul className="list-disc space-y-1 pl-6 text-gray-700">
               {propertyRatings.map((rating) => <li key={rating}>{rating}</li>)}
             </ul>
-            <h3 className="font-semibold text-gray-800">Landlord ratings</h3>
+            <h3 className="font-semibold text-[#294B3A]">Landlord ratings</h3>
             <ul className="list-disc space-y-1 pl-6 text-gray-700">
               {landlordRatings.map((rating) => <li key={rating}>{rating}</li>)}
             </ul>
@@ -105,8 +129,11 @@ export default function PoliciesPage() {
             </p>
           </section>
 
-          <section className="space-y-3 border-t border-[#DEDCD5] pt-6">
-            <h2 className="text-xl font-bold text-[#2F4F46]">Moderation</h2>
+          <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+            <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
+              <IconTile icon={ShieldCheck} />
+              Moderation
+            </h2>
             <p className="text-gray-700">
               Every submitted review starts as pending and is not shown publicly
               unless approved by the authorized moderator. The moderator may
@@ -127,8 +154,11 @@ export default function PoliciesPage() {
             </p>
           </section>
 
-          <section className="space-y-3 border-t border-[#DEDCD5] pt-6">
-            <h2 className="text-xl font-bold text-[#2F4F46]">Privacy and anonymity</h2>
+          <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+            <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
+              <IconTile icon={UserCheck} />
+              Privacy and anonymity
+            </h2>
             <p className="text-gray-700">
               Review submissions do not require a public user account and are not
               displayed with a username or account identity. Do not put your name
@@ -152,8 +182,9 @@ export default function PoliciesPage() {
             </p>
           </section>
 
-          <section className="space-y-3 border-t border-[#DEDCD5] pt-6">
-            <h2 className="text-xl font-bold text-[#2F4F46]">
+          <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+            <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
+              <IconTile icon={Scale} />
               Accuracy and disclaimer
             </h2>
             <p className="text-gray-700">
@@ -169,8 +200,11 @@ export default function PoliciesPage() {
             </p>
           </section>
 
-          <section className="space-y-3 border-t border-[#DEDCD5] pt-6">
-            <h2 className="text-xl font-bold text-[#2F4F46]">Use of this site</h2>
+          <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+            <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
+              <IconTile icon={FileText} />
+              Use of this site
+            </h2>
             <p className="text-gray-700">
               By submitting a review, you confirm that it reflects your own
               experience and follows these guidelines. Tenant Voice NS may reject
@@ -180,8 +214,11 @@ export default function PoliciesPage() {
             </p>
           </section>
 
-          <section className="space-y-3 border-t border-[#DEDCD5] pt-6">
-            <h2 className="text-xl font-bold text-[#2F4F46]">Contact</h2>
+          <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+            <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
+              <IconTile icon={Mail} />
+              Contact
+            </h2>
             <p className="text-gray-700">
               Questions or content concerns can be sent to{" "}
               <Link
@@ -194,7 +231,7 @@ export default function PoliciesPage() {
             </p>
           </section>
 
-          <footer className="border-t border-[#DEDCD5] pt-6 text-sm text-gray-500">
+          <footer className="text-sm text-[#66706B]">
             Tenant Voice NS · Policies are a working draft and are not legal
             advice.
           </footer>
