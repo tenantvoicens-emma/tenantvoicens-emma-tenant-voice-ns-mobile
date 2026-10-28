@@ -171,7 +171,7 @@ function ReviewRatingGroup({
 }) {
   return (
     <section className="space-y-1 border-t border-[#DEDCD5] pt-3">
-      <h4 className="text-xs font-semibold uppercase tracking-wide text-[#66706B]">
+      <h4 className="text-sm font-semibold uppercase tracking-wide text-[#66706B]">
         {title} ratings
       </h4>
       <ul className="divide-y divide-[#EEECE6] text-sm">

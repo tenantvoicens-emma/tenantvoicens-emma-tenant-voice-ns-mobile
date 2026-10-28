@@ -60,7 +60,7 @@ function AverageGroup({
 }) {
   return (
     <div className="space-y-3 rounded-2xl bg-white/70 p-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-[#5B7A68]">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-[#5B7A68]">
         {title}
       </h3>
 
@@ -84,7 +84,7 @@ function AverageGroup({
                   style={{ width: `${(Math.min(5, Math.max(0, item.average)) / 5) * 100}%` }}
                 />
               </div>
-              <p className="text-xs text-[#66706B]">
+              <p className="text-sm text-[#66706B]">
                 {item.ratingCount} {item.ratingCount === 1 ? "rating" : "ratings"}
               </p>
             </li>

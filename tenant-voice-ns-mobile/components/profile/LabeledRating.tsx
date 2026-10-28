@@ -13,7 +13,7 @@ export default function LabeledRating({
 }: LabeledRatingProps) {
   return (
     <div className="flex items-center gap-3 text-sm">
-      <span className="w-28 shrink-0 text-xs font-semibold uppercase tracking-wide text-[#66706B]">
+      <span className="w-28 shrink-0 text-sm font-semibold uppercase tracking-wide text-[#66706B]">
         {label}
       </span>
       {score === null ? (

@@ -45,7 +45,6 @@ export default function SearchBar({
           px-6
           py-4
           text-lg
-          outline-none
           focus:border-[#08873A]
           focus:bg-white
         "

@@ -45,7 +45,7 @@ function RatingSummary({
 }) {
   return (
     <section className="space-y-1" aria-label={label}>
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-[#5B7A68]">{label}</h3>
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-[#5B7A68]">{label}</h3>
       <p className="text-3xl font-bold text-[#294B3A]">
         {summary.average === null
           ? "Not rated yet"
