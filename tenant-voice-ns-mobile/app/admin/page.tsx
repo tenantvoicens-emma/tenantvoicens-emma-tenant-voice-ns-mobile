@@ -5,7 +5,9 @@ import type { Session } from "@supabase/supabase-js";
 import Link from "next/link";
 
 import BackLink from "@/components/navigation/BackLink";
+import FormMessages from "@/components/ui/FormMessages";
 import PageContainer from "@/components/ui/PageContainer";
+import SegmentedControl from "@/components/ui/SegmentedControl";
 import { supabase } from "@/lib/supabase";
 
 const ADMIN_EMAIL = "tenantvoicens@gmail.com";
@@ -174,40 +176,40 @@ export default function AdminPage() {
       <PageContainer>
         <div className="space-y-6">
           <BackLink fallback={{ url: "/", label: "Discover" }} />
-          <div>
-            <h1 className="text-2xl font-bold text-[#2F4F46]">
+          <header className="space-y-2">
+            <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
               Review moderation
             </h1>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="text-lg text-[#66706B]">
               Pending reviews are visible only to the authorized moderator.
             </p>
-          </div>
+          </header>
 
           {isCheckingSession ? (
-            <p className="text-gray-600" role="status">
+            <p className="text-[#66706B]" role="status">
               Checking sign-in status...
             </p>
           ) : !session ? (
-            <section className="space-y-4">
-              <p className="text-gray-700">
+            <section className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+              <p className="text-lg text-[#4A5A52]">
                 Sign in with the authorized admin account to review pending submissions.
               </p>
               <Link
                 href="/account"
-                className="inline-flex min-h-11 items-center rounded-xl bg-[#2F4F46] px-5 font-medium text-white"
+                className="flex min-h-12 w-full items-center justify-center rounded-full bg-[#08873A] px-5 text-lg font-medium text-white"
               >
                 Sign in or create an account
               </Link>
             </section>
           ) : !isAdmin ? (
-            <section className="space-y-4">
-              <p className="text-gray-700" role="alert">
+            <section className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+              <p className="text-lg text-[#8A3B2B]" role="alert">
                 This account is not authorized to moderate reviews.
               </p>
               <button
                 type="button"
                 onClick={signOut}
-                className="min-h-11 rounded-xl border border-[#DEDCD5] px-5 font-medium text-[#2F4F46]"
+                className="min-h-11 rounded-full border border-[#D9D6CE] bg-white px-5 font-medium text-[#2F4F46]"
               >
                 Sign out
               </button>
@@ -215,49 +217,40 @@ export default function AdminPage() {
           ) : (
             <section className="space-y-5">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-gray-600">Signed in as admin</p>
+                <p className="text-[#66706B]">Signed in as admin</p>
                 <button
                   type="button"
                   onClick={signOut}
-                  className="min-h-11 rounded-xl border border-[#DEDCD5] px-4 text-sm font-medium text-[#2F4F46]"
+                  className="min-h-11 rounded-full border border-[#D9D6CE] bg-white px-5 font-medium text-[#2F4F46]"
                 >
                   Sign out
                 </button>
               </div>
 
-              <div
-                className="inline-flex rounded-lg border border-[#DEDCD5] p-1"
-                role="tablist"
-                aria-label="Review status"
-              >
-                {reviewStatuses.map((status) => (
-                  <button
-                    key={status}
-                    type="button"
-                    role="tab"
-                    aria-selected={reviewStatus === status}
-                    onClick={() => {
-                      setReviewStatus(status);
-                      setMessage("");
-                      setErrorMessage("");
-                    }}
-                    className={`min-h-10 rounded-md px-3 text-sm font-medium capitalize ${reviewStatus === status ? "bg-[#EEF5EB] text-[#2F4F46]" : "text-gray-600"}`}
-                  >
-                    {status}
-                  </button>
-                ))}
-              </div>
+              <SegmentedControl
+                label="Review status"
+                options={reviewStatuses.map((status) => ({
+                  value: status,
+                  label: capitalize(status),
+                }))}
+                value={reviewStatus}
+                onChange={(status) => {
+                  setReviewStatus(status);
+                  setMessage("");
+                  setErrorMessage("");
+                }}
+              />
 
-              <h2 className="text-xl font-bold text-[#2F4F46]">
+              <h2 className="text-3xl font-bold tracking-tight text-[#294B3A]">
                 {capitalize(reviewStatus)} reviews ({reviews.length})
               </h2>
 
               {isLoadingReviews ? (
-                <p className="text-gray-600" role="status">
-                  Loading pending reviews...
+                <p className="text-[#66706B]" role="status">
+                  Loading {reviewStatus} reviews...
                 </p>
               ) : reviews.length === 0 ? (
-                <p className="text-gray-600">
+                <p className="text-[#66706B]">
                   {reviewStatus === "pending"
                     ? "The queue is clear."
                     : `No ${reviewStatus} reviews are archived yet.`}
@@ -266,23 +259,29 @@ export default function AdminPage() {
                 reviews.map((review) => (
                   <article
                     key={review.id}
-                    className="space-y-4 rounded-lg border border-[#DEDCD5] bg-white p-4"
+                    className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6"
                   >
-                    <div>
-                      <h3 className="font-bold text-[#2F4F46]">
+                    <header className="space-y-1">
+                      <h3 className="text-xl font-bold text-[#294B3A]">
                         {review.properties?.name ?? "Unknown property"}
                       </h3>
-                      <p className="text-sm text-gray-600">
-                        Lived here {formatOccupancy(review.occupancy_duration)}
-                        {" · "}
-                        Would live here again: {review.would_live_again}
-                      </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-[#66706B]">
                         Submitted {new Date(review.created_at).toLocaleString()}
                       </p>
+                    </header>
+
+                    <div className="flex flex-wrap gap-2">
+                      <ReviewDetail
+                        label="Lived here"
+                        value={formatOccupancy(review.occupancy_duration)}
+                      />
+                      <ReviewDetail
+                        label="Would live here again"
+                        value={capitalize(review.would_live_again)}
+                      />
                     </div>
 
-                    <p className="whitespace-pre-wrap text-gray-800">
+                    <p className="whitespace-pre-wrap leading-relaxed text-gray-800">
                       {review.review_text}
                     </p>
 
@@ -296,12 +295,12 @@ export default function AdminPage() {
                     />
 
                     {reviewStatus === "pending" ? (
-                      <div className="flex flex-wrap gap-3 border-t border-[#DEDCD5] pt-4">
+                      <div className="grid grid-cols-2 gap-3 border-t border-[#EEECE6] pt-4">
                         <button
                           type="button"
                           onClick={() => moderateReview(review.id, "approved")}
                           disabled={moderatingReviewId !== null}
-                          className="min-h-11 rounded-xl bg-[#2F4F46] px-5 font-medium text-white disabled:opacity-60"
+                          className="min-h-12 rounded-full bg-[#08873A] px-5 text-lg font-medium text-white disabled:opacity-60"
                         >
                           {moderatingReviewId === review.id
                             ? "Saving..."
@@ -311,13 +310,13 @@ export default function AdminPage() {
                           type="button"
                           onClick={() => moderateReview(review.id, "rejected")}
                           disabled={moderatingReviewId !== null}
-                          className="min-h-11 rounded-xl border border-red-300 px-5 font-medium text-red-800 disabled:opacity-60"
+                          className="min-h-12 rounded-full border border-[#E0C4BC] bg-white px-5 text-lg font-medium text-[#8A3B2B] disabled:opacity-60"
                         >
                           Reject
                         </button>
                       </div>
                     ) : (
-                      <p className="border-t border-[#DEDCD5] pt-4 text-sm text-gray-600">
+                      <p className="border-t border-[#EEECE6] pt-4 text-sm text-[#66706B]">
                         Archived as {reviewStatus}. This record is retained.
                       </p>
                     )}
@@ -327,16 +326,7 @@ export default function AdminPage() {
             </section>
           )}
 
-          {message && (
-            <p className="text-sm text-green-800" role="status">
-              {message}
-            </p>
-          )}
-          {errorMessage && (
-            <p className="text-sm text-red-700" role="alert">
-              {errorMessage}
-            </p>
-          )}
+          <FormMessages message={message} errorMessage={errorMessage} />
         </div>
       </PageContainer>
     </main>
@@ -351,22 +341,34 @@ function RatingList({
   ratings: RatingRow[];
 }) {
   return (
-    <section className="space-y-2">
-      <h4 className="font-semibold text-[#2F4F46]">{title}</h4>
+    <section className="space-y-1 border-t border-[#EEECE6] pt-3">
+      <h4 className="text-xs font-semibold uppercase tracking-wide text-[#5B7A68]">
+        {title}
+      </h4>
       {ratings.length === 0 ? (
-        <p className="text-sm text-gray-500">No ratings provided.</p>
+        <p className="text-sm text-[#66706B]">No ratings provided.</p>
       ) : (
-        <ul className="grid grid-cols-1 gap-1 text-sm sm:grid-cols-2">
+        <ul className="divide-y divide-[#EEECE6] text-sm">
           {ratings.map((rating) => (
-            <li key={rating.id}>
-              {formatCategory(rating.category)}: {rating.score.toLowerCase() === "na"
-                ? "N/A"
-                : rating.score}
+            <li key={rating.id} className="flex justify-between gap-3 py-2">
+              <span className="text-gray-700">{formatCategory(rating.category)}</span>
+              <span className="font-semibold tabular-nums text-[#294B3A]">
+                {rating.score.toLowerCase() === "na" ? "N/A" : `${rating.score}/5`}
+              </span>
             </li>
           ))}
         </ul>
       )}
     </section>
+  );
+}
+
+function ReviewDetail({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F3F2EE] px-3 py-1 text-sm text-[#2F4F46]">
+      <span className="opacity-75">{label}</span>
+      <span className="font-semibold">{value}</span>
+    </span>
   );
 }
 
@@ -379,7 +381,7 @@ function formatOccupancy(value: string) {
     more_than_10_years: "more than 10 years",
   };
 
-  return labels[value] ?? value.replaceAll("_", " ");
+  return capitalize(labels[value] ?? value.replaceAll("_", " "));
 }
 
 function formatCategory(value: string) {
