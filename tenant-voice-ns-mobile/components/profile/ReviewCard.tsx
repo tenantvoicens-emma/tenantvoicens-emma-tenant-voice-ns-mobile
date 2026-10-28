@@ -88,17 +88,21 @@ export default function ReviewCard({
 
         {compact ? (
           <div className="space-y-1.5 border-t border-[#DEDCD5] pt-3">
-            <LabeledRating label="Property" score={averageScore(review.propertyRatings)} />
-            <LabeledRating label="Landlord" score={averageScore(review.landlordRatings)} />
+            <LabeledRating label="Property" score={review.propertyOverall ?? null} />
+            <LabeledRating label="Landlord" score={review.landlordOverall ?? null} />
           </div>
         ) : (
           <>
-            {review.propertyRatings && review.propertyRatings.length > 0 && (
-              <ReviewRatingGroup title="Property" ratings={review.propertyRatings} />
-            )}
-            {review.landlordRatings && review.landlordRatings.length > 0 && (
-              <ReviewRatingGroup title="Landlord" ratings={review.landlordRatings} />
-            )}
+            <ReviewRatingGroup
+              title="Property"
+              overall={review.propertyOverall ?? null}
+              ratings={review.propertyRatings ?? []}
+            />
+            <ReviewRatingGroup
+              title="Landlord"
+              overall={review.landlordOverall ?? null}
+              ratings={review.landlordRatings ?? []}
+            />
           </>
         )}
       </article>
@@ -129,16 +133,6 @@ function reviewAnchorId(id: Review["id"]) {
   return `review-${id}`;
 }
 
-function averageScore(ratings: Review["propertyRatings"]) {
-  const scores = (ratings ?? [])
-    .map((rating) => rating.score)
-    .filter((score): score is number => score !== null);
-
-  return scores.length === 0
-    ? null
-    : scores.reduce((total, score) => total + score, 0) / scores.length;
-}
-
 const detailTones = {
   positive: "bg-[#C5E8C8] text-[#1C5F31]",
   negative: "bg-[#FBEDE9] text-[#8A3B2B]",
@@ -164,17 +158,31 @@ function ReviewDetail({
 
 function ReviewRatingGroup({
   title,
+  overall,
   ratings,
 }: {
   title: string;
+  overall: number | null;
   ratings: NonNullable<Review["propertyRatings"]>;
 }) {
+  if (overall === null && ratings.length === 0) {
+    return null;
+  }
+
   return (
     <section className="space-y-1 border-t border-[#DEDCD5] pt-3">
       <h4 className="text-sm font-semibold uppercase tracking-wide text-[#66706B]">
         {title} ratings
       </h4>
       <ul className="divide-y divide-[#EEECE6] text-sm">
+        {overall !== null && (
+          <li className="flex items-center justify-between gap-3 py-2">
+            <span className="min-w-0 font-semibold text-gray-800">Overall</span>
+            <span className="shrink-0">
+              <RatingMeter score={overall} />
+            </span>
+          </li>
+        )}
         {ratings.map((rating) => (
           <li key={rating.id} className="flex items-center justify-between gap-3 py-2">
             <span className="min-w-0 text-gray-700">{rating.category}</span>

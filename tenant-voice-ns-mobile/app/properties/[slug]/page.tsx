@@ -11,6 +11,12 @@ import PropertySnapshot from "@/components/profile/PropertySnapshot";
 import ReviewCard from "@/components/profile/ReviewCard";
 import ReviewsSection from "@/components/profile/ReviewsSection";
 import PageContainer from "@/components/ui/PageContainer";
+import {
+  detailedRatings,
+  formatCategory,
+  overallScore,
+  parseRatingScore,
+} from "@/lib/ratings";
 import { supabase } from "@/lib/supabase";
 import { PropertyListing } from "@/types/property";
 import { Rating } from "@/types/rating";
@@ -113,6 +119,8 @@ async function PropertyContent({
     createdAt: review.created_at,
     propertyRatings: mapRatings([review], "property_ratings", slug),
     landlordRatings: mapRatings([review], "landlord_ratings", slug),
+    propertyOverall: overallScore(review.property_ratings),
+    landlordOverall: overallScore(review.landlord_ratings),
   }));
 
   const propertyCategoryAverages = averageByCategory(
@@ -243,7 +251,7 @@ function mapRatings(
   propertySlug: string
 ): Rating[] {
   return reviews.flatMap((review) =>
-    (review[ratingGroup] ?? []).map((rating) => ({
+    detailedRatings(review[ratingGroup]).map((rating) => ({
       id: rating.id,
       propertySlug,
       category: formatCategory(rating.category),
@@ -257,15 +265,8 @@ function summarizeRatings(
   ratingGroup: "property_ratings" | "landlord_ratings"
 ) {
   const reviewAverages = reviews.flatMap((review) => {
-    const scores = (review[ratingGroup] ?? [])
-      .map((rating) => parseRatingScore(rating.score))
-      .filter((score): score is number => score !== null);
-
-    if (scores.length === 0) {
-      return [];
-    }
-
-    return [scores.reduce((total, score) => total + score, 0) / scores.length];
+    const score = overallScore(review[ratingGroup]);
+    return score === null ? [] : [score];
   });
 
   if (reviewAverages.length === 0) {
@@ -291,7 +292,7 @@ function averageByCategory(
   const scoresByCategory = new Map<string, number[]>();
 
   for (const review of reviews) {
-    for (const rating of review[ratingGroup] ?? []) {
+    for (const rating of detailedRatings(review[ratingGroup])) {
       const score = parseRatingScore(rating.score);
       if (score === null) {
         continue;
@@ -314,23 +315,4 @@ function averageByCategory(
       ratingCount: scores.length,
     }))
     .sort((a, b) => a.category.localeCompare(b.category));
-}
-
-function formatCategory(value: string) {
-  return value
-    .replaceAll("_", " ")
-    .replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
-function parseRatingScore(value: string | number | null) {
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? value : null;
-  }
-
-  if (!value || ["na", "n/a"].includes(value.trim().toLowerCase())) {
-    return null;
-  }
-
-  const score = Number(value);
-  return Number.isFinite(score) ? score : null;
 }
