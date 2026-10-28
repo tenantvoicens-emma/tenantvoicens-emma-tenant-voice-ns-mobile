@@ -4,8 +4,30 @@
 // pill, "Share Your Experience") go through StartReviewLink, which asks
 // before discarding a draft with anything typed or rated in it.
 
+// A building the renter is adding because it isn't listed.
+export type NewBuilding = {
+  address: string;
+  city: string;
+  name: string;
+  hasFourOrMoreUnits: boolean;
+};
+
+export function isNewBuildingComplete(
+  building: NewBuilding | null | undefined
+): building is NewBuilding {
+  return Boolean(
+    building &&
+      /^\s*\d/.test(building.address) &&
+      building.address.trim().length >= 3 &&
+      building.city.trim().length >= 2 &&
+      building.hasFourOrMoreUnits
+  );
+}
+
 export type ReviewDraft = {
   propertySlug: string | null;
+  // Older drafts don't have this.
+  newBuilding?: NewBuilding | null;
   searchTerm: string;
   occupancyDuration: string;
   wouldLiveAgain: string;
@@ -47,6 +69,7 @@ export function hasUnsavedWork(draft: ReviewDraft | null): draft is ReviewDraft 
     Object.values(ratings ?? {}).some((value) => value !== "");
   return (
     draft.reviewText.trim() !== "" ||
+    Boolean(draft.newBuilding?.address.trim() || draft.newBuilding?.name.trim()) ||
     draft.occupancyDuration !== "" ||
     draft.wouldLiveAgain !== "" ||
     hasRating(draft.propertyRatings) ||

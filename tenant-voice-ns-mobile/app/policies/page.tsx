@@ -232,6 +232,11 @@ export default function PoliciesPage() {
               , © OpenStreetMap contributors, available under the Open Database
               Licence. Buildings without a name are listed by street address.
             </p>
+            <p className="text-gray-700">
+              If your building isn&apos;t listed, you can add it when you write a
+              review. The moderator checks every added building, and it appears
+              on the site only once a review for it is approved.
+            </p>
           </section>
 
           <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">

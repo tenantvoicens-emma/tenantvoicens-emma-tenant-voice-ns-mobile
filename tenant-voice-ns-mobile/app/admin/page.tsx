@@ -31,6 +31,9 @@ type PendingReview = {
   properties: {
     name: string;
     slug: string;
+    address: string;
+    city: string;
+    is_listed: boolean;
   } | null;
   property_ratings: RatingRow[];
   landlord_ratings: RatingRow[];
@@ -134,7 +137,7 @@ export default function AdminPage() {
       const { data, error } = await supabase
         .from("reviews")
         .select(
-          "id, review_text, occupancy_duration, would_live_again, created_at, properties(name, slug), property_ratings(id, category, score), landlord_ratings(id, category, score)"
+          "id, review_text, occupancy_duration, would_live_again, created_at, properties(name, slug, address, city, is_listed), property_ratings(id, category, score), landlord_ratings(id, category, score)"
         )
         .eq("status", reviewStatus)
         .order("created_at", { ascending: reviewStatus === "pending" });
@@ -338,9 +341,23 @@ export default function AdminPage() {
                     className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6"
                   >
                     <header className="space-y-1">
+                      {review.properties && !review.properties.is_listed && (
+                        <p className="mb-2 rounded-2xl bg-[#FFF4D6] px-3 py-2 text-sm text-[#6B4E00]">
+                          <span className="font-semibold">New building</span>, added by
+                          this reviewer and not yet on the site. Check the address:
+                          approving this review publishes the building too.
+                        </p>
+                      )}
                       <h3 className="text-xl font-bold text-[#294B3A]">
                         {review.properties?.name ?? "Unknown property"}
                       </h3>
+                      {review.properties &&
+                        review.properties.address !== review.properties.name && (
+                          <p className="text-[#4A5A52]">{review.properties.address}</p>
+                        )}
+                      {review.properties?.city && (
+                        <p className="text-[#4A5A52]">{review.properties.city}</p>
+                      )}
                       <p className="text-sm text-[#66706B]">
                         Submitted {new Date(review.created_at).toLocaleString()}
                       </p>
