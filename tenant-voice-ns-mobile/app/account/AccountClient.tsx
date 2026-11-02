@@ -9,6 +9,10 @@ import type { Session } from "@supabase/supabase-js";
 import FormMessages from "@/components/ui/FormMessages";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import { supabase } from "@/lib/supabase";
+import {
+  FLEXIBLE_TURNSTILE_STYLE,
+  TURNSTILE_INCOMPLETE_MESSAGE,
+} from "@/lib/turnstile";
 
 type AccountMode = "sign-in" | "create-account" | "recover-password";
 
@@ -103,8 +107,12 @@ export default function AccountClient() {
       }
     }
 
-    if (!captchaToken || !turnstileSiteKey || isSubmitting) {
-      setErrorMessage("Complete the security check to continue.");
+    if (isSubmitting) {
+      return;
+    }
+
+    if (!captchaToken || !turnstileSiteKey) {
+      setErrorMessage(TURNSTILE_INCOMPLETE_MESSAGE);
       return;
     }
 
@@ -322,7 +330,8 @@ export default function AccountClient() {
           <Turnstile
             key={captchaResetKey}
             siteKey={turnstileSiteKey}
-            options={{ action: "account_auth", theme: "light" }}
+            options={{ action: "account_auth", theme: "light", size: "flexible" }}
+            style={FLEXIBLE_TURNSTILE_STYLE}
             onSuccess={setCaptchaToken}
             onExpire={() => setCaptchaToken("")}
             onError={() => {
@@ -338,7 +347,7 @@ export default function AccountClient() {
 
         <button
           type="submit"
-          disabled={isSubmitting || !captchaToken || !turnstileSiteKey}
+          disabled={isSubmitting || !turnstileSiteKey}
           className="min-h-12 w-full rounded-full bg-[#08873A] px-5 text-lg font-medium text-white disabled:opacity-60"
         >
           {isSubmitting

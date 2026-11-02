@@ -1,6 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, type KeyboardEvent } from "react";
+import StartReviewLink from "@/components/navigation/StartReviewLink";
+import LoadError from "@/components/ui/LoadError";
 import { getPropertyHref } from "@/lib/navigation";
 import { propertyLocation } from "@/lib/property-display";
+import { NO_SEARCH_RESULTS_HINT } from "@/lib/review-draft";
+import type { PropertySearch } from "@/lib/use-property-search";
 import { PropertyListing } from "@/types/property";
 
 type SearchBarProps = {
@@ -8,33 +16,100 @@ type SearchBarProps = {
   onChange: (value: string) => void;
 
   suggestions: PropertyListing[];
-  id?: string;
-  label?: string;
+  status: PropertySearch["status"];
+  onRetry: () => void;
+  id: string;
+  label: string;
 };
 
+// The highlighted suggestion, remembered for the list it belongs to so a
+// new list starts with nothing highlighted.
+type ActiveOption = {
+  list: PropertyListing[];
+  index: number;
+};
+
+// A combobox: type to search, then use the up and down arrow keys to move
+// through the matching properties and Enter to open one.
 export default function SearchBar({
   value,
   onChange,
   suggestions,
+  status,
+  onRetry,
   id,
   label,
 }: SearchBarProps) {
+  const router = useRouter();
+  const [active, setActive] = useState<ActiveOption | null>(null);
+  // Escape hides the list until the renter types again.
+  const [isDismissed, setIsDismissed] = useState(false);
+  const listId = `${id}-listbox`;
+  const optionId = (index: number) => `${id}-option-${index}`;
+  const hasText = value.trim() !== "";
+  const isOpen = hasText && suggestions.length > 0 && !isDismissed;
+  const activeIndex =
+    isOpen && active?.list === suggestions ? active.index : -1;
+  const showNoResults = hasText && status === "done" && suggestions.length === 0;
+
+  function highlight(index: number) {
+    setActive({ list: suggestions, index });
+    document
+      .getElementById(optionId(index))
+      ?.scrollIntoView({ block: "nearest" });
+  }
+
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      if (!hasText || suggestions.length === 0) {
+        return;
+      }
+      event.preventDefault();
+      setIsDismissed(false);
+      const last = suggestions.length - 1;
+      if (event.key === "ArrowDown") {
+        highlight(activeIndex >= last ? 0 : activeIndex + 1);
+      } else {
+        highlight(activeIndex <= 0 ? last : activeIndex - 1);
+      }
+      return;
+    }
+
+    if (event.key === "Enter" && activeIndex >= 0) {
+      // Open the highlighted property instead of submitting the search.
+      event.preventDefault();
+      router.push(getPropertyHref(suggestions[activeIndex].slug, value));
+      return;
+    }
+
+    if (event.key === "Escape" && isOpen) {
+      event.preventDefault();
+      setActive(null);
+      setIsDismissed(true);
+    }
+  }
+
   return (
     <div className="relative space-y-3">
-      {label && id && (
-        <label htmlFor={id} className="block text-lg font-medium text-[#4A5A52]">
-          {label}
-        </label>
-      )}
+      <label htmlFor={id} className="block text-lg font-medium text-[#4A5A52]">
+        {label}
+      </label>
       <input
         id={id}
         type="text"
+        role="combobox"
         enterKeyHint="search"
-        aria-label={label && id ? undefined : "Search properties or addresses"}
+        autoComplete="off"
+        aria-autocomplete="list"
+        aria-expanded={isOpen}
+        aria-controls={listId}
+        aria-activedescendant={activeIndex >= 0 ? optionId(activeIndex) : undefined}
         value={value}
-        onChange={(event) =>
-          onChange(event.target.value)
-        }
+        onChange={(event) => {
+          setIsDismissed(false);
+          onChange(event.target.value);
+        }}
+        onKeyDown={handleKeyDown}
         placeholder="Search properties or addresses..."
         className="
           w-full
@@ -50,39 +125,85 @@ export default function SearchBar({
         "
       />
 
-      {value.trim() !== "" &&
-        suggestions.length > 0 && (
-          <div
-            className="
-              overflow-hidden
-              rounded-3xl
-              border
-              border-[#E6E3DA]
-              bg-white
-            "
-          >
-            {suggestions.map((property) => (
-              <Link
-                key={property.id}
-                href={getPropertyHref(property.slug, value)}
-                className="
-                  block
-                  last:border-b-0 border-b
-                  p-4
-                  hover:bg-[#EEF5EB]
-                "
-              >
-                <p className="font-medium">
-                  {property.name}
-                </p>
+      {/* Always in the page (even when empty) so screen readers notice
+          when the count changes. */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {resultsAnnouncement(hasText, status, suggestions.length)}
+      </p>
 
-                <p className="text-sm text-gray-500">
+      <ul
+        id={listId}
+        role="listbox"
+        aria-label="Matching properties"
+        hidden={!isOpen}
+        className="overflow-hidden rounded-3xl border border-[#E6E3DA] bg-white"
+      >
+        {isOpen &&
+          suggestions.map((property, index) => (
+            <li
+              key={property.id}
+              role="presentation"
+              className="border-b border-[#DEDCD5] last:border-b-0"
+            >
+              {/* Focus stays in the search box; the arrow keys move the
+                  highlight. Tapping or clicking still follows the link. */}
+              <Link
+                id={optionId(index)}
+                role="option"
+                aria-selected={index === activeIndex}
+                tabIndex={-1}
+                href={getPropertyHref(property.slug, value)}
+                className={`block p-4 hover:bg-[#EEF5EB] ${
+                  index === activeIndex
+                    ? "bg-[#EEF5EB] outline-2 -outline-offset-2 outline-[#08873A]"
+                    : ""
+                }`}
+              >
+                <span className="block font-medium">{property.name}</span>
+                <span className="block text-sm text-gray-500">
                   {propertyLocation(property, ", ")}
-                </p>
+                </span>
               </Link>
-            ))}
-          </div>
-        )}
+            </li>
+          ))}
+      </ul>
+
+      {showNoResults && (
+        <div className="space-y-2 rounded-3xl border border-[#E6E3DA] bg-white p-4 text-[#4A5A52]">
+          <p>No properties match that search. {NO_SEARCH_RESULTS_HINT}</p>
+          <p>
+            Can&apos;t find your building?{" "}
+            <StartReviewLink
+              addBuilding={{ searchTerm: value }}
+              className="font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
+            >
+              Add it
+            </StartReviewLink>
+          </p>
+        </div>
+      )}
+
+      {hasText && status === "error" && (
+        <LoadError
+          message="Search isn't working right now. Please try again in a moment."
+          onRetry={onRetry}
+        />
+      )}
     </div>
   );
+}
+
+function resultsAnnouncement(
+  hasText: boolean,
+  status: PropertySearch["status"],
+  count: number
+) {
+  if (!hasText || status !== "done") {
+    return "";
+  }
+  if (count === 0) {
+    return "No properties match that search.";
+  }
+  const found = count === 1 ? "1 property found." : `${count} properties found.`;
+  return `${found} Use the up and down arrow keys to choose one.`;
 }

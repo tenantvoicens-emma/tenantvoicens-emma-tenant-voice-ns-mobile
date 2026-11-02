@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HeartHandshake } from "lucide-react";
@@ -9,6 +9,7 @@ import BackLink from "@/components/navigation/BackLink";
 import PropertyPreviewCard from "@/components/profile/PropertyPreviewCard";
 import ReviewCard from "@/components/profile/ReviewCard";
 import Card from "@/components/ui/Card";
+import LoadError from "@/components/ui/LoadError";
 import PageContainer from "@/components/ui/PageContainer";
 import SearchBar from "@/components/ui/SearchBar";
 import TrustCard from "@/components/ui/TrustCard";
@@ -46,7 +47,7 @@ type DiscoverReviewRow = {
   }[] | null;
 };
 
-const SEARCH_INPUT_ID = "property-search";
+const SEARCH_INPUT_ID = "discover-search";
 
 const SEARCH_RESULTS_ID = "search-results-heading";
 
@@ -76,85 +77,9 @@ function DiscoverPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const urlSearchTerm = searchParams.get("q") ?? "";
-  const [recentReviews, setRecentReviews] = useState<Review[]>([]);
-  const [topProperties, setTopProperties] = useState<PropertyListing[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [recentReviewsError, setRecentReviewsError] = useState(false);
-  const [topPropertiesError, setTopPropertiesError] = useState(false);
+  const recentReviews = useDiscoverSection(loadRecentReviews);
+  const topProperties = useDiscoverSection(loadTopProperties);
   const [searchTerm, setSearchTerm] = useState(urlSearchTerm);
-
-  useEffect(() => {
-    let isActive = true;
-
-    async function loadProperties() {
-      try {
-        const [reviewsResult, topPropertiesResult] =
-          await Promise.all([
-            supabase
-              .from("reviews")
-              .select(
-                "id, review_text, occupancy_duration, would_live_again, created_at, properties(name, slug), property_ratings(id, category, score), landlord_ratings(id, category, score)"
-              )
-              .eq("status", "approved")
-              .order("created_at", { ascending: false })
-              .limit(5),
-            supabase
-              .from("discover_top_properties")
-              .select("id, slug, name, address, city, review_count, property_rating, landlord_rating")
-              .order("review_count", { ascending: false })
-              .order("name")
-              .limit(5),
-          ]);
-
-        if (!isActive) {
-          return;
-        }
-
-        if (reviewsResult.error) {
-          console.error("Failed to load recent approved reviews.", reviewsResult.error.code);
-          setRecentReviewsError(true);
-        } else {
-          setRecentReviews(
-            ((reviewsResult.data ?? []) as unknown as DiscoverReviewRow[]).map(
-              mapDiscoverReview
-            )
-          );
-        }
-
-        if (topPropertiesResult.error) {
-          console.error("Failed to load most-reviewed properties.", topPropertiesResult.error.code);
-          setTopPropertiesError(true);
-        } else {
-          setTopProperties(
-            (topPropertiesResult.data ?? []).map((property) => ({
-              ...property,
-              address: property.address ?? "",
-              city: property.city ?? "",
-              reviewCount: Number(property.review_count),
-              propertyRating: parseRatingScore(property.property_rating),
-              landlordRating: parseRatingScore(property.landlord_rating),
-            }))
-          );
-        }
-      } catch (error) {
-        console.error("Failed to load Discover from Supabase.", error);
-        if (isActive) {
-          setRecentReviewsError(true);
-          setTopPropertiesError(true);
-        }
-      } finally {
-        if (isActive) {
-          setIsLoading(false);
-        }
-      }
-    }
-
-    void loadProperties();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
 
   useEffect(() => {
     if (searchTerm.trim() === urlSearchTerm.trim()) {
@@ -208,6 +133,8 @@ function DiscoverPage() {
                 value={searchTerm}
                 onChange={setSearchTerm}
                 suggestions={search.results}
+                status={search.status}
+                onRetry={search.retry}
               />
             </form>
           </div>
@@ -216,79 +143,65 @@ function DiscoverPage() {
         </div>
 
         {search.status !== "idle" ? (
-          <section className="space-y-4" aria-labelledby={SEARCH_RESULTS_ID}>
-            <h2 id={SEARCH_RESULTS_ID} className="scroll-mt-6 text-3xl font-bold tracking-tight text-[#294B3A]">
-              Search results
-            </h2>
-            {search.status === "loading" && search.results.length === 0 && (
-              <p className="text-[#66706B]" role="status">Searching...</p>
-            )}
-            {search.status === "error" && (
-              <p className="text-[#8A3B2B]" role="alert">
-                Search isn&apos;t working right now. Please try again in a moment.
-              </p>
-            )}
-            {search.status === "done" && search.results.length === 0 && (
-              <p className="text-[#66706B]">
-                No properties found. Try just the street name, or the street number and name.
-                Lived somewhere that isn&apos;t listed?{" "}
-                <Link
-                  href="/submit-review"
-                  className="font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
-                >
-                  Add it when you write your review
-                </Link>
-                .
-              </p>
-            )}
-            <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
-              {search.results.map((property) => (
-                <PropertyPreviewCard
-                  key={property.id}
-                  property={property}
-                  searchTerm={searchTerm}
-                />
-              ))}
-            </div>
-          </section>
+          // No results and search errors are explained right under the
+          // search box, so this only lists what was found.
+          (search.status === "loading" || search.results.length > 0) && (
+            <section className="space-y-4" aria-labelledby={SEARCH_RESULTS_ID}>
+              <h2 id={SEARCH_RESULTS_ID} className="scroll-mt-6 text-3xl font-bold tracking-tight text-[#294B3A]">
+                Search results
+              </h2>
+              {search.status === "loading" && search.results.length === 0 && (
+                <p className="text-[#66706B]">Searching...</p>
+              )}
+              <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
+                {search.results.map((property) => (
+                  <PropertyPreviewCard
+                    key={property.id}
+                    property={property}
+                    searchTerm={searchTerm}
+                  />
+                ))}
+              </div>
+            </section>
+          )
         ) : (
           <div className="space-y-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-10 lg:space-y-0">
             <section className="space-y-4" aria-labelledby="recent-reviews-heading">
               <h2 id="recent-reviews-heading" className="text-3xl font-bold tracking-tight text-[#294B3A]">
                 Recent reviews
               </h2>
-              {isLoading && recentReviews.length === 0 && (
+              {recentReviews.status === "loading" ? (
                 <p className="text-gray-500" role="status">Loading recent reviews...</p>
-              )}
-              {recentReviewsError ? (
-                <p className="text-gray-600" role="alert">
-                  Recent reviews are temporarily unavailable.
-                </p>
-              ) : recentReviews.length > 0 ? (
+              ) : recentReviews.status === "error" ? (
+                <LoadError
+                  message="Recent reviews couldn't be loaded. Check your connection and try again."
+                  onRetry={recentReviews.retry}
+                />
+              ) : recentReviews.items.length > 0 ? (
                 <div className="space-y-4">
-                  {recentReviews.map((review) => (
+                  {recentReviews.items.map((review) => (
                     <ReviewCard key={review.id} review={review} compact />
                   ))}
                 </div>
-              ) : !isLoading ? (
+              ) : (
                 <p className="text-gray-500">No approved reviews yet.</p>
-              ) : null}
+              )}
             </section>
 
             <section className="space-y-4" aria-labelledby="top-properties-heading">
               <h2 id="top-properties-heading" className="text-3xl font-bold tracking-tight text-[#294B3A]">
                 Most reviewed properties
               </h2>
-              {isLoading && topProperties.length === 0 && (
+              {topProperties.status === "loading" ? (
                 <p className="text-gray-500" role="status">Loading property rankings...</p>
-              )}
-              {topPropertiesError ? (
-                <p className="text-gray-600" role="alert">
-                  Property rankings are unavailable. The Discover ranking migration may need to be applied in Supabase.
-                </p>
-              ) : topProperties.length > 0 ? (
+              ) : topProperties.status === "error" ? (
+                <LoadError
+                  message="The most reviewed properties couldn't be loaded. Check your connection and try again."
+                  onRetry={topProperties.retry}
+                />
+              ) : topProperties.items.length > 0 ? (
                 <div className="space-y-4">
-                  {topProperties.map((property) => (
+                  {topProperties.items.map((property) => (
                     <PropertyPreviewCard
                       key={property.id}
                       property={property}
@@ -296,9 +209,9 @@ function DiscoverPage() {
                     />
                   ))}
                 </div>
-              ) : !isLoading ? (
+              ) : (
                 <p className="text-gray-500">No properties have approved reviews yet.</p>
-              ) : null}
+              )}
             </section>
           </div>
         )}
@@ -319,6 +232,89 @@ function DiscoverPage() {
       </div>
     </PageContainer>
   );
+}
+
+type SectionState<T> = {
+  status: "loading" | "done" | "error";
+  items: T[];
+  retry: () => void;
+};
+
+// Loads one Discover section. A failure (including a request that times
+// out) shows an error with "Try again" instead of loading forever.
+function useDiscoverSection<T>(load: () => Promise<T[]>): SectionState<T> {
+  const [attempt, setAttempt] = useState(0);
+  const [result, setResult] = useState<{
+    attempt: number;
+    items: T[];
+    failed: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    let isActive = true;
+    load().then(
+      (items) => {
+        if (isActive) {
+          setResult({ attempt, items, failed: false });
+        }
+      },
+      (error: unknown) => {
+        console.error("Failed to load a Discover section.", error);
+        if (isActive) {
+          setResult({ attempt, items: [], failed: true });
+        }
+      }
+    );
+    return () => {
+      isActive = false;
+    };
+  }, [load, attempt]);
+
+  const retry = useCallback(() => setAttempt((count) => count + 1), []);
+
+  if (result?.attempt !== attempt) {
+    return { status: "loading", items: [], retry };
+  }
+  return {
+    status: result.failed ? "error" : "done",
+    items: result.items,
+    retry,
+  };
+}
+
+async function loadRecentReviews(): Promise<Review[]> {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select(
+      "id, review_text, occupancy_duration, would_live_again, created_at, properties(name, slug), property_ratings(id, category, score), landlord_ratings(id, category, score)"
+    )
+    .eq("status", "approved")
+    .order("created_at", { ascending: false })
+    .limit(5);
+  if (error) {
+    throw new Error(`Recent reviews failed to load (${error.code}).`);
+  }
+  return ((data ?? []) as unknown as DiscoverReviewRow[]).map(mapDiscoverReview);
+}
+
+async function loadTopProperties(): Promise<PropertyListing[]> {
+  const { data, error } = await supabase
+    .from("discover_top_properties")
+    .select("id, slug, name, address, city, review_count, property_rating, landlord_rating")
+    .order("review_count", { ascending: false })
+    .order("name")
+    .limit(5);
+  if (error) {
+    throw new Error(`Most reviewed properties failed to load (${error.code}).`);
+  }
+  return (data ?? []).map((property) => ({
+    ...property,
+    address: property.address ?? "",
+    city: property.city ?? "",
+    reviewCount: Number(property.review_count),
+    propertyRating: parseRatingScore(property.property_rating),
+    landlordRating: parseRatingScore(property.landlord_rating),
+  }));
 }
 
 function mapDiscoverReview(row: DiscoverReviewRow): Review {
