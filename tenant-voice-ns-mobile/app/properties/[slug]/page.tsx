@@ -1,5 +1,7 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 
 import CategoryRatings, {
   type CategoryAverage,
@@ -18,6 +20,7 @@ import {
   overallScore,
   parseRatingScore,
 } from "@/lib/ratings";
+import { getPropertyBySlug } from "@/lib/server/property-lookup";
 import { supabase } from "@/lib/supabase";
 import { PropertyListing } from "@/types/property";
 import { Rating } from "@/types/rating";
@@ -48,6 +51,24 @@ type PropertyPageProps = {
   }>;
 };
 
+export async function generateMetadata({
+  params,
+}: PropertyPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const { data } = await getPropertyBySlug(slug);
+  if (!data) {
+    // Not found, or the lookup failed: the page itself explains which.
+    return { title: "Property" };
+  }
+  const location = [data.address, data.city].filter(Boolean).join(", ");
+  return {
+    title: data.name,
+    description: `Renter reviews and ratings for ${data.name}${
+      location && location !== data.name ? `, ${location}` : ""
+    }, from Nova Scotia tenants on Tenant Voice NS.`,
+  };
+}
+
 export default function PropertyPage({
   params,
   searchParams,
@@ -65,13 +86,10 @@ async function PropertyContent({
 }: PropertyPageProps) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const searchTerm = typeof query.q === "string" ? query.q : "";
-  const { data, error } = await supabase
-    .from("properties")
-    .select("id, slug, name, address, city")
-    .eq("slug", slug)
-    .maybeSingle();
+  const { data, error } = await getPropertyBySlug(slug);
 
   if (error) {
+    await waitForRealVisit();
     console.error("Failed to load property from Supabase.", error);
 
     return (
@@ -103,6 +121,7 @@ async function PropertyContent({
     .order("created_at", { ascending: false });
 
   if (reviewError) {
+    await waitForRealVisit();
     console.error("Failed to load reviews and ratings from Supabase.", reviewError);
   }
 
@@ -186,6 +205,17 @@ async function PropertyContent({
       </div>
     </PageContainer>
   );
+}
+
+// Next renders this page ahead of time (a prerender, or prefetching a
+// link) and stops that render partway through, which makes Supabase's
+// requests fail. Supabase reports that as an ordinary error, so without
+// this the page would log it and could save "couldn't be loaded" as the
+// prefetched page. Waiting for a real visit first means a stopped
+// prerender simply ends here, while a real visit carries on to show the
+// error and "Try again".
+async function waitForRealVisit() {
+  await connection();
 }
 
 function PropertyLoadingFallback() {

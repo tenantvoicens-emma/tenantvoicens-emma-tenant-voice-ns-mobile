@@ -6,11 +6,27 @@ import TopNavigation, {
   TopNavigationFallback,
 } from "@/components/navigation/TopNavigation";
 import { UnfinishedReviewDialogProvider } from "@/components/navigation/UnfinishedReviewDialog";
+import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
 
+const description =
+  "Honest, moderated reviews of rental buildings and landlords from Nova Scotia renters. Read what it's like to live there, or share your own experience anonymously.";
+
 export const metadata: Metadata = {
-  title: "Tenant Voice NS",
-  description: "Discover tenant experiences throughout Nova Scotia.",
+  metadataBase: new URL(siteUrl()),
+  title: {
+    default: "Tenant Voice NS: rental reviews by Nova Scotia renters",
+    template: "%s · Tenant Voice NS",
+  },
+  description,
+  applicationName: "Tenant Voice NS",
+  openGraph: {
+    type: "website",
+    siteName: "Tenant Voice NS",
+    locale: "en_CA",
+    title: "Tenant Voice NS",
+    description,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -42,10 +58,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </div>
               <div className="border-t border-[#DEDCD5]" />
             </header>
-            <div id="main-content" tabIndex={-1} className="outline-none">
+            <main id="main-content" tabIndex={-1} className="outline-none">
               {children}
-            </div>
-            <div className="mt-auto w-full px-5 pb-8 lg:px-10">
+            </main>
+            <footer className="mt-auto w-full px-5 pb-8 lg:px-10">
               <div className="border-t border-[#DEDCD5] pt-4">
                 <Suspense fallback={<TopNavigationFallback label="Footer navigation" />}>
                   <TopNavigation label="Footer navigation" />
@@ -62,7 +78,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   .
                 </p>
               </div>
-            </div>
+            </footer>
           </div>
         </UnfinishedReviewDialogProvider>
       </body>

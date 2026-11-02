@@ -60,7 +60,7 @@ function AverageGroup({
 }) {
   return (
     <div className="space-y-3 rounded-2xl bg-white/70 p-4">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-[#5B7A68]">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-[#547160]">
         {title}
       </h3>
 

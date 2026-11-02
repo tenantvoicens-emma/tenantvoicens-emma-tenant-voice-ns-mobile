@@ -4,7 +4,7 @@ type BadgeProps = {
 };
 
 const tones = {
-  green: "bg-[#C5E8C8] text-[#1C7A36]",
+  green: "bg-[#C5E8C8] text-[#1C5F31]",
   gray: "bg-[#DDE1DA] text-[#2B3A33]",
 };
 

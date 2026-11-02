@@ -36,7 +36,7 @@ export default function ReviewSubmitted({
   const shareUrl = `${window.location.origin}${path}`;
   const shareText = propertySlug
     ? `Renters are sharing what it's like to live at ${buildingName}. Read the reviews or add your own on Tenant Voice NS.`
-    : "Renters across Nova Scotia are reviewing their buildings. Read the reviews or add your own on Tenant Voice NS.";
+    : "Nova Scotia renters are reviewing their buildings. Read the reviews or add your own on Tenant Voice NS.";
 
   async function share() {
     setShareStatus("");

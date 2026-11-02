@@ -1,12 +1,18 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 
 import BackLink from "@/components/navigation/BackLink";
 import PageContainer from "@/components/ui/PageContainer";
 import AccountClient from "./AccountClient";
 
+export const metadata: Metadata = {
+  title: "Sign in",
+  robots: { index: false },
+};
+
 export default function AccountPage() {
   return (
-    <main>
+    <div>
       <PageContainer>
         <div className="mb-6">
           <BackLink fallback={{ url: "/", label: "Discover" }} />
@@ -21,6 +27,6 @@ export default function AccountPage() {
           <AccountClient />
         </Suspense>
       </PageContainer>
-    </main>
+    </div>
   );
 }

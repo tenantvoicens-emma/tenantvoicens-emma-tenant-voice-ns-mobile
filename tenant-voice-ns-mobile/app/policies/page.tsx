@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   FileText,
@@ -14,6 +15,15 @@ import {
 import BackLink from "@/components/navigation/BackLink";
 import IconTile from "@/components/ui/IconTile";
 import PageContainer from "@/components/ui/PageContainer";
+
+export const metadata: Metadata = {
+  title: "Policies and review guidelines",
+  description:
+    "How Tenant Voice NS moderates reviews, protects renters' privacy, calculates ratings and handles concerns from landlords.",
+};
+
+// Change this whenever the policies below change.
+const LAST_UPDATED = "November 2, 2026";
 
 const propertyRatings = [
   "Cleanliness",
@@ -36,13 +46,13 @@ const landlordRatings = [
 
 export default function PoliciesPage() {
   return (
-    <main>
+    <div>
       <PageContainer>
         <div className="space-y-6">
           <BackLink fallback={{ url: "/", label: "Discover" }} />
 
           <header className="space-y-3">
-            <p className="text-lg font-medium uppercase tracking-wide text-[#5B7A68]">
+            <p className="text-lg font-medium uppercase tracking-wide text-[#547160]">
               Policies and review guidelines
             </p>
             <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
@@ -53,8 +63,7 @@ export default function PoliciesPage() {
               renters and housing providers fairly.
             </p>
             <p className="text-sm text-[#66706B]">
-              Draft for review. These policies describe the current build and may
-              change before public launch.
+              Last updated {LAST_UPDATED}.
             </p>
           </header>
 
@@ -67,6 +76,11 @@ export default function PoliciesPage() {
               Tenant Voice NS helps Nova Scotia renters understand what it may be
               like to live in a property by sharing structured tenant experiences
               and information about property management.
+            </p>
+            <p className="text-gray-700">
+              Tenant Voice NS is an independent, volunteer-run project based in
+              Nova Scotia. It isn&apos;t affiliated with any landlord, property
+              manager, or government.
             </p>
             <p className="text-gray-700">
               Properties are the primary way to search. Property-condition ratings
@@ -144,10 +158,15 @@ export default function PoliciesPage() {
               privacy, safety, or legal requirements.
             </p>
             <p className="text-gray-700">
-              Rejected reviews are retained privately in the moderation area for
-              recordkeeping and possible future appeals. Rejected reviews and
-              their ratings are not displayed publicly. A formal appeal workflow
-              and an in-product report button are not available in this build yet.
+              Rejected reviews and their ratings are never shown publicly. They
+              are kept privately in the moderation area for 24 months after
+              they were rejected, for recordkeeping and appeals, and then
+              deleted automatically.
+            </p>
+            <p className="text-gray-700">
+              To appeal a moderation decision, or to report a published review,
+              email us (see Contact below) with the building&apos;s name and what
+              the review says.
             </p>
             <p className="text-gray-700">
               A landlord, property manager, or other affected person may contact
@@ -174,6 +193,20 @@ export default function PoliciesPage() {
               moderator can read pending submissions in the private moderation
               area. Do not submit information you would not want the moderator to
               see.
+            </p>
+            <p className="text-gray-700">
+              An account is optional. If you create one, we store your email
+              address and your password (in scrambled, hashed form) with our
+              database provider, Supabase. Your email is used only for signing
+              in and account messages such as password resets, and is never
+              shown publicly. Reviews you submit while signed in are privately
+              linked to your account.
+            </p>
+            <p className="text-gray-700">
+              You can delete your account at any time from the Account page.
+              That deletes your email address and password straight away. Your
+              published reviews stay on the site, still anonymous, but are no
+              longer linked to you.
             </p>
             <p className="text-gray-700">
               To limit spam, the server creates a keyed, one-way fingerprint from
@@ -225,7 +258,8 @@ export default function PoliciesPage() {
             <p className="text-gray-700">
               The rental buildings you can review come from the Halifax
               Regional Municipality&apos;s Residential Rental Registry, used with
-              credit under its open data licence. Only buildings with four or
+              credit under its open data licence, so for now the list covers the
+              Halifax region. Only buildings with four or
               more registered rental units are listed, so a review can&apos;t
               single out the one or two tenants of a house or duplex.
             </p>
@@ -241,8 +275,8 @@ export default function PoliciesPage() {
               Licence. Buildings without a name are listed by street address.
             </p>
             <p className="text-gray-700">
-              If your building isn&apos;t listed, you can add it when you write a
-              review. The moderator checks every added building, and it appears
+              If your building isn&apos;t listed, including anywhere else in
+              Nova Scotia, you can add it when you write a review. The moderator checks every added building, and it appears
               on the site only once a review for it is approved.
             </p>
           </section>
@@ -265,11 +299,11 @@ export default function PoliciesPage() {
           </section>
 
           <footer className="text-sm text-[#66706B]">
-            Tenant Voice NS · Policies are a working draft and are not legal
-            advice.
+            Tenant Voice NS · Last updated {LAST_UPDATED}. These policies may
+            change as the site grows; the date above shows the latest version.
           </footer>
         </div>
       </PageContainer>
-    </main>
+    </div>
   );
 }

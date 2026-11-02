@@ -95,11 +95,13 @@ export default function ReviewCard({
           <>
             <ReviewRatingGroup
               title="Property"
+              headingLevel={review.propertyName ? "h4" : "h3"}
               overall={review.propertyOverall ?? null}
               ratings={review.propertyRatings ?? []}
             />
             <ReviewRatingGroup
               title="Landlord"
+              headingLevel={review.propertyName ? "h4" : "h3"}
               overall={review.landlordOverall ?? null}
               ratings={review.landlordRatings ?? []}
             />
@@ -150,7 +152,7 @@ function ReviewDetail({
 }) {
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm ${detailTones[tone]}`}>
-      <span className="opacity-75">{label}</span>
+      <span>{label}</span>
       <span className="font-semibold">{value}</span>
     </span>
   );
@@ -158,10 +160,14 @@ function ReviewDetail({
 
 function ReviewRatingGroup({
   title,
+  headingLevel: Heading,
   overall,
   ratings,
 }: {
   title: string;
+  // One level below the card's own heading (the building name, when the
+  // card shows it), so screen-reader heading lists stay in order.
+  headingLevel: "h3" | "h4";
   overall: number | null;
   ratings: NonNullable<Review["propertyRatings"]>;
 }) {
@@ -171,9 +177,9 @@ function ReviewRatingGroup({
 
   return (
     <section className="space-y-1 border-t border-[#DEDCD5] pt-3">
-      <h4 className="text-sm font-semibold uppercase tracking-wide text-[#66706B]">
+      <Heading className="text-sm font-semibold uppercase tracking-wide text-[#66706B]">
         {title} ratings
-      </h4>
+      </Heading>
       <ul className="divide-y divide-[#EEECE6] text-sm">
         {overall !== null && (
           <li className="flex items-center justify-between gap-3 py-2">

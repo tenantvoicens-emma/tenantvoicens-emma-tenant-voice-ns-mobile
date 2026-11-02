@@ -238,6 +238,8 @@ function ReviewForm() {
     10
   );
   const hasBuilding = Boolean(selectedProperty) || isNewBuildingComplete(newBuilding);
+  const showSuggestions =
+    search.status !== "idle" && !isLoadingProperties && !propertyLoadError;
   const hasDetailedRatings = [...Object.entries(propertyRatings), ...Object.entries(landlordRatings)]
     .some(([category, value]) => category !== OVERALL_CATEGORY && value !== "");
   const showDetails = detailsOpen ?? hasDetailedRatings;
@@ -357,7 +359,7 @@ function ReviewForm() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-md px-5 py-6 md:max-w-none lg:max-w-2xl">
+    <div className="mx-auto w-full max-w-md px-5 py-6 md:max-w-none lg:max-w-2xl">
       <div className="space-y-6">
         <BackLink
           fallback={
@@ -432,7 +434,8 @@ function ReviewForm() {
                   }}
                   placeholder="Search by property name, address, or city"
                   aria-autocomplete="list"
-                  aria-controls="property-suggestions"
+                  // Only while the suggestions list is on the page.
+                  aria-controls={showSuggestions ? "property-suggestions" : undefined}
                   className={formField}
                 />
 
@@ -448,9 +451,7 @@ function ReviewForm() {
                   </p>
                 )}
 
-                {search.status !== "idle" &&
-                  !isLoadingProperties &&
-                  !propertyLoadError && (
+                {showSuggestions && (
                     <ul
                       id="property-suggestions"
                       className="overflow-hidden rounded-2xl border border-[#E6E3DA] bg-white"
@@ -749,7 +750,7 @@ function ReviewForm() {
           </form>
         )}
       </div>
-    </main>
+    </div>
   );
 }
 

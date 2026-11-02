@@ -4,7 +4,7 @@ import { Compass, PenLine } from "lucide-react";
 import PageContainer from "@/components/ui/PageContainer";
 
 export const metadata: Metadata = {
-  title: "Page not found · Tenant Voice NS",
+  title: "Page not found",
 };
 
 // Shown for addresses that don't exist, and for property pages whose
@@ -14,7 +14,7 @@ export default function NotFound() {
     <PageContainer>
       <div className="space-y-6 py-4">
         <div className="space-y-4">
-          <p className="text-lg font-medium uppercase tracking-wide text-[#5B7A68]">
+          <p className="text-lg font-medium uppercase tracking-wide text-[#547160]">
             Page not found
           </p>
           <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type KeyboardEvent } from "react";
 import StartReviewLink from "@/components/navigation/StartReviewLink";
 import LoadError from "@/components/ui/LoadError";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { getPropertyHref } from "@/lib/navigation";
 import { propertyLocation } from "@/lib/property-display";
 import { NO_SEARCH_RESULTS_HINT } from "@/lib/review-draft";
@@ -30,7 +31,10 @@ type ActiveOption = {
 };
 
 // A combobox: type to search, then use the up and down arrow keys to move
-// through the matching properties and Enter to open one.
+// through the matching properties and Enter to open one. On large screens
+// the full result cards sit right below the search box, so it's a plain
+// search box there, without the dropdown (which would list the same
+// properties twice).
 export default function SearchBar({
   value,
   onChange,
@@ -47,7 +51,9 @@ export default function SearchBar({
   const listId = `${id}-listbox`;
   const optionId = (index: number) => `${id}-option-${index}`;
   const hasText = value.trim() !== "";
-  const isOpen = hasText && suggestions.length > 0 && !isDismissed;
+  const showsDropdown = !useMediaQuery("(min-width: 1024px)");
+  const isOpen =
+    showsDropdown && hasText && suggestions.length > 0 && !isDismissed;
   const activeIndex =
     isOpen && active?.list === suggestions ? active.index : -1;
   const showNoResults = hasText && status === "done" && suggestions.length === 0;
@@ -61,7 +67,7 @@ export default function SearchBar({
 
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-      if (!hasText || suggestions.length === 0) {
+      if (!showsDropdown || !hasText || suggestions.length === 0) {
         return;
       }
       event.preventDefault();
@@ -97,12 +103,12 @@ export default function SearchBar({
       <input
         id={id}
         type="text"
-        role="combobox"
+        role={showsDropdown ? "combobox" : undefined}
         enterKeyHint="search"
         autoComplete="off"
-        aria-autocomplete="list"
-        aria-expanded={isOpen}
-        aria-controls={listId}
+        aria-autocomplete={showsDropdown ? "list" : undefined}
+        aria-expanded={showsDropdown ? isOpen : undefined}
+        aria-controls={showsDropdown ? listId : undefined}
         aria-activedescendant={activeIndex >= 0 ? optionId(activeIndex) : undefined}
         value={value}
         onChange={(event) => {
@@ -128,45 +134,47 @@ export default function SearchBar({
       {/* Always in the page (even when empty) so screen readers notice
           when the count changes. */}
       <p className="sr-only" role="status" aria-live="polite">
-        {resultsAnnouncement(hasText, status, suggestions.length)}
+        {resultsAnnouncement(hasText, status, suggestions.length, showsDropdown)}
       </p>
 
-      <ul
-        id={listId}
-        role="listbox"
-        aria-label="Matching properties"
-        hidden={!isOpen}
-        className="overflow-hidden rounded-3xl border border-[#E6E3DA] bg-white"
-      >
-        {isOpen &&
-          suggestions.map((property, index) => (
-            <li
-              key={property.id}
-              role="presentation"
-              className="border-b border-[#DEDCD5] last:border-b-0"
-            >
-              {/* Focus stays in the search box; the arrow keys move the
-                  highlight. Tapping or clicking still follows the link. */}
-              <Link
-                id={optionId(index)}
-                role="option"
-                aria-selected={index === activeIndex}
-                tabIndex={-1}
-                href={getPropertyHref(property.slug, value)}
-                className={`block p-4 hover:bg-[#EEF5EB] ${
-                  index === activeIndex
-                    ? "bg-[#EEF5EB] outline-2 -outline-offset-2 outline-[#08873A]"
-                    : ""
-                }`}
+      {showsDropdown && (
+        <ul
+          id={listId}
+          role="listbox"
+          aria-label="Matching properties"
+          hidden={!isOpen}
+          className="overflow-hidden rounded-3xl border border-[#E6E3DA] bg-white"
+        >
+          {isOpen &&
+            suggestions.map((property, index) => (
+              <li
+                key={property.id}
+                role="presentation"
+                className="border-b border-[#DEDCD5] last:border-b-0"
               >
-                <span className="block font-medium">{property.name}</span>
-                <span className="block text-sm text-gray-500">
-                  {propertyLocation(property, ", ")}
-                </span>
-              </Link>
-            </li>
-          ))}
-      </ul>
+                {/* Focus stays in the search box; the arrow keys move the
+                    highlight. Tapping or clicking still follows the link. */}
+                <Link
+                  id={optionId(index)}
+                  role="option"
+                  aria-selected={index === activeIndex}
+                  tabIndex={-1}
+                  href={getPropertyHref(property.slug, value)}
+                  className={`block p-4 hover:bg-[#EEF5EB] ${
+                    index === activeIndex
+                      ? "bg-[#EEF5EB] outline-2 -outline-offset-2 outline-[#08873A]"
+                      : ""
+                  }`}
+                >
+                  <span className="block font-medium">{property.name}</span>
+                  <span className="block text-sm text-gray-500">
+                    {propertyLocation(property, ", ")}
+                  </span>
+                </Link>
+              </li>
+            ))}
+        </ul>
+      )}
 
       {showNoResults && (
         <div className="space-y-2 rounded-3xl border border-[#E6E3DA] bg-white p-4 text-[#4A5A52]">
@@ -196,7 +204,8 @@ export default function SearchBar({
 function resultsAnnouncement(
   hasText: boolean,
   status: PropertySearch["status"],
-  count: number
+  count: number,
+  showsDropdown: boolean
 ) {
   if (!hasText || status !== "done") {
     return "";
@@ -205,5 +214,7 @@ function resultsAnnouncement(
     return "No properties match that search.";
   }
   const found = count === 1 ? "1 property found." : `${count} properties found.`;
-  return `${found} Use the up and down arrow keys to choose one.`;
+  return showsDropdown
+    ? `${found} Use the up and down arrow keys to choose one.`
+    : `${found} They're listed under Search results.`;
 }

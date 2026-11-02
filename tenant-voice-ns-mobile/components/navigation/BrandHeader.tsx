@@ -11,7 +11,7 @@ export default function BrandHeader() {
         <span className="block text-3xl font-bold leading-tight tracking-tight text-[#294B3A]">
           tenant voice
         </span>
-        <span className="block text-sm font-medium uppercase tracking-wide text-[#5B7A68]">
+        <span className="block text-sm font-medium uppercase tracking-wide text-[#547160]">
           Nova Scotia · Renters helping renters
         </span>
       </span>
