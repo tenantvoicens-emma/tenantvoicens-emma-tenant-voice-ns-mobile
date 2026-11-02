@@ -6,8 +6,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { Session } from "@supabase/supabase-js";
 
+import DeleteAccount from "@/components/account/DeleteAccount";
 import FormMessages from "@/components/ui/FormMessages";
 import SegmentedControl from "@/components/ui/SegmentedControl";
+import { isModeratorEmail } from "@/lib/moderator";
 import { supabase } from "@/lib/supabase";
 import {
   FLEXIBLE_TURNSTILE_STYLE,
@@ -17,7 +19,6 @@ import {
 type AccountMode = "sign-in" | "create-account" | "recover-password";
 
 const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-const adminEmail = "tenantvoicens@gmail.com";
 
 export default function AccountClient() {
   const searchParams = useSearchParams();
@@ -226,7 +227,7 @@ export default function AccountClient() {
   }
 
   if (session) {
-    const isAdmin = session.user.email?.toLowerCase() === adminEmail;
+    const isAdmin = isModeratorEmail(session.user.email);
     return (
       <section className="space-y-5">
         <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">Your account</h1>
@@ -251,6 +252,12 @@ export default function AccountClient() {
           >
             Sign out
           </button>
+          {!isAdmin && (
+            <DeleteAccount
+              session={session}
+              onDeleted={() => setMessage("Your account has been deleted.")}
+            />
+          )}
         </div>
         <FormMessages message={message} errorMessage={errorMessage} />
       </section>

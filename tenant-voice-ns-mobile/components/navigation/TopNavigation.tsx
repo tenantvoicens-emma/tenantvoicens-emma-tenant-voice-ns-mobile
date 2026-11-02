@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import StartReviewLink from "@/components/navigation/StartReviewLink";
+import { useAccountStatus } from "@/lib/use-account-status";
 
 type NavigationProps = {
   // Each copy needs its own label so screen readers can tell them apart.
@@ -16,7 +17,6 @@ export default function TopNavigation({
   const pathname = usePathname();
   const isOnReviewPage = pathname === "/submit-review";
   const isOnPoliciesPage = pathname === "/policies";
-  const isOnAccountPage = pathname === "/account";
 
   return (
     <nav aria-label={label} className="flex flex-wrap gap-2">
@@ -50,14 +50,52 @@ export default function TopNavigation({
         Policies
       </Link>
 
-      <Link
-        href="/account"
-        aria-current={isOnAccountPage ? "page" : undefined}
-        className={navigationPill(isOnAccountPage)}
-      >
-        Sign In
-      </Link>
+      <AccountLink pathname={pathname} />
     </nav>
+  );
+}
+
+// "Sign In" for visitors and "Account" once signed in. For the moderator
+// it's "Moderation" with the number of reviews waiting, and goes straight
+// to the moderation queue.
+function AccountLink({ pathname }: { pathname: string }) {
+  const { signedIn, isModerator, pendingCount } = useAccountStatus();
+
+  if (isModerator) {
+    const isCurrent = pathname === "/admin";
+    const waiting = pendingCount ?? 0;
+    return (
+      <Link
+        href="/admin"
+        aria-current={isCurrent ? "page" : undefined}
+        className={`${navigationPill(isCurrent)} inline-flex items-center gap-2`}
+      >
+        Moderation{" "}
+        {waiting > 0 && (
+          <span
+            className={`rounded-full px-2 text-base font-semibold ${
+              isCurrent ? "bg-white text-[#08873A]" : "bg-[#08873A] text-white"
+            }`}
+          >
+            {waiting}
+            <span className="sr-only">
+              {waiting === 1 ? " review waiting" : " reviews waiting"}
+            </span>
+          </span>
+        )}
+      </Link>
+    );
+  }
+
+  const isCurrent = pathname === "/account";
+  return (
+    <Link
+      href="/account"
+      aria-current={isCurrent ? "page" : undefined}
+      className={navigationPill(isCurrent)}
+    >
+      {signedIn ? "Account" : "Sign In"}
+    </Link>
   );
 }
 

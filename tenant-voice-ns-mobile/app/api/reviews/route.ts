@@ -1,6 +1,7 @@
 import { createHmac } from "node:crypto";
 import { isIP } from "node:net";
 import { createClient } from "@supabase/supabase-js";
+import { checkRequestOrigin } from "@/lib/server/request-origin";
 
 const propertyRatingCategories = new Set([
   "overall",
@@ -57,36 +58,11 @@ type ReviewRequest = {
 };
 
 export async function POST(request: Request) {
-  const origin = request.headers.get("origin");
-  const requestUrl = new URL(request.url);
-  const configuredOrigins = (process.env.APP_ALLOWED_ORIGINS ?? "")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
-  let requestOrigin: URL;
-  try {
-    requestOrigin = new URL(origin ?? "");
-  } catch {
+  const originCheck = checkRequestOrigin(request);
+  if (!originCheck.ok) {
     return Response.json({ error: "Invalid request origin." }, { status: 403 });
   }
-
-  const isAllowedOrigin = configuredOrigins.length > 0
-    ? configuredOrigins.includes(requestOrigin.origin)
-    : requestOrigin.origin === requestUrl.origin;
-
-  if (!isAllowedOrigin) {
-    return Response.json({ error: "Invalid request origin." }, { status: 403 });
-  }
-
-  const allowedHostnames = (
-    configuredOrigins.length > 0 ? configuredOrigins : [requestOrigin.origin]
-  ).flatMap((allowedOrigin) => {
-    try {
-      return [new URL(allowedOrigin).hostname.toLowerCase()];
-    } catch {
-      return [];
-    }
-  });
+  const { allowedHostnames } = originCheck;
 
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (contentLength > 20_000) {
@@ -343,10 +319,12 @@ function isNewProperty(value: unknown): value is NewPropertyInput {
   );
 }
 
+// Only headers that Vercel sets itself, overwriting anything the browser
+// sent. (cf-connecting-ip is not one of them on Vercel: a browser could
+// send a new made-up value with every request to dodge the rate limit.)
 function getClientIp(request: Request) {
   const forwardedFor = request.headers.get("x-forwarded-for");
   const candidates = [
-    request.headers.get("cf-connecting-ip"),
     request.headers.get("x-vercel-forwarded-for"),
     forwardedFor?.split(",")[0],
     request.headers.get("x-real-ip"),

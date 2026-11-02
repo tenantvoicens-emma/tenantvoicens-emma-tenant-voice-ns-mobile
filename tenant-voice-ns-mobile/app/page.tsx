@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { HeartHandshake } from "lucide-react";
 
 import BackLink from "@/components/navigation/BackLink";
+import StartReviewLink from "@/components/navigation/StartReviewLink";
 import PropertyPreviewCard from "@/components/profile/PropertyPreviewCard";
 import ReviewCard from "@/components/profile/ReviewCard";
 import Card from "@/components/ui/Card";
@@ -108,14 +109,16 @@ function DiscoverPage() {
         <div className="space-y-8 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-end lg:gap-10 lg:space-y-0">
           <div className="space-y-8">
             <div className="space-y-4">
-              <p className="text-lg font-medium uppercase tracking-wide text-[#5B7A68]">
+              <p className="text-lg font-medium uppercase tracking-wide text-[#547160]">
                 Your next home starts with knowledge
               </p>
               <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
                 Renting is personal. Your research should be, too.
               </h1>
               <p className="text-lg text-[#66706B]">
-                Explore renter experiences with properties across Nova Scotia.
+                Explore renter experiences across Nova Scotia. Our building list
+                starts with the Halifax region; renting somewhere else? Add your
+                building when you write a review.
               </p>
             </div>
 
@@ -184,7 +187,15 @@ function DiscoverPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500">No approved reviews yet.</p>
+                <div className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+                  <p className="text-lg text-[#4A5A52]">
+                    No reviews yet. Tenant Voice NS is just getting started, so
+                    yours could be one of the first.
+                  </p>
+                  <StartReviewLink className="inline-flex items-center justify-center rounded-full bg-[#08873A] px-6 py-3 text-lg font-medium text-white transition hover:brightness-95">
+                    Share your experience
+                  </StartReviewLink>
+                </div>
               )}
             </section>
 
@@ -210,7 +221,11 @@ function DiscoverPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500">No properties have approved reviews yet.</p>
+                <p className="rounded-3xl border border-[#E6E3DA] bg-white p-6 text-lg text-[#4A5A52]">
+                  Once renters start sharing, the buildings with the most
+                  reviews will show up here. In the meantime, search above to
+                  find yours.
+                </p>
               )}
             </section>
           </div>

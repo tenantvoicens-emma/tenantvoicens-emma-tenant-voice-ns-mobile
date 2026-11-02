@@ -13,9 +13,9 @@ import FormMessages from "@/components/ui/FormMessages";
 import PageContainer from "@/components/ui/PageContainer";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import { formatCategory, OVERALL_CATEGORY } from "@/lib/ratings";
+import { isModeratorEmail } from "@/lib/moderator";
 import { supabase } from "@/lib/supabase";
-
-const ADMIN_EMAIL = "tenantvoicens@gmail.com";
+import { refreshPendingCount } from "@/lib/use-account-status";
 
 type RatingRow = {
   id: number;
@@ -88,8 +88,7 @@ export default function AdminPage() {
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const isAdmin =
-    session?.user.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+  const isAdmin = isModeratorEmail(session?.user.email);
   const activeQueueKey = session?.access_token
     ? `${session.access_token}:${reviewStatus}`
     : null;
@@ -219,6 +218,7 @@ export default function AdminPage() {
         reviews.filter((review) => review.id !== action.reviewId)
       );
       setMessage(result.message);
+      refreshPendingCount();
     }
 
     setSavingReviewId(null);
@@ -252,7 +252,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main>
+    <div>
       <PageContainer width="wide">
         <div className="space-y-6">
           <BackLink fallback={{ url: "/", label: "Discover" }} />
@@ -457,7 +457,7 @@ export default function AdminPage() {
           onCancel={() => setPendingAction(null)}
         />
       </PageContainer>
-    </main>
+    </div>
   );
 }
 
@@ -470,7 +470,7 @@ function RatingList({
 }) {
   return (
     <section className="space-y-1 border-t border-[#EEECE6] pt-3">
-      <h4 className="text-sm font-semibold uppercase tracking-wide text-[#5B7A68]">
+      <h4 className="text-sm font-semibold uppercase tracking-wide text-[#547160]">
         {title}
       </h4>
       {ratings.length === 0 ? (
@@ -516,7 +516,7 @@ const statusLabels: Record<ReviewStatus, string> = {
 function ModerationHistory({ events }: { events: HistoryEvent[] | null }) {
   return (
     <section className="space-y-2 rounded-2xl bg-[#F6F6EE] p-4">
-      <h4 className="text-sm font-semibold uppercase tracking-wide text-[#5B7A68]">
+      <h4 className="text-sm font-semibold uppercase tracking-wide text-[#547160]">
         Moderation history
       </h4>
       {events === null ? (
@@ -562,7 +562,7 @@ function describeChange(event: HistoryEvent) {
 function ReviewDetail({ label, value }: { label: string; value: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F3F2EE] px-3 py-1 text-sm text-[#2F4F46]">
-      <span className="opacity-75">{label}</span>
+      <span>{label}</span>
       <span className="font-semibold">{value}</span>
     </span>
   );
