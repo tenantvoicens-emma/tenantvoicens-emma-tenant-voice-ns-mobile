@@ -11,8 +11,10 @@ import { propertyLocation } from "@/lib/property-display";
 import NewBuildingFields from "@/components/review/NewBuildingFields";
 import ReviewSubmitted from "@/components/review/ReviewSubmitted";
 import {
+  ADD_BUILDING_PARAM,
   hasUnsavedWork,
   isNewBuildingComplete,
+  NO_SEARCH_RESULTS_HINT,
   readDraft,
   writeDraft,
   type NewBuilding,
@@ -20,6 +22,10 @@ import {
 import { OVERALL_CATEGORY } from "@/lib/ratings";
 import { usePropertySearch } from "@/lib/use-property-search";
 import { supabase } from "@/lib/supabase";
+import {
+  FLEXIBLE_TURNSTILE_STYLE,
+  TURNSTILE_INCOMPLETE_MESSAGE,
+} from "@/lib/turnstile";
 import { PropertyListing } from "@/types/property";
 
 type RatingCategory = {
@@ -118,14 +124,18 @@ function ReviewForm() {
     // else is found by searching.
     async function loadProperties() {
       try {
-        const requestedSlug = new URLSearchParams(window.location.search).get(
-          "property"
-        );
+        const linkParams = new URLSearchParams(window.location.search);
+        const requestedSlug = linkParams.get("property");
+        // Set when the link came from "Add it" on a search with no results.
+        const addBuildingTerm = linkParams.get(ADD_BUILDING_PARAM);
         // A draft with nothing typed or rated (just a building picked) gives
         // way to the building in the link.
         const savedDraft = readDraft();
         const draft =
-          requestedSlug && !hasUnsavedWork(savedDraft) ? null : savedDraft;
+          (requestedSlug || addBuildingTerm !== null) &&
+          !hasUnsavedWork(savedDraft)
+            ? null
+            : savedDraft;
         const slugs = [requestedSlug, draft?.propertySlug].filter(
           (slug): slug is string => Boolean(slug)
         );
@@ -172,6 +182,9 @@ function ReviewForm() {
           } else if (requestedProperty) {
             setSelectedProperty(requestedProperty);
             setSearchTerm(requestedProperty.name);
+          } else if (addBuildingTerm !== null) {
+            setSearchTerm(addBuildingTerm);
+            setNewBuilding(newBuildingFromSearch(addBuildingTerm));
           }
           isDraftReady.current = true;
         }
@@ -237,14 +250,7 @@ function ReviewForm() {
       : "";
 
   function startNewBuilding() {
-    const typed = searchTerm.trim();
-    setNewBuilding({
-      // Keep what they searched for if it looks like a street address.
-      address: /^\d/.test(typed) ? typed : "",
-      city: "",
-      name: "",
-      hasFourOrMoreUnits: false,
-    });
+    setNewBuilding(newBuildingFromSearch(searchTerm));
     setSelectedProperty(null);
   }
 
@@ -260,7 +266,7 @@ function ReviewForm() {
     if (!turnstileToken) {
       setSubmissionStatus("error");
       setSubmissionError(
-        "The security check above isn’t finished yet. Please wait a moment, then press Submit again."
+        TURNSTILE_INCOMPLETE_MESSAGE
       );
       return;
     }
@@ -474,14 +480,20 @@ function ReviewForm() {
                           Searching...
                         </li>
                       ) : search.status === "error" ? (
-                        <li className="p-3 text-sm text-red-700" role="alert">
-                          Search isn&apos;t working right now. Please try again in a moment.
+                        <li className="space-y-2 p-3 text-sm text-red-700" role="alert">
+                          <p>Search isn&apos;t working right now. Please try again in a moment.</p>
+                          <button
+                            type="button"
+                            onClick={search.retry}
+                            className="font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
+                          >
+                            Try again
+                          </button>
                         </li>
                       ) : (
                         <li className="space-y-2 p-3 text-sm text-gray-600">
                           <p>
-                            No matching property. Try just the street name, or the
-                            street number and name.
+                            No properties match that search. {NO_SEARCH_RESULTS_HINT}
                           </p>
                           <button
                             type="button"
@@ -696,7 +708,8 @@ function ReviewForm() {
                 <Turnstile
                   key={turnstileResetKey}
                   siteKey={turnstileSiteKey}
-                  options={{ action: "review_submit", theme: "light" }}
+                  options={{ action: "review_submit", theme: "light", size: "flexible" }}
+                  style={FLEXIBLE_TURNSTILE_STYLE}
                   onSuccess={(token) => {
                     setTurnstileToken(token);
                     setTurnstileError(false);
@@ -907,4 +920,16 @@ function getWouldLiveAgainLabel(value: string) {
   };
 
   return labels[value] ?? "Not selected";
+}
+
+// The add-a-building fields, starting from what the renter searched for:
+// kept as the address if it looks like a street address.
+function newBuildingFromSearch(searchTerm: string): NewBuilding {
+  const typed = searchTerm.trim();
+  return {
+    address: /^\d/.test(typed) ? typed : "",
+    city: "",
+    name: "",
+    hasFourOrMoreUnits: false,
+  };
 }

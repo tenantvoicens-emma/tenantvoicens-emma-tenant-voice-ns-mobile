@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { PropertyListing } from "@/types/property";
 
@@ -8,12 +8,15 @@ export type PropertySearch = {
   results: PropertyListing[];
   // "idle" when nothing is typed.
   status: "idle" | "loading" | "done" | "error";
+  // Runs the same search again, e.g. after it failed.
+  retry: () => void;
 };
 
 const SEARCH_DELAY_MS = 200;
 
 type SearchOutcome = {
   term: string;
+  attempt: number;
   results: PropertyListing[];
   failed: boolean;
 };
@@ -23,6 +26,8 @@ type SearchOutcome = {
 export function usePropertySearch(term: string, limit = 20): PropertySearch {
   const query = term.trim();
   const [outcome, setOutcome] = useState<SearchOutcome | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const retry = useCallback(() => setAttempt((count) => count + 1), []);
 
   useEffect(() => {
     if (!query) {
@@ -31,10 +36,17 @@ export function usePropertySearch(term: string, limit = 20): PropertySearch {
 
     let isCurrent = true;
     const timeoutId = window.setTimeout(async () => {
-      const { data, error } = await supabase.rpc("search_properties", {
-        p_query: query,
-        p_limit: limit,
-      });
+      let data: unknown[] | null = null;
+      let error: { code?: string } | null = null;
+      try {
+        ({ data, error } = await supabase.rpc("search_properties", {
+          p_query: query,
+          p_limit: limit,
+        }));
+      } catch (thrown) {
+        console.error("Property search failed.", thrown);
+        error = {};
+      }
       if (!isCurrent) {
         return;
       }
@@ -43,6 +55,7 @@ export function usePropertySearch(term: string, limit = 20): PropertySearch {
       }
       setOutcome({
         term: query,
+        attempt,
         failed: Boolean(error),
         results: ((data ?? []) as PropertyListing[]).map((property) => ({
           ...property,
@@ -56,18 +69,19 @@ export function usePropertySearch(term: string, limit = 20): PropertySearch {
       isCurrent = false;
       window.clearTimeout(timeoutId);
     };
-  }, [query, limit]);
+  }, [query, limit, attempt]);
 
   if (!query) {
-    return { results: [], status: "idle" };
+    return { results: [], status: "idle", retry };
   }
   // Until the answer for exactly this text arrives, keep showing the
   // previous results so the list doesn't flicker while typing.
-  if (outcome?.term !== query) {
-    return { results: outcome?.results ?? [], status: "loading" };
+  if (outcome?.term !== query || outcome.attempt !== attempt) {
+    return { results: outcome?.results ?? [], status: "loading", retry };
   }
   return {
     results: outcome.results,
     status: outcome.failed ? "error" : "done",
+    retry,
   };
 }

@@ -11,6 +11,7 @@ import PropertySnapshot from "@/components/profile/PropertySnapshot";
 import ReviewCard from "@/components/profile/ReviewCard";
 import ReviewsSection from "@/components/profile/ReviewsSection";
 import PageContainer from "@/components/ui/PageContainer";
+import RefreshLoadError from "@/components/ui/RefreshLoadError";
 import {
   detailedRatings,
   formatCategory,
@@ -75,11 +76,7 @@ async function PropertyContent({
 
     return (
       <PageContainer>
-        <div className="space-y-6">
-          <p className="text-center text-gray-600" role="alert">
-            Property details could not be loaded. Please try again later.
-          </p>
-        </div>
+        <RefreshLoadError message="This property couldn't be loaded. Check your connection and try again." />
       </PageContainer>
     );
   }
@@ -173,9 +170,7 @@ async function PropertyContent({
         <div className="space-y-8">
           <ReviewsSection reviewCount={reviews.length} />
           {reviewError ? (
-            <p className="text-gray-600" role="alert">
-              Reviews could not be loaded. Please try again later.
-            </p>
+            <RefreshLoadError message="Reviews for this property couldn't be loaded. Check your connection and try again." />
           ) : reviews.length === 0 ? (
             <p className="text-gray-600">No reviews yet.</p>
           ) : (

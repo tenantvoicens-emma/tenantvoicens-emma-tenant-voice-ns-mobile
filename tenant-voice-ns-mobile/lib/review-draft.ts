@@ -76,3 +76,29 @@ export function hasUnsavedWork(draft: ReviewDraft | null): draft is ReviewDraft 
     hasRating(draft.landlordRatings)
   );
 }
+
+// The query parameter that opens the review form ready to add a building
+// that isn't listed. Its value is what the renter searched for.
+export const ADD_BUILDING_PARAM = "add-building";
+
+// The review form's address: for a specific property, ready to add a new
+// building, or blank.
+export function reviewFormHref({
+  propertySlug,
+  addBuilding,
+}: {
+  propertySlug?: string | null;
+  addBuilding?: { searchTerm: string };
+} = {}) {
+  if (propertySlug) {
+    return `/submit-review?property=${encodeURIComponent(propertySlug)}`;
+  }
+  if (addBuilding) {
+    return `/submit-review?${ADD_BUILDING_PARAM}=${encodeURIComponent(addBuilding.searchTerm.trim())}`;
+  }
+  return "/submit-review";
+}
+
+// Shown wherever a property search comes back empty.
+export const NO_SEARCH_RESULTS_HINT =
+  "Try just the street name, or the street number and name.";
