@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import BrandHeader from "@/components/navigation/BrandHeader";
 import TopNavigation, {
   TopNavigationFallback,
@@ -19,6 +19,12 @@ export const metadata: Metadata = {
   },
   description,
   applicationName: "Tenant Voice NS",
+  // Added to an iPhone home screen, it opens full screen like an app.
+  appleWebApp: {
+    capable: true,
+    title: "Tenant Voice",
+    statusBarStyle: "default",
+  },
   openGraph: {
     type: "website",
     siteName: "Tenant Voice NS",
@@ -26,6 +32,10 @@ export const metadata: Metadata = {
     title: "Tenant Voice NS",
     description,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#FFFFFF",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -72,6 +82,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                     OpenStreetMap contributors
                   </a>
                   .
+                </p>
+                {/* Hidden once it's opened from the home screen. */}
+                <p className="mt-3 text-sm leading-relaxed text-[#66706B] [@media(display-mode:standalone)]:hidden">
+                  <span className="font-medium text-[#4A5A52]">Tip:</span> add
+                  Tenant Voice NS to your home screen to open it like an app.
+                  On iPhone, tap Share, then Add to Home Screen. On Android,
+                  open the browser menu (⋮), then Add to Home screen or Install
+                  app.
                 </p>
               </div>
             </footer>
