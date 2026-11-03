@@ -2,6 +2,11 @@
 
 import { Turnstile } from "@marsidev/react-turnstile";
 import { useEffect, useState, type FormEvent } from "react";
+import {
+  landlordRatingGuide,
+  propertyRatingGuide,
+  type RatingGuideEntry,
+} from "@/lib/rating-guide";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Star } from "lucide-react";
@@ -27,31 +32,12 @@ import {
 } from "@/lib/turnstile";
 import { PropertyListing } from "@/types/property";
 
-type RatingCategory = {
-  value: string;
-  label: string;
-};
+type RatingCategory = RatingGuideEntry;
 
 type SubmissionStatus = "success" | "error" | null;
 
-const propertyRatingCategories: RatingCategory[] = [
-  { value: "cleanliness", label: "Cleanliness" },
-  { value: "safety", label: "Safety" },
-  { value: "common_areas", label: "Common areas" },
-  { value: "noise_levels", label: "Noise levels" },
-  { value: "parking", label: "Parking" },
-  { value: "amenities", label: "Amenities" },
-  { value: "building_condition", label: "Building condition" },
-  { value: "pet_friendliness", label: "Pet friendliness" },
-];
-
-const landlordRatingCategories: RatingCategory[] = [
-  { value: "communication", label: "Communication" },
-  { value: "repair_speed", label: "Repair speed" },
-  { value: "professionalism", label: "Professionalism" },
-  { value: "lease_transparency", label: "Lease transparency" },
-  { value: "move_in_experience", label: "Move-in experience" },
-];
+const propertyRatingCategories: RatingCategory[] = propertyRatingGuide;
+const landlordRatingCategories: RatingCategory[] = landlordRatingGuide;
 
 const starRatings = [1, 2, 3, 4, 5] as const;
 const ratingLabels: Record<number, string> = {
@@ -771,7 +757,8 @@ function RatingGroup({
     <fieldset className={formCard}>
       <legend className="float-left w-full text-xl font-bold text-[#294B3A]">{title}</legend>
       <p id={`${idPrefix}-scale`} className="clear-both text-sm text-[#66706B]">
-        {description} Scale: 1 is poor; 5 is excellent.
+        {description} 5 is always the best for a renter, so 5 for noise
+        means quiet.
       </p>
 
       <div className="space-y-3">
@@ -780,6 +767,7 @@ function RatingGroup({
             key={category.value}
             name={`${idPrefix}-${category.value}`}
             label={category.label}
+            hint={`5: ${category.high} · 1: ${category.low}`}
             value={values[category.value] ?? ""}
             onChange={(value) => onChange(category.value, value)}
             describedBy={`${idPrefix}-scale`}
@@ -796,6 +784,8 @@ type StarRatingFieldProps = {
   value: string;
   onChange: (value: string) => void;
   describedBy: string;
+  // What a 5 and a 1 mean for this category.
+  hint?: string;
   emphasis?: boolean;
 };
 
@@ -807,9 +797,12 @@ function StarRatingField({
   value,
   onChange,
   describedBy,
+  hint,
   emphasis = false,
 }: StarRatingFieldProps) {
   const selectedScore = Number(value) || 0;
+  const hintId = `${name}-hint`;
+  const descriptions = hint ? `${hintId} ${describedBy}` : describedBy;
 
   return (
     <fieldset className="space-y-2">
@@ -822,6 +815,11 @@ function StarRatingField({
       >
         {label}
       </legend>
+      {hint && (
+        <p id={hintId} className="text-sm text-[#66706B]">
+          {hint}
+        </p>
+      )}
       <div className="grid grid-cols-5 gap-2">
         {starRatings.map((score) => (
           <label
@@ -834,7 +832,7 @@ function StarRatingField({
               name={name}
               value={score}
               checked={value === String(score)}
-              aria-describedby={describedBy}
+              aria-describedby={descriptions}
               onChange={() => onChange(String(score))}
               className="peer sr-only"
             />
@@ -860,7 +858,7 @@ function StarRatingField({
           name={name}
           value="na"
           checked={value === "na"}
-          aria-describedby={describedBy}
+          aria-describedby={descriptions}
           onChange={() => onChange("na")}
           className="peer sr-only"
         />

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ChartColumn } from "lucide-react";
 import Card from "@/components/ui/Card";
 import { formatRatingScore } from "@/lib/format-rating";
@@ -40,6 +41,15 @@ export default function CategoryRatings({
                 : reviewCount === 1
                   ? "Scores from the one approved review so far. N/A answers aren't counted."
                   : `Averaged across all ${reviewCount} approved reviews. N/A answers aren't counted.`}
+            </p>
+            <p className="text-sm text-[#4A5A52]">
+              5 is always best for renters, so 5 for noise means quiet.{" "}
+              <Link
+                href="/policies#how-ratings-work"
+                className="font-medium text-[#2F4F46] underline underline-offset-4"
+              >
+                What each rating means
+              </Link>
             </p>
           </header>
 

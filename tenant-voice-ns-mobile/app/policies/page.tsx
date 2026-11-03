@@ -13,6 +13,11 @@ import {
 } from "lucide-react";
 
 import IconTile from "@/components/ui/IconTile";
+import {
+  landlordRatingGuide,
+  propertyRatingGuide,
+  type RatingGuideEntry,
+} from "@/lib/rating-guide";
 import PageContainer from "@/components/ui/PageContainer";
 
 export const metadata: Metadata = {
@@ -23,25 +28,6 @@ export const metadata: Metadata = {
 
 // Change this whenever the policies below change.
 const LAST_UPDATED = "November 3, 2026";
-
-const propertyRatings = [
-  "Cleanliness",
-  "Safety",
-  "Common areas",
-  "Noise levels",
-  "Parking",
-  "Amenities",
-  "Building condition",
-  "Pet friendliness",
-];
-
-const landlordRatings = [
-  "Communication",
-  "Repair speed",
-  "Professionalism",
-  "Lease transparency",
-  "Move-in experience",
-];
 
 export default function PoliciesPage() {
   return (
@@ -109,7 +95,7 @@ export default function PoliciesPage() {
             </p>
           </section>
 
-          <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+          <section id="how-ratings-work" className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
             <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
               <IconTile icon={Star} />
               How ratings work
@@ -127,14 +113,14 @@ export default function PoliciesPage() {
               skipped categories are left out of the score, not counted as
               zero.
             </p>
+            <p className="text-gray-700">
+              Every rating runs from 1 to 5, and 5 is always the best for a
+              renter. So 5 for noise levels means quiet, not noisy.
+            </p>
             <h3 className="font-semibold text-[#294B3A]">Detailed property ratings</h3>
-            <ul className="list-disc space-y-1 pl-6 text-gray-700">
-              {propertyRatings.map((rating) => <li key={rating}>{rating}</li>)}
-            </ul>
+            <RatingGuideList entries={propertyRatingGuide} />
             <h3 className="font-semibold text-[#294B3A]">Detailed landlord ratings</h3>
-            <ul className="list-disc space-y-1 pl-6 text-gray-700">
-              {landlordRatings.map((rating) => <li key={rating}>{rating}</li>)}
-            </ul>
+            <RatingGuideList entries={landlordRatingGuide} />
             <p className="text-gray-700">
               Summary scores use approved reviews with numeric ratings. Each
               review contributes its average numeric score for that rating group;
@@ -302,5 +288,18 @@ export default function PoliciesPage() {
         </div>
       </PageContainer>
     </div>
+  );
+}
+
+function RatingGuideList({ entries }: { entries: RatingGuideEntry[] }) {
+  return (
+    <ul className="list-disc space-y-1 pl-6 text-gray-700">
+      {entries.map((entry) => (
+        <li key={entry.value}>
+          <span className="font-medium text-gray-800">{entry.label}:</span>{" "}
+          5 means {entry.high}; 1 means {entry.low}.
+        </li>
+      ))}
+    </ul>
   );
 }
