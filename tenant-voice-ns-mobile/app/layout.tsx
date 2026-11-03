@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import BrandHeader from "@/components/navigation/BrandHeader";
-import HistoryTracker from "@/components/navigation/HistoryTracker";
 import TopNavigation, {
   TopNavigationFallback,
 } from "@/components/navigation/TopNavigation";
@@ -39,9 +38,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to main content
         </a>
-        <Suspense fallback={null}>
-          <HistoryTracker />
-        </Suspense>
         {/* One shared "unfinished review" dialog for every link that
             starts a new review. */}
         <UnfinishedReviewDialogProvider>

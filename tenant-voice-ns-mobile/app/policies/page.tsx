@@ -12,7 +12,6 @@ import {
   UserCheck,
 } from "lucide-react";
 
-import BackLink from "@/components/navigation/BackLink";
 import IconTile from "@/components/ui/IconTile";
 import PageContainer from "@/components/ui/PageContainer";
 
@@ -49,8 +48,6 @@ export default function PoliciesPage() {
     <div>
       <PageContainer>
         <div className="space-y-6">
-          <BackLink fallback={{ url: "/", label: "Discover" }} />
-
           <header className="space-y-3">
             <p className="text-lg font-medium uppercase tracking-wide text-[#547160]">
               Policies and review guidelines

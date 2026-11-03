@@ -13,7 +13,6 @@ type NavigationProps = {
 export default function TopNavigation({
   label = "Main navigation",
 }: NavigationProps) {
-  // Pills always open a page fresh; "Back to ..." links restore state.
   const pathname = usePathname();
   const isOnReviewPage = pathname === "/submit-review";
   const isOnPoliciesPage = pathname === "/policies";

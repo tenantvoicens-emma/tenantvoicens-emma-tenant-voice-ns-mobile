@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { HeartHandshake } from "lucide-react";
 
-import BackLink from "@/components/navigation/BackLink";
 import StartReviewLink from "@/components/navigation/StartReviewLink";
 import PropertyPreviewCard from "@/components/profile/PropertyPreviewCard";
 import ReviewCard from "@/components/profile/ReviewCard";
@@ -102,8 +101,6 @@ function DiscoverPage() {
   return (
     <PageContainer width="wide">
       <div className="space-y-8">
-        <BackLink />
-
         {/* Side by side on large screens: the welcome and search on the
             left, the trust card on the right. */}
         <div className="space-y-8 lg:grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-end lg:gap-10 lg:space-y-0">

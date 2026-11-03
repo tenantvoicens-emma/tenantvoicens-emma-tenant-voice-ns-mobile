@@ -8,7 +8,6 @@ import ModerationDialog, {
   type ModerationAction,
   type ModerationActionKind,
 } from "@/components/admin/ModerationDialog";
-import BackLink from "@/components/navigation/BackLink";
 import FormMessages from "@/components/ui/FormMessages";
 import PageContainer from "@/components/ui/PageContainer";
 import SegmentedControl from "@/components/ui/SegmentedControl";
@@ -255,7 +254,6 @@ export default function AdminPage() {
     <div>
       <PageContainer width="wide">
         <div className="space-y-6">
-          <BackLink fallback={{ url: "/", label: "Discover" }} />
           <header className="space-y-2">
             <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
               Review moderation

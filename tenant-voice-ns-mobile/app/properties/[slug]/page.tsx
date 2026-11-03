@@ -46,9 +46,6 @@ type PropertyPageProps = {
   params: Promise<{
     slug: string;
   }>;
-  searchParams: Promise<{
-    q?: string;
-  }>;
 };
 
 export async function generateMetadata({
@@ -69,23 +66,16 @@ export async function generateMetadata({
   };
 }
 
-export default function PropertyPage({
-  params,
-  searchParams,
-}: PropertyPageProps) {
+export default function PropertyPage({ params }: PropertyPageProps) {
   return (
     <Suspense fallback={<PropertyLoadingFallback />}>
-      <PropertyContent params={params} searchParams={searchParams} />
+      <PropertyContent params={params} />
     </Suspense>
   );
 }
 
-async function PropertyContent({
-  params,
-  searchParams,
-}: PropertyPageProps) {
-  const [{ slug }, query] = await Promise.all([params, searchParams]);
-  const searchTerm = typeof query.q === "string" ? query.q : "";
+async function PropertyContent({ params }: PropertyPageProps) {
+  const { slug } = await params;
   const { data, error } = await getPropertyBySlug(slug);
 
   if (error) {
@@ -164,10 +154,6 @@ async function PropertyContent({
         <div className="space-y-8">
           <PropertyHeader
             property={property}
-            backFallback={{
-              url: discoverHref(searchTerm),
-              label: searchTerm.trim() ? "search results" : "Discover",
-            }}
             reviewCount={reviews.length}
           />
           <PropertySnapshot
@@ -228,12 +214,6 @@ function PropertyLoadingFallback() {
       </div>
     </PageContainer>
   );
-}
-
-function discoverHref(searchTerm: string) {
-  return searchTerm.trim()
-    ? `/?q=${encodeURIComponent(searchTerm.trim())}`
-    : "/";
 }
 
 function formatOccupancyDuration(value: string | null) {
