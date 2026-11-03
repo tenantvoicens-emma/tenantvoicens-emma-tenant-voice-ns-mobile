@@ -11,6 +11,7 @@ import ModerationDialog, {
 import FormMessages from "@/components/ui/FormMessages";
 import PageContainer from "@/components/ui/PageContainer";
 import SegmentedControl from "@/components/ui/SegmentedControl";
+import ModerationChecklist from "@/components/admin/ModerationChecklist";
 import { formatCategory, OVERALL_CATEGORY } from "@/lib/ratings";
 import { isModeratorEmail } from "@/lib/moderator";
 import { supabase } from "@/lib/supabase";
@@ -320,6 +321,8 @@ export default function AdminPage() {
                   }}
                 />
               </div>
+
+              <ModerationChecklist />
 
               <h2 className="text-3xl font-bold tracking-tight text-[#294B3A]">
                 {capitalize(reviewStatus)} reviews ({reviews.length})
