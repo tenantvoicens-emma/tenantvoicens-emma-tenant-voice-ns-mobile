@@ -4,7 +4,7 @@ import { Turnstile } from "@marsidev/react-turnstile";
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import type { Session } from "@supabase/supabase-js";
+import { AuthError, type Session } from "@supabase/supabase-js";
 
 import DeleteAccount from "@/components/account/DeleteAccount";
 import FormMessages from "@/components/ui/FormMessages";
@@ -164,8 +164,15 @@ export default function AccountClient() {
       }
     } catch (error) {
       console.error("Account request failed.", error);
+      // Supabase allows one email per address per minute, and a few an hour
+      // overall; say so rather than looking broken.
+      const isEmailRateLimited =
+        error instanceof AuthError &&
+        (error.code === "over_email_send_rate_limit" || error.status === 429);
       setErrorMessage(
-        mode === "sign-in"
+        isEmailRateLimited && mode !== "sign-in"
+          ? "An email was sent very recently. Please wait a minute, check your inbox and spam folder, then try again if it hasn't arrived."
+          : mode === "sign-in"
           ? "Could not sign in. Check your email and password, then try again."
           : mode === "create-account"
             ? "Could not create the account. Check the details and try again."
