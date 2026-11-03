@@ -186,7 +186,7 @@ export default function SearchBar({
               className="font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
             >
               Add it
-            </StartReviewLink>
+            </StartReviewLink>.
           </p>
         </div>
       )}

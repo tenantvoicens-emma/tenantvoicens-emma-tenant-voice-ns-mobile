@@ -497,7 +497,7 @@ function ReviewForm() {
                         onClick={startNewBuilding}
                         className="text-sm font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
                       >
-                        Can&apos;t find your building? Add it
+                        Can&apos;t find your building? Add it.
                       </button>
                     )}
                   </>
