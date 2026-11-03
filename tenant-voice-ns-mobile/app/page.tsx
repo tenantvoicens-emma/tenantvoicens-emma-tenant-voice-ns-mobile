@@ -168,9 +168,12 @@ function DiscoverPage() {
         ) : (
           <div className="space-y-8 lg:grid lg:grid-cols-2 lg:items-start lg:gap-10 lg:space-y-0">
             <section className="space-y-4" aria-labelledby="recent-reviews-heading">
-              <h2 id="recent-reviews-heading" className="text-3xl font-bold tracking-tight text-[#294B3A]">
-                Recent reviews
-              </h2>
+              <div className="space-y-1">
+                <h2 id="recent-reviews-heading" className="text-3xl font-bold tracking-tight text-[#294B3A]">
+                  Recent reviews
+                </h2>
+                <ReviewCountInvite />
+              </div>
               {recentReviews.status === "loading" ? (
                 <p className="text-gray-500" role="status">Loading recent reviews...</p>
               ) : recentReviews.status === "error" ? (
@@ -293,6 +296,48 @@ function useDiscoverSection<T>(load: () => Promise<T[]>): SectionState<T> {
     items: result.items,
     retry,
   };
+}
+
+// "27 reviews from Nova Scotia renters so far. Add yours." Counts approved
+// reviews live, so it never needs updating. Shows nothing until it loads,
+// if it fails, or before the first review (the empty state covers that).
+function ReviewCountInvite() {
+  const [count, setCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let isActive = true;
+    void supabase
+      .from("reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "approved")
+      .then(({ count: approvedCount, error }) => {
+        if (error) {
+          console.error("Could not count reviews.", error.code);
+          return;
+        }
+        if (isActive) {
+          setCount(approvedCount ?? null);
+        }
+      });
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  if (!count) {
+    return null;
+  }
+
+  return (
+    <p className="text-[#4A5A52]">
+      {count.toLocaleString("en-CA")} {count === 1 ? "review" : "reviews"} from
+      Nova Scotia renters so far.{" "}
+      <StartReviewLink className="font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4">
+        Add yours
+      </StartReviewLink>
+      .
+    </p>
+  );
 }
 
 async function loadRecentReviews(): Promise<Review[]> {
