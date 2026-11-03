@@ -200,7 +200,7 @@ OSM names matched: 340 by address, 57 by location
   name [address] 'Fairfax Ridge' -> 72 Fairfax Drive, Halifax
   name [address] 'Fairfax Suites' -> 76 Fairfax Drive, Halifax
   name [nearby] "Gate Keeper's Motorcycle Club" -> 2681 Fern Lane, Halifax
-  name [address] '46 Friesian' -> 46 Friesian Court, Halifax
+  name [override] 'Friesian Place II' -> 46 Friesian Court, Halifax
   name [override] 'Friesian Place I' -> 49 Friesian Court, Halifax
   name [address] 'Domvista Apartments' -> 299 Gary Martin Drive, Halifax
   name [address] 'The Berkeley' -> 2633 Gladstone Street, Halifax
