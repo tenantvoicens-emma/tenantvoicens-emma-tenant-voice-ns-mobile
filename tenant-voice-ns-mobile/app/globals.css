@@ -18,6 +18,16 @@ body {
     Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
+/* Tailwind v4 no longer gives buttons a pointer cursor; restore it so
+   button-styled links like "Can't find your building? Add it" look
+   clickable. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+}
+
 /* A clear, thick outline on whatever has keyboard focus, so people who
    navigate with a keyboard can always see where they are. */
 :focus-visible {
