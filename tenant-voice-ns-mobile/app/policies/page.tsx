@@ -194,11 +194,19 @@ export default function PoliciesPage() {
             </p>
             <p className="text-gray-700">
               An account is optional. If you create one, we store your email
-              address and your password (in scrambled, hashed form) with our
-              database provider, Supabase. Your email is used only for signing
-              in and account messages such as password resets, and is never
-              shown publicly. Reviews you submit while signed in are privately
-              linked to your account.
+              address and your password with our database provider, Supabase.
+              Your password is kept only as a one-way hash, so no one, including
+              us, can see it. Your email is used only for signing in and account
+              messages such as password resets, and is never shown publicly.
+              Stored data is encrypted by our providers, and every connection
+              to the site uses HTTPS.
+            </p>
+            <p className="text-gray-700">
+              Reviews you submit while signed in are privately linked to your
+              account. That link is never shown publicly or to other visitors,
+              but it is stored. If you&apos;d rather there be no connection at
+              all between your email address and a review, submit it without
+              signing in.
             </p>
             <p className="text-gray-700">
               You can delete your account at any time from the Account page.
