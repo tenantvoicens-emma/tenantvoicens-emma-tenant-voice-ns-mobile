@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 // Change this whenever the policies below change.
-const LAST_UPDATED = "November 2, 2026";
+const LAST_UPDATED = "November 3, 2026";
 
 const propertyRatings = [
   "Cleanliness",
@@ -286,10 +286,10 @@ export default function PoliciesPage() {
             <p className="text-gray-700">
               Questions or content concerns can be sent to{" "}
               <Link
-                href="mailto:tenantvoicens@gmail.com"
+                href="mailto:hello@tenantvoicens.ca"
                 className="font-medium text-[#2F4F46] underline"
               >
-                tenantvoicens@gmail.com
+                hello@tenantvoicens.ca
               </Link>
               . Please do not include passwords, sign-in links, or other secrets.
             </p>
