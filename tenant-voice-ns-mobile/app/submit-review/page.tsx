@@ -1,12 +1,11 @@
 "use client";
 
 import { Turnstile } from "@marsidev/react-turnstile";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Star } from "lucide-react";
 
-import BackLink from "@/components/navigation/BackLink";
 import { propertyLocation } from "@/lib/property-display";
 import NewBuildingFields from "@/components/review/NewBuildingFields";
 import ReviewSubmitted from "@/components/review/ReviewSubmitted";
@@ -108,13 +107,11 @@ function ReviewForm() {
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileError, setTurnstileError] = useState(false);
   const [turnstileResetKey, setTurnstileResetKey] = useState(0);
-  // The profile this form was opened from, for the back link when this
-  // tab has no earlier page.
-  const [profileProperty, setProfileProperty] =
-    useState<PropertyListing | null>(null);
   // Saving starts only after any saved draft has been restored, so the
-  // empty initial form doesn't overwrite it.
-  const isDraftReady = useRef(false);
+  // empty initial form doesn't overwrite it. State rather than a ref, so it
+  // turns on in the same render as the restored values: a ref flips at
+  // once, and the save effect would run first with the still-empty form.
+  const [isDraftReady, setIsDraftReady] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -162,10 +159,6 @@ function ReviewForm() {
             (property) => property.slug === requestedSlug
           );
 
-          if (requestedProperty) {
-            setProfileProperty(requestedProperty);
-          }
-
           if (draft) {
             setSearchTerm(draft.searchTerm);
             setSelectedProperty(
@@ -186,7 +179,7 @@ function ReviewForm() {
             setSearchTerm(addBuildingTerm);
             setNewBuilding(newBuildingFromSearch(addBuildingTerm));
           }
-          isDraftReady.current = true;
+          setIsDraftReady(true);
         }
       } catch (error) {
         console.error("Failed to load properties for the review form.", error);
@@ -208,7 +201,7 @@ function ReviewForm() {
   }, []);
 
   useEffect(() => {
-    if (!isDraftReady.current || submissionStatus === "success") {
+    if (!isDraftReady || submissionStatus === "success") {
       return;
     }
     writeDraft({
@@ -231,6 +224,7 @@ function ReviewForm() {
     propertyRatings,
     landlordRatings,
     submissionStatus,
+    isDraftReady,
   ]);
 
   const search = usePropertySearch(
@@ -361,17 +355,6 @@ function ReviewForm() {
   return (
     <div className="mx-auto w-full max-w-md px-5 py-6 md:max-w-none lg:max-w-2xl">
       <div className="space-y-6">
-        <BackLink
-          fallback={
-            profileProperty
-              ? {
-                  url: `/properties/${encodeURIComponent(profileProperty.slug)}`,
-                  label: profileProperty.name,
-                }
-              : undefined
-          }
-        />
-
         <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">
           Your experience matters
         </h1>
