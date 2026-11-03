@@ -5,6 +5,7 @@ import LabeledRating from "@/components/profile/LabeledRating";
 import ClampedReviewText from "@/components/profile/ClampedReviewText";
 import { getPropertyHref } from "@/lib/navigation";
 import { Review } from "@/types/review";
+import { MODERATOR_EDIT_NOTICE } from "@/lib/moderator-edit";
 
 type ReviewCardProps = {
   review: Review;
@@ -83,6 +84,13 @@ export default function ReviewCard({
         ) : (
           <p className="whitespace-pre-line leading-relaxed text-gray-800">
             {review.reviewText}
+          </p>
+        )}
+
+        {review.moderatorEdited && (
+          <p className="text-sm text-[#66706B]">
+            <span className="font-medium text-[#4A5A52]">Edited by a moderator.</span>
+            {!compact && <> {MODERATOR_EDIT_NOTICE}</>}
           </p>
         )}
 

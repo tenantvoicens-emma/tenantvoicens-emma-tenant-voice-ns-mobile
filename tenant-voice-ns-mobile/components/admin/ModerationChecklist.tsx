@@ -19,6 +19,7 @@ const reject = [
 ];
 
 const habits = [
+  "Small violation in an otherwise good review? Use “Remove words” to take out only the problem words and approve. The review gets the “Edited by a moderator” label. If removing them would change the meaning or leave little behind, reject with a note instead.",
   "Not sure? Reject with a note saying why. The writer can submit again without the problem part.",
   "Always add a note when you reject or unpublish. It's your record if someone appeals or complains.",
   "When a landlord raises a concern about a published review, look at it promptly. Unpublish factual accusations you can't support; opinions and experiences can stay.",
