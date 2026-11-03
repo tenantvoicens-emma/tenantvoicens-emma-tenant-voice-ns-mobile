@@ -585,8 +585,17 @@ function ReviewForm() {
                     noise, pests, safety, and how management handled problems.
                   </p>
                   <p className="font-medium text-[#4A5A52]">
-                    Please don&apos;t include anyone&apos;s name, unit numbers or
-                    other personal details. We can&apos;t publish reviews that do.
+                    Describe what happened, not who did it: say
+                    &ldquo;management&rdquo; rather than singling out a staff
+                    member, and share your experience rather than accusations.
+                    Don&apos;t include names, unit numbers or other personal
+                    details. We can&apos;t publish reviews that do, and we
+                    can&apos;t contact you to ask for changes.
+                  </p>
+                  <p>
+                    For example: &ldquo;Repairs often took weeks, and management
+                    stopped answering my emails after I complained about the
+                    heat.&rdquo;
                   </p>
                 </div>
                 <textarea
