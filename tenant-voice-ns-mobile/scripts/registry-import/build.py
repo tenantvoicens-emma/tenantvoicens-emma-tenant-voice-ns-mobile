@@ -8,6 +8,9 @@ Reads:
     .github/agents/Residential_Rental_Registry_*.csv   (HRM open data)
     tenant-voice-ns-mobile/scripts/registry-import/osm-named-buildings.geojson
         (overpass turbo export of named buildings in HRM; ODbL)
+    tenant-voice-ns-mobile/scripts/registry-import/name-overrides.json
+        (building names corrected by hand, by slug; these win over OSM.
+        Make the same change in the live database: properties.name)
 
 Writes, next to this script:
     buildings.json   one entry per building to import
@@ -239,6 +242,7 @@ def main():
                 matched_nearby += 1
     report.append(f"OSM names matched: {matched_address} by address, {matched_nearby} by location")
 
+    overrides = json.load(open(HERE / "name-overrides.json"))
     output = []
     used_slugs = set()
     for building in sorted(kept, key=lambda b: (b["city"], b["street"], int(re.match(r"\d+", b["number"]).group(0)))):
@@ -251,13 +255,16 @@ def main():
             slug = f"{base}-{suffix}"
             suffix += 1
         used_slugs.add(slug)
+        if slug in overrides:
+            name = overrides[slug]
+            report.append(f"  name [override] {name!r} -> {address}, {city}")
         output.append({
             "slug": slug, "name": name, "address": address, "city": city,
             "postal_code": building["postal"] or None,
             "registered_units": building["units"],
             "osm_id": building["osm"]["id"] if "osm" in building else None,
         })
-        if "osm" in building:
+        if "osm" in building and slug not in overrides:
             how = "nearby" if building.get("osm_nearby") else "address"
             report.append(f"  name [{how}] {name!r} -> {address}, {city}")
 
