@@ -157,6 +157,21 @@ export default function PoliciesPage() {
               does not automatically remove a review; it will be considered by the
               moderator.
             </p>
+            <h3 id="moderator-edits" className="scroll-mt-6 font-semibold text-[#294B3A]">
+              Moderator edits
+            </h3>
+            <p className="text-gray-700">
+              If a review breaks our guidelines in a small way, we may remove
+              only the part that breaks them instead of rejecting the whole
+              review. That includes names of private people, personal or
+              identifying details, and accusations of illegal or dishonest
+              conduct stated as fact. We never add words, reword what you
+              wrote or change your ratings. Edited reviews are marked
+              &ldquo;Edited by a moderator&rdquo;, and the original is kept
+              privately in the moderation area. If we can&apos;t remove the
+              problem without changing what your review means, we&apos;ll
+              reject it so you can resubmit.
+            </p>
           </section>
 
           <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">

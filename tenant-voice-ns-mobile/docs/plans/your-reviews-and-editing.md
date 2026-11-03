@@ -49,6 +49,13 @@ building, the date and a status:
   published" plus the reason. The published version is unchanged.
   Actions: Edit again, Delete.
 
+- **Published, edited by a moderator:** (moderator edits, which remove
+  words only, were added on November 3, 2026.) Show "A moderator removed
+  some words" with the removed words crossed out, so the writer learns the
+  rules. Actions: Edit and resubmit, Delete (so a writer who doesn't like
+  the edited version can withdraw it). Optionally email them when it
+  happens.
+
 Only the writer sees this list. Public pages stay exactly as anonymous as
 today.
 

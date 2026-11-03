@@ -12,6 +12,9 @@ import FormMessages from "@/components/ui/FormMessages";
 import PageContainer from "@/components/ui/PageContainer";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import ModerationChecklist from "@/components/admin/ModerationChecklist";
+import RemoveWordsDialog, {
+  type RemoveWordsTarget,
+} from "@/components/admin/RemoveWordsDialog";
 import { formatCategory, OVERALL_CATEGORY } from "@/lib/ratings";
 import { isModeratorEmail } from "@/lib/moderator";
 import { supabase } from "@/lib/supabase";
@@ -29,6 +32,8 @@ type PendingReview = {
   occupancy_duration: string;
   would_live_again: string;
   created_at: string;
+  // Words were removed by the moderator; the original is kept privately.
+  moderator_edited: boolean;
   properties: {
     name: string;
     slug: string;
@@ -48,6 +53,7 @@ type HistoryEvent = {
   from_status: ReviewStatus;
   to_status: ModerationStatus;
   note: string | null;
+  text_edited: boolean;
   created_at: string;
 };
 
@@ -81,6 +87,11 @@ export default function AdminPage() {
     {}
   );
   const [pendingAction, setPendingAction] = useState<ModerationAction | null>(
+    null
+  );
+  // The writer's original words for reviews the moderator has edited.
+  const [originals, setOriginals] = useState<Record<number, string>>({});
+  const [removeTarget, setRemoveTarget] = useState<RemoveWordsTarget | null>(
     null
   );
   const [savingReviewId, setSavingReviewId] = useState<number | null>(null);
@@ -137,7 +148,7 @@ export default function AdminPage() {
       const { data, error } = await supabase
         .from("reviews")
         .select(
-          "id, review_text, occupancy_duration, would_live_again, created_at, properties(name, slug, address, city, is_listed), property_ratings(id, category, score), landlord_ratings(id, category, score)"
+          "id, review_text, occupancy_duration, would_live_again, created_at, moderator_edited, properties(name, slug, address, city, is_listed), property_ratings(id, category, score), landlord_ratings(id, category, score)"
         )
         .eq("status", reviewStatus)
         .order("created_at", { ascending: reviewStatus === "pending" });
@@ -171,9 +182,34 @@ export default function AdminPage() {
         }
       }
 
+      // Originals of edited reviews. If they can't load, editing is
+      // disabled for those reviews rather than checked against the wrong
+      // text.
+      const editedIds = normalizedReviews
+        .filter((review) => review.moderator_edited)
+        .map((review) => review.id);
+      const originalsByReview: Record<number, string> = {};
+      if (editedIds.length > 0) {
+        const { data: originalRows, error: originalsError } = await supabase.rpc(
+          "get_review_originals",
+          { p_review_ids: editedIds }
+        );
+        if (originalsError) {
+          console.error("Could not load original review text.", originalsError.code);
+        } else {
+          for (const row of (originalRows ?? []) as {
+            review_id: number;
+            original_text: string;
+          }[]) {
+            originalsByReview[row.review_id] = row.original_text;
+          }
+        }
+      }
+
       if (isActive) {
         setReviews(normalizedReviews);
         setHistory(historyByReview);
+        setOriginals(originalsByReview);
         setLoadedQueueKey(activeKey);
         setErrorMessage("");
       }
@@ -223,6 +259,90 @@ export default function AdminPage() {
 
     setSavingReviewId(null);
     setPendingAction(null);
+  }
+
+  async function saveRemoval(
+    target: RemoveWordsTarget,
+    editedText: string,
+    note: string
+  ) {
+    if (!isAdmin || isSaving) {
+      return;
+    }
+
+    setSavingReviewId(target.reviewId);
+    setMessage("");
+    setErrorMessage("");
+
+    const { error } = await supabase.rpc("moderate_review", {
+      p_review_id: target.reviewId,
+      p_status: "approved",
+      p_note: note.trim() || null,
+      p_edited_text: editedText,
+    });
+
+    if (error) {
+      console.error("Could not save the edited review.", error.code);
+      setErrorMessage(
+        "The edit couldn't be saved. Edits can only remove words; please try again."
+      );
+    } else if (target.status === "approved") {
+      // Still published, so it stays on this tab with its new text.
+      const restored = editedText.trim() === target.originalText.trim();
+      setReviews((reviews) =>
+        reviews.map((review) =>
+          review.id === target.reviewId
+            ? {
+                ...review,
+                review_text: restored ? target.originalText : editedText.trim(),
+                moderator_edited: !restored,
+              }
+            : review
+        )
+      );
+      setOriginals((originals) => {
+        const next = { ...originals };
+        if (restored) {
+          delete next[target.reviewId];
+        } else {
+          next[target.reviewId] = target.originalText;
+        }
+        return next;
+      });
+      setMessage(
+        restored
+          ? "The writer's words are restored."
+          : "Edit saved. The published review now shows it."
+      );
+    } else {
+      setReviews((reviews) =>
+        reviews.filter((review) => review.id !== target.reviewId)
+      );
+      setMessage("Review approved with words removed, and published.");
+      refreshPendingCount();
+    }
+
+    setSavingReviewId(null);
+    setRemoveTarget(null);
+  }
+
+  function askToRemoveWords(review: PendingReview) {
+    const savedOriginal = originals[review.id];
+    if (review.moderator_edited && savedOriginal === undefined) {
+      setErrorMessage(
+        "The writer's original text couldn't be loaded, so this review can't be edited right now."
+      );
+      return;
+    }
+    setMessage("");
+    setErrorMessage("");
+    setRemoveTarget({
+      reviewId: review.id,
+      propertyName: review.properties?.name ?? "this building",
+      status: reviewStatus,
+      originalText: savedOriginal ?? review.review_text,
+      currentText: review.review_text,
+    });
   }
 
   function askToModerate(kind: ModerationActionKind, review: PendingReview) {
@@ -380,9 +500,24 @@ export default function AdminPage() {
                         />
                       </div>
 
+                      {review.moderator_edited && (
+                        <p className="inline-flex rounded-full bg-[#FFF4D6] px-3 py-1 text-sm font-medium text-[#6B4E00]">
+                          Edited by a moderator
+                        </p>
+                      )}
                       <p className="whitespace-pre-wrap leading-relaxed text-gray-800">
                         {review.review_text}
                       </p>
+                      {review.moderator_edited && originals[review.id] !== undefined && (
+                        <details className="rounded-2xl bg-[#F6F6EE] p-4 text-sm">
+                          <summary className="cursor-pointer font-medium text-[#4A5A52]">
+                            Writer&apos;s original (private)
+                          </summary>
+                          <p className="mt-2 whitespace-pre-wrap leading-relaxed text-[#4A5A52]">
+                            {originals[review.id]}
+                          </p>
+                        </details>
+                      )}
 
                       <RatingList
                         title="Property ratings"
@@ -400,7 +535,7 @@ export default function AdminPage() {
                       )}
 
                       <div
-                        className={`gap-3 border-t border-[#EEECE6] pt-4 ${reviewStatus === "pending" ? "grid grid-cols-2" : "flex"}`}
+                        className={`gap-3 border-t border-[#EEECE6] pt-4 ${reviewStatus === "pending" ? "grid grid-cols-2" : "flex flex-wrap"}`}
                       >
                         {reviewStatus !== "approved" && (
                           <button
@@ -436,6 +571,16 @@ export default function AdminPage() {
                             {reviewStatus === "pending" ? "Reject" : "Unpublish"}
                           </button>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => askToRemoveWords(review)}
+                          disabled={isSaving}
+                          className={`min-h-11 font-medium text-[#2F4F46] underline underline-offset-4 disabled:opacity-60 ${reviewStatus === "pending" ? "col-span-2" : "basis-full"}`}
+                        >
+                          {reviewStatus === "approved"
+                            ? "Remove words"
+                            : "Remove words and approve"}
+                        </button>
                       </div>
                     </article>
                   ))}
@@ -446,6 +591,17 @@ export default function AdminPage() {
 
           <FormMessages message={message} errorMessage={errorMessage} />
         </div>
+
+        <RemoveWordsDialog
+          target={removeTarget}
+          isSaving={isSaving}
+          onConfirm={(editedText, note) => {
+            if (removeTarget) {
+              void saveRemoval(removeTarget, editedText, note);
+            }
+          }}
+          onCancel={() => setRemoveTarget(null)}
+        />
 
         <ModerationDialog
           action={pendingAction}
@@ -551,6 +707,11 @@ function ModerationHistory({ events }: { events: HistoryEvent[] | null }) {
 }
 
 function describeChange(event: HistoryEvent) {
+  if (event.text_edited) {
+    return event.from_status === event.to_status
+      ? "Edited: words removed"
+      : `${event.from_status === "rejected" ? "Approved after all" : "Approved"}, with words removed`;
+  }
   if (event.from_status === "approved" && event.to_status === "rejected") {
     return "Unpublished";
   }

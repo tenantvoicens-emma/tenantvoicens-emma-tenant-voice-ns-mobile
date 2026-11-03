@@ -31,6 +31,7 @@ type DiscoverReviewRow = {
   occupancy_duration: string | null;
   would_live_again: string | null;
   created_at: string;
+  moderator_edited: boolean | null;
   properties:
     | { name: string; slug: string }
     | { name: string; slug: string }[]
@@ -298,7 +299,7 @@ async function loadRecentReviews(): Promise<Review[]> {
   const { data, error } = await supabase
     .from("reviews")
     .select(
-      "id, review_text, occupancy_duration, would_live_again, created_at, properties(name, slug), property_ratings(id, category, score), landlord_ratings(id, category, score)"
+      "id, review_text, occupancy_duration, would_live_again, created_at, moderator_edited, properties(name, slug), property_ratings(id, category, score), landlord_ratings(id, category, score)"
     )
     .eq("status", "approved")
     .order("created_at", { ascending: false })
@@ -342,6 +343,7 @@ function mapDiscoverReview(row: DiscoverReviewRow): Review {
     occupancyPeriod: formatOccupancy(row.occupancy_duration),
     reviewText: row.review_text ?? "",
     wouldLiveAgain: formatWouldLiveAgain(row.would_live_again),
+    moderatorEdited: row.moderator_edited === true,
     createdAt: row.created_at,
     propertyRatings: mapDiscoverRatings(row.property_ratings, propertySlug),
     landlordRatings: mapDiscoverRatings(row.landlord_ratings, propertySlug),

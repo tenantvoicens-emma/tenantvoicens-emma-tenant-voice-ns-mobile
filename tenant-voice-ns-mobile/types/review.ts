@@ -13,6 +13,9 @@ export type Review = {
 
   wouldLiveAgain?: string;
 
+  // A moderator removed words that broke the guidelines.
+  moderatorEdited?: boolean;
+
   createdAt?: string;
 
   propertyName?: string;

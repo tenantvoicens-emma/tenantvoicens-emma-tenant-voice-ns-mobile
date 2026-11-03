@@ -38,6 +38,7 @@ type SupabaseReviewRow = {
   occupancy_duration: string | null;
   would_live_again: string | null;
   created_at: string;
+  moderator_edited: boolean | null;
   property_ratings: SupabaseRatingRow[] | null;
   landlord_ratings: SupabaseRatingRow[] | null;
 };
@@ -104,7 +105,7 @@ async function PropertyContent({ params }: PropertyPageProps) {
   const { data: reviewData, error: reviewError } = await supabase
     .from("reviews")
     .select(
-      "id, review_text, occupancy_duration, would_live_again, created_at, property_ratings(id, category, score), landlord_ratings(id, category, score)"
+      "id, review_text, occupancy_duration, would_live_again, created_at, moderator_edited, property_ratings(id, category, score), landlord_ratings(id, category, score)"
     )
     .eq("property_id", property.id)
     .eq("status", "approved")
@@ -122,6 +123,7 @@ async function PropertyContent({ params }: PropertyPageProps) {
     occupancyPeriod: formatOccupancyDuration(review.occupancy_duration),
     reviewText: review.review_text ?? "",
     wouldLiveAgain: formatWouldLiveAgain(review.would_live_again),
+    moderatorEdited: review.moderator_edited === true,
     createdAt: review.created_at,
     propertyRatings: mapRatings([review], "property_ratings", slug),
     landlordRatings: mapRatings([review], "landlord_ratings", slug),
