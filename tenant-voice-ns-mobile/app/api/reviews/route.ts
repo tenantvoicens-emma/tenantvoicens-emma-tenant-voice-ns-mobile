@@ -1,6 +1,7 @@
 import { createHmac } from "node:crypto";
 import { isIP } from "node:net";
 import { createClient } from "@supabase/supabase-js";
+import { expandStreetType } from "@/lib/street-address";
 import { checkRequestOrigin } from "@/lib/server/request-origin";
 
 const propertyRatingCategories = new Set([
@@ -231,7 +232,9 @@ export async function POST(request: Request) {
       const { data: suggestedId, error: suggestError } = await adminClient.rpc(
         "find_or_suggest_property",
         {
-          p_address: body.newProperty.address,
+          // "70 Ochterloney St" is saved as "70 Ochterloney Street", like
+          // the registry's buildings.
+          p_address: expandStreetType(body.newProperty.address),
           p_city: body.newProperty.city,
           p_name: body.newProperty.name ?? null,
         }
