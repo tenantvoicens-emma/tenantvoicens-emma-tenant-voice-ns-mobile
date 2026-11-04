@@ -20,6 +20,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // Pages for renter-added buildings that turned out to duplicate a
+  // listed one, sent to the building they were merged into.
+  async redirects() {
+    return [
+      {
+        source: "/properties/2300-gottingen-street-halifax",
+        destination: "/properties/2300-gottingen-street-5501-cunard-street-halifax",
+        permanent: true,
+      },
+    ];
+  },
   experimental: {
     agentFeedback: true,
   },
