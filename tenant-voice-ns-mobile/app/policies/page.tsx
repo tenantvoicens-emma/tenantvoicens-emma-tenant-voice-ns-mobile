@@ -193,10 +193,11 @@ export default function PoliciesPage() {
               see.
             </p>
             <p className="text-gray-700">
-              An account is optional. If you create one, your password is kept 
-              only as a one-way hash, so no one, including us, can see it. 
-              Your email is used only for signing in and account messages such 
-              as password resets, and is never shown publicly.
+              An account is optional. If you create one, it&apos;s stored with
+              our database provider, Supabase. Your password is kept only as a
+              one-way hash, so no one, including us, can see it. Your email is
+              used only for signing in and account messages such as password
+              resets, and is never shown publicly.
             </p>
             <p className="text-gray-700">
               Reviews you submit while signed in are privately linked to your
@@ -210,6 +211,10 @@ export default function PoliciesPage() {
               That deletes your email address and password straight away. Your
               published reviews stay on the site, still anonymous, but are no
               longer linked to you.
+            </p>
+            <p className="text-gray-700">
+              To stop spam, we keep a one-way fingerprint of your IP address
+              (not the address itself) for about 48 hours.
             </p>
           </section>
 
@@ -271,8 +276,8 @@ export default function PoliciesPage() {
             </p>
             <p className="text-gray-700">
               If your building isn&apos;t listed, including anywhere else in
-              Nova Scotia, you can add it when you write a review. The moderator 
-              checks every added building, and it appears on the site only once 
+              Nova Scotia, you can add it when you write a review. The moderator
+              checks every added building, and it appears on the site only once
               a review for it is approved.
             </p>
           </section>
