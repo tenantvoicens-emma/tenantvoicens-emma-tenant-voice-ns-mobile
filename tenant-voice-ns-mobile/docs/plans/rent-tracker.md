@@ -52,8 +52,8 @@ Rent, unit size and year together can identify a tenant, so:
   when there are **3 or more reports** for that building and unit size in
   the last 3 years. Show a range rounded to $25 ("$1,650 to $1,800 a
   month"), plus "based on N reports".
-- **Small rentals** (see `private-rentals.md`) are never shown at the
-  property level. One house is one tenant. Their reports only count toward
+- **Small rentals** (houses, suites, rooms, duplexes and condos:
+  `properties.is_small_rental`) are never shown at the property level. One house is one tenant. Their reports only count toward
   area numbers ("2 bedrooms in Dartmouth").
 
 ## Data quality
@@ -111,13 +111,6 @@ ratings. Update "Last updated".
 - `app/properties/[slug]/page.tsx`: the "What renters pay" card.
 - `app/admin/`: flagged reports, with a remove action.
 - `app/policies/page.tsx`: the new section.
-
-## Order with the private-rentals plan
-
-Both add questions to the review form, and the rent privacy rules depend
-on how small rentals are handled. Suggestion: settle the private-rentals
-decisions first, then design both form changes together so the form only
-changes once.
 
 ## Testing before it goes live
 
