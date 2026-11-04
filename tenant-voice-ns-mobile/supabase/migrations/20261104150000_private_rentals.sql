@@ -120,6 +120,9 @@ ALTER TABLE public.reviews
 
 -- Two landlord ratings that matter most with private landlords, offered
 -- on every review.
+-- The original rule is named landlord_rating_category_check (singular).
+ALTER TABLE public.landlord_ratings
+  DROP CONSTRAINT IF EXISTS landlord_rating_category_check;
 ALTER TABLE public.landlord_ratings
   DROP CONSTRAINT IF EXISTS landlord_ratings_category_check;
 ALTER TABLE public.landlord_ratings

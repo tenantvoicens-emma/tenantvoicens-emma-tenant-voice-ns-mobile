@@ -20,9 +20,15 @@ import {
   isNewBuildingComplete,
   NO_SEARCH_RESULTS_HINT,
   readDraft,
+  restoreNewBuilding,
   writeDraft,
   type NewBuilding,
 } from "@/lib/review-draft";
+import {
+  isLandlordOnSite,
+  isSmallRentalKind,
+  landlordOnSiteOptions,
+} from "@/lib/rental-kind";
 import { OVERALL_CATEGORY } from "@/lib/ratings";
 import { usePropertySearch } from "@/lib/use-property-search";
 import { supabase } from "@/lib/supabase";
@@ -76,6 +82,8 @@ function ReviewForm() {
   const [newBuilding, setNewBuilding] = useState<NewBuilding | null>(null);
   const [occupancyDuration, setOccupancyDuration] = useState("");
   const [wouldLiveAgain, setWouldLiveAgain] = useState("");
+  // Only asked, and only sent, for small rentals.
+  const [landlordOnSite, setLandlordOnSite] = useState("");
   const [reviewText, setReviewText] = useState("");
   const [propertyRatings, setPropertyRatings] = useState<Record<string, string>>(
     {}
@@ -127,17 +135,20 @@ function ReviewForm() {
         if (slugs.length > 0) {
           const { data, error } = await supabase
             .from("properties")
-            .select("id, slug, name, address, city")
+            .select("id, slug, name, address, city, is_small_rental")
             .in("slug", slugs);
 
           if (error) {
             throw error;
           }
-          propertyListings = (data ?? []).map((property) => ({
-            ...property,
-            address: property.address ?? "",
-            city: property.city ?? "",
-          }));
+          propertyListings = (data ?? []).map(
+            ({ is_small_rental, ...property }) => ({
+              ...property,
+              address: property.address ?? "",
+              city: property.city ?? "",
+              isSmallRental: is_small_rental === true,
+            })
+          );
         }
 
         if (isActive) {
@@ -152,9 +163,10 @@ function ReviewForm() {
                 (property) => property.slug === draft.propertySlug
               ) ?? null
             );
-            setNewBuilding(draft.newBuilding ?? null);
+            setNewBuilding(restoreNewBuilding(draft.newBuilding));
             setOccupancyDuration(draft.occupancyDuration);
             setWouldLiveAgain(draft.wouldLiveAgain);
+            setLandlordOnSite(draft.landlordOnSite ?? "");
             setReviewText(draft.reviewText);
             setPropertyRatings(draft.propertyRatings);
             setLandlordRatings(draft.landlordRatings);
@@ -196,6 +208,7 @@ function ReviewForm() {
       searchTerm,
       occupancyDuration,
       wouldLiveAgain,
+      landlordOnSite,
       reviewText,
       propertyRatings,
       landlordRatings,
@@ -206,6 +219,7 @@ function ReviewForm() {
     searchTerm,
     occupancyDuration,
     wouldLiveAgain,
+    landlordOnSite,
     reviewText,
     propertyRatings,
     landlordRatings,
@@ -213,11 +227,46 @@ function ReviewForm() {
     isDraftReady,
   ]);
 
+  // Search results don't say whether a property is a small rental, so look
+  // it up once one is picked.
+  const selectedId = selectedProperty?.id;
+  const selectedKindKnown = selectedProperty?.isSmallRental !== undefined;
+  useEffect(() => {
+    if (selectedId === undefined || selectedKindKnown) {
+      return;
+    }
+    let isActive = true;
+    void supabase
+      .from("properties")
+      .select("is_small_rental")
+      .eq("id", selectedId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (error) {
+          console.error("Could not check the property's rental type.", error.code);
+          return;
+        }
+        if (isActive) {
+          setSelectedProperty((current) =>
+            current?.id === selectedId
+              ? { ...current, isSmallRental: data?.is_small_rental === true }
+              : current
+          );
+        }
+      });
+    return () => {
+      isActive = false;
+    };
+  }, [selectedId, selectedKindKnown]);
+
   const search = usePropertySearch(
     selectedProperty || newBuilding ? "" : searchTerm,
     10
   );
   const hasBuilding = Boolean(selectedProperty) || isNewBuildingComplete(newBuilding);
+  const isSmallRental = selectedProperty
+    ? selectedProperty.isSmallRental === true
+    : isSmallRentalKind(newBuilding?.rentalKind);
   const showSuggestions =
     search.status !== "idle" && !isLoadingProperties && !propertyLoadError;
   const hasDetailedRatings = [...Object.entries(propertyRatings), ...Object.entries(landlordRatings)]
@@ -302,12 +351,15 @@ function ReviewForm() {
                   address: newBuilding?.address.trim(),
                   city: newBuilding?.city.trim(),
                   name: newBuilding?.name.trim() || undefined,
-                  hasFourOrMoreUnits: true,
+                  rentalKind: newBuilding?.rentalKind,
                 },
               }),
           reviewText,
           occupancyDuration,
           wouldLiveAgain,
+          ...(isSmallRental && isLandlordOnSite(landlordOnSite)
+            ? { landlordOnSite }
+            : {}),
           propertyRatings: toRatingRows(propertyRatings),
           landlordRatings: toRatingRows(landlordRatings),
         }),
@@ -495,6 +547,7 @@ function ReviewForm() {
                   </p>
                 )}
               </div>
+              {isSmallRental && <SmallRentalNotice />}
             </section>
 
             <section className={formCard} aria-labelledby="experience-heading">
@@ -539,6 +592,28 @@ function ReviewForm() {
                   <option value="unsure">Unsure</option>
                 </select>
               </div>
+
+              {isSmallRental && (
+                <div className="space-y-2">
+                  <label htmlFor="landlord-on-site" className="block text-lg font-medium text-[#4A5A52]">
+                    Did the landlord live there too?{" "}
+                    <span className="font-normal text-[#66706B]">(optional)</span>
+                  </label>
+                  <select
+                    id="landlord-on-site"
+                    value={landlordOnSite}
+                    onChange={(event) => setLandlordOnSite(event.target.value)}
+                    className={formField}
+                  >
+                    <option value="">Choose an answer</option>
+                    {landlordOnSiteOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <p id="overall-scale" className="text-[#66706B]">
                 1 is poor and 5 is excellent. Choose N/A if it doesn&apos;t apply,
@@ -661,6 +736,15 @@ function ReviewForm() {
                   label="Would live there again"
                   value={getWouldLiveAgainLabel(wouldLiveAgain)}
                 />
+                {isSmallRental && (
+                  <SummaryRow
+                    label="Landlord lived there too"
+                    value={
+                      landlordOnSiteOptions.find((option) => option.value === landlordOnSite)
+                        ?.label ?? "Not answered"
+                    }
+                  />
+                )}
                 <SummaryRow
                   label="Building overall"
                   value={overallLabel(propertyRatings[OVERALL_CATEGORY])}
@@ -921,6 +1005,26 @@ function newBuildingFromSearch(searchTerm: string): NewBuilding {
     address: /^\d/.test(typed) ? typed : "",
     city: "",
     name: "",
-    hasFourOrMoreUnits: false,
+    rentalKind: "",
   };
+}
+
+// For houses, suites, rooms, duplexes and condos. Reviewing one is the
+// writer's choice; this explains the risk and what the site does about it.
+function SmallRentalNotice() {
+  return (
+    <div className="space-y-2 rounded-2xl border border-[#E8D9B5] bg-[#FBF5E6] p-4 text-[#4A4030]">
+      <p className="font-medium">This is a private rental</p>
+      <p>
+        With only a few tenants, your landlord may be able to tell who wrote
+        a review. If you still live there, you may want to wait until
+        you&apos;ve moved out. It&apos;s your choice.
+      </p>
+      <p>
+        To help, we show only the year your review was written, never the
+        landlord&apos;s name, and never a unit number. Leave out anything that
+        could identify you, your roommates or the landlord&apos;s family.
+      </p>
+    </div>
+  );
 }

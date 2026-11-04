@@ -6,11 +6,12 @@ import { ChevronDown, ListChecks } from "lucide-react";
 const approve = [
   "The writer's own experience or opinion of the building, landlord or management.",
   "Criticism, even harsh, when it's framed as experience: “repairs took weeks”, “the hallways are usually a mess”.",
-  "Naming the landlord, property manager or management company. Businesses are fair to name.",
+  "Naming the landlord company, property manager or management company. Businesses are fair to name.",
 ];
 
 const reject = [
   "Names or identifies a private person: another tenant, a neighbour, or a staff member by name.",
+  "Private rentals (houses, suites, rooms, duplexes, condos): the landlord's name, or anything identifying their family, roommates or the writer. The landlord is always just “Private landlord”. Use “Remove words” where you can.",
   "A specific accusation of illegal or dishonest conduct stated as fact (theft, fraud, illegal eviction, discrimination) that can't be backed up. A one-person role, like “the superintendent”, counts as identifying someone here.",
   "Details that could identify the writer or other tenants, like unit numbers or schedules.",
   "Threats, harassment, slurs, discriminatory content or personal attacks.",

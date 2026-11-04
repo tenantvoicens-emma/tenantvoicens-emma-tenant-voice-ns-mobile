@@ -21,13 +21,17 @@ export default function ReviewCard({
   review,
   compact = false,
 }: ReviewCardProps) {
-  const reviewDate = review.createdAt ? new Date(review.createdAt) : null;
+  // published_on is a plain date, read as midnight UTC.
+  const reviewDate = review.publishedOn ? new Date(review.publishedOn) : null;
   const formattedDate = reviewDate && !Number.isNaN(reviewDate.getTime())
-    ? new Intl.DateTimeFormat("en-CA", {
-        dateStyle: "medium",
-        timeZone: "UTC",
-      }).format(reviewDate)
+    ? review.yearOnly
+      ? `in ${reviewDate.getUTCFullYear()}`
+      : new Intl.DateTimeFormat("en-CA", {
+          dateStyle: "medium",
+          timeZone: "UTC",
+        }).format(reviewDate)
     : null;
+  const landlordLivedThere = review.landlordOnSite === "yes";
 
   const occupancyPeriod = UNANSWERED.includes(review.occupancyPeriod)
     ? null
@@ -64,7 +68,7 @@ export default function ReviewCard({
           </p>
         </header>
 
-        {(occupancyPeriod || wouldLiveAgain) && (
+        {(occupancyPeriod || wouldLiveAgain || landlordLivedThere) && (
           <div className="flex flex-wrap gap-2">
             {occupancyPeriod && (
               <ReviewDetail label="Lived here" value={occupancyPeriod} />
@@ -75,6 +79,9 @@ export default function ReviewCard({
                 value={wouldLiveAgain}
                 tone={wouldLiveAgain === "Yes" ? "positive" : wouldLiveAgain === "No" ? "negative" : "neutral"}
               />
+            )}
+            {landlordLivedThere && (
+              <ReviewDetail label="Landlord lived on site" value="" />
             )}
           </div>
         )}
@@ -161,7 +168,7 @@ function ReviewDetail({
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm ${detailTones[tone]}`}>
       <span>{label}</span>
-      <span className="font-semibold">{value}</span>
+      {value && <span className="font-semibold">{value}</span>}
     </span>
   );
 }

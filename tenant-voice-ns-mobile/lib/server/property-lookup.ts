@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 export const getPropertyBySlug = cache(async (slug: string) =>
   supabase
     .from("properties")
-    .select("id, slug, name, address, city")
+    .select("id, slug, name, address, city, rental_kind, is_small_rental")
     .eq("slug", slug)
     .maybeSingle()
 );
