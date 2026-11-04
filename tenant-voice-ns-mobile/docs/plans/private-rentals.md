@@ -5,6 +5,28 @@ ready.
 
 Started: November 4, 2026, from feedback on the Reddit post.
 
+## Where it stands (November 4, 2026)
+
+Done on the `claude/private-rentals` branch, and already in the live
+database (all additive, so the current site kept working):
+
+- Migrations `20261104150000_private_rentals` and the category-rule fix
+  `private_rentals_landlord_rating_categories` are applied.
+- 9,011 small rentals from the registry were imported hidden (3,782
+  houses, 3,508 duplexes and small buildings, 806 suites, 551 condos, 364
+  rooms), from `scripts/registry-import/small-rentals.json`. Four that
+  matched existing properties were skipped and left as they were.
+- The 15 older renter-added buildings have no rental kind yet, so they're
+  treated as larger buildings. The moderator can set one with SQL:
+  `UPDATE public.properties SET rental_kind = 'house' WHERE id = ...;`
+  Their reviews' dates update automatically.
+
+After the branch is merged and live:
+
+1. Apply `20261104170000_hide_review_submission_times`, which stops the
+   public reading reviews' exact submission time.
+2. Check a published small rental's page once one is approved.
+
 ## Why
 
 Renters said private rentals often have the worst problems, and warning
