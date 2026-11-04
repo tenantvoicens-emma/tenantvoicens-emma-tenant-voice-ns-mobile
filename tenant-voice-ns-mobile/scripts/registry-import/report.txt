@@ -1,6 +1,7 @@
 Registry: Residential_Rental_Registry_5011327862495338746.csv, 12409 registrations
 Buildings: 10811; kept 1796; skipped {'fewer than 4 units': 8872, 'rented by the room': 17, 'house, duplex or small building': 126}
 Unparseable addresses: 4 ['231-24 HAMMONDS PLAINS RD,BEDFORD,24A 3P3', '65 TREKKER DR,B4B 2K8', '31A LUCIEN DR,DARTMOUTH,2W 2J2', '9,HIGHRIGGER CRESCENT,MIDDLE SACKVILLE,B4E2V5']
+Small rentals (imported hidden): 9015 {'condo': 555, 'house': 3782, 'room': 364, 'small_building': 3508, 'suite': 806}
 OSM names matched: 340 by address, 57 by location
   name [address] 'Avia' -> 29 Abbington Avenue, Bedford
   name [address] 'The Aspen' -> 75 Abbington Avenue, Bedford

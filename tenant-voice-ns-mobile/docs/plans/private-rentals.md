@@ -1,7 +1,6 @@
 # Plan: Private rentals (houses, rooms, basement suites, duplexes)
 
-Status: **planned, not built.** Questions marked **Decide** need an answer
-before building. Build on a branch, test on a Vercel preview, merge when
+Status: **being built** on the `claude/private-rentals` branch. Build on a branch, test on a Vercel preview, merge when
 ready.
 
 Started: November 4, 2026, from feedback on the Reddit post.
@@ -49,14 +48,16 @@ The property is listed once a review for it is approved, as today.
 
 ## Decisions
 
-| Question | Recommendation |
+Decided November 4, 2026.
+
+| Question | Decision |
 | --- | --- |
-| **Decide:** Who can review a small rental? | **Former tenants only** at first. It's the simplest protection against retaliation. Current tenants get a short explanation ("come back after you move out; we'll keep your draft") instead of the form. Can be relaxed later. |
-| **Decide:** What address is shown? | **The full street address, no unit number.** A warning is only useful if renters can match it to a listing. The address is already public in the HRM registry. |
-| **Decide:** Show the landlord's name? | **Never** for private landlords. Shown as "Private landlord". The moderator already removes names, and the unused `landlords.type = 'private'` value shouldn't become named profiles. |
-| How precise is the date? | **Year only** for small rentals ("Reviewed in 2026"), with "Lived here" still shown in ranges. This must be done in the database, not just on the page, because `reviews.created_at` can be read through the public API today. |
-| **Decide:** Ask whether the landlord lived there too? | **Yes, and show it** ("Landlord lived on site"). It's useful for renters, and it changes what can go wrong. |
-| New landlord rating categories? | **Add for everyone, optional:** "Respects your privacy (gives notice before entering)" and "Deposit handling". These are the most common complaints with private landlords. Existing reviews show N/A for them. |
+| Who can review a small rental? | **Anyone, current or former tenant. It's the writer's choice.** The form explains the risk and suggests waiting until after moving out, but doesn't block. Renters were already choosing to review small rentals. |
+| What address is shown? | **The full street address, no unit number.** A warning is only useful if renters can match it to a listing. The address is already public in the HRM registry. |
+| Show the landlord's name? | **Never. Always "Private landlord".** If landlord pages are added later (to follow a landlord across properties), they're built with landlord IDs kept in the background, never shown. Note: `public.landlords` is readable by anyone today, so private landlords' names must never go in that table as it is. |
+| Ask whether the landlord lived there too? | **Yes, and show it** on the review ("Landlord lived on site"). |
+| How precise is the date? | **Year only** for small rentals ("Reviewed in 2026"). This has to happen in the database, not just on the page, because `reviews.created_at` can be read through the public API today. Small-rental reviews are also left out of the "Recent reviews" list on Discover, which would otherwise show roughly when they were posted. |
+| New landlord rating categories? | **Add for everyone, optional:** "Respects your privacy" (gives notice before entering) and "Deposit handling", the most common complaints about private landlords. Earlier reviews show these as not rated. |
 
 ## What renters see
 
@@ -65,8 +66,9 @@ The property is listed once a review for it is approved, as today.
   a room in a shared home, a basement or in-law suite, a unit in a duplex
   or triplex, an apartment in a larger building. Filled in automatically
   when the address matches the registry.
-- For small rentals: **"Do you still live there?"** If yes, show the
-  explanation above instead of the form.
+- For small rentals: a note that a small rental's landlord may be able to
+  tell who wrote the review, so it may be safer to wait until after moving
+  out. The choice is the writer's.
 - For small rentals: **"Did the landlord live there too?"** Yes, no or not
   sure.
 - A short note: "Leave out anything that could identify you, your
@@ -114,8 +116,7 @@ Small rentals get a flag in the admin queue and extra checklist items:
   `rental_kind`.
 - `find_or_suggest_property`: take `rental_kind` when a renter adds a
   property.
-- `app/api/reviews/route.ts`: accept and check the new answers, and refuse
-  current-tenant reviews of small rentals if that's the decision.
+- `app/api/reviews/route.ts`: accept and check the new answers, .
 - `app/submit-review/`: the new questions.
 - `app/properties/[slug]/page.tsx`: the label and year-only dates.
 - `app/admin/` and `components/admin/ModerationChecklist.tsx`: the flag and
@@ -126,8 +127,8 @@ Small rentals get a flag in the admin queue and extra checklist items:
 
 1. Type a small-rental address from the registry. It matches, the type is
    filled in, and no duplicate is created.
-2. Small rental, "still live there": the review can't be submitted, and the
-   draft is kept.
+2. Choosing a small rental shows the note about waiting until after moving
+   out, and the review can still be submitted.
 3. Approve a small-rental review. The page appears with the label and a
    year-only date, and the exact date can't be read through the public API.
 4. Imported unlisted rentals never appear in search, the sitemap or Discover
