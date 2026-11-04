@@ -36,9 +36,18 @@ Before pushing, run `npm run lint` and `npm run build`.
 - **Database changes** are SQL files in `supabase/migrations/`, applied in
   order. A nightly `pg_cron` job deletes rejected reviews after 24 months.
 - **Building list**: the Halifax Regional Municipality Residential Rental
-  Registry plus OpenStreetMap names (`scripts/registry-import/`). Renters
-  can add buildings that aren't listed; they appear once a review is
-  approved.
+  Registry plus OpenStreetMap names (`scripts/registry-import/`). Buildings
+  with 4 or more units are listed. Houses, suites, rooms, duplexes and
+  condos (`properties.rental_kind`, `is_small_rental`) are kept hidden
+  until a review for one is approved, as are places renters add. Small
+  rentals show "Private landlord" and only the year of each review
+  (`reviews.published_on`); the exact time is readable only by the
+  moderator.
+- **Private landlords are never named.** `public.landlords` can be read by
+  anyone, so a private landlord's name must never be stored there. If
+  landlord pages are added (following a landlord across properties), link
+  them with IDs kept out of public view.
+- **Plans** for features not built yet are in `docs/plans/`.
 
 ## Environment variables
 
