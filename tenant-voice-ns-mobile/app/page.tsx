@@ -115,7 +115,7 @@ function DiscoverPage() {
               </h1>
               <p className="text-lg text-[#66706B]">
                 Explore renter experiences across Nova Scotia. Our building list
-                starts with the Halifax region; renting somewhere else? Add your
+                starts with the Halifax region. Renting somewhere else? Add your
                 building when you write a review.
               </p>
             </div>
