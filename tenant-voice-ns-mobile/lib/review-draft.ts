@@ -4,12 +4,15 @@
 // pill, "Share Your Experience") go through StartReviewLink, which asks
 // before discarding a draft with anything typed or rated in it.
 
-// A building the renter is adding because it isn't listed.
+import { isRentalKind } from "@/lib/rental-kind";
+
+// A property the renter is adding because it isn't listed.
 export type NewBuilding = {
   address: string;
   city: string;
   name: string;
-  hasFourOrMoreUnits: boolean;
+  // A RentalKind, or "" until the renter answers "What did you rent?".
+  rentalKind: string;
 };
 
 export function isNewBuildingComplete(
@@ -20,8 +23,23 @@ export function isNewBuildingComplete(
       /^\s*\d/.test(building.address) &&
       building.address.trim().length >= 3 &&
       building.city.trim().length >= 2 &&
-      building.hasFourOrMoreUnits
+      isRentalKind(building.rentalKind)
   );
+}
+
+// Drafts saved before November 4, 2026 had a "4 or more units" checkbox
+// instead of the rental kind.
+export function restoreNewBuilding(saved: unknown): NewBuilding | null {
+  if (!saved || typeof saved !== "object") {
+    return null;
+  }
+  const building = saved as Partial<NewBuilding> & { hasFourOrMoreUnits?: boolean };
+  return {
+    address: building.address ?? "",
+    city: building.city ?? "",
+    name: building.name ?? "",
+    rentalKind: building.rentalKind ?? (building.hasFourOrMoreUnits ? "building" : ""),
+  };
 }
 
 export type ReviewDraft = {
@@ -32,6 +50,8 @@ export type ReviewDraft = {
   occupancyDuration: string;
   wouldLiveAgain: string;
   reviewText: string;
+  // Older drafts don't have this.
+  landlordOnSite?: string;
   propertyRatings: Record<string, string>;
   landlordRatings: Record<string, string>;
 };
@@ -72,6 +92,7 @@ export function hasUnsavedWork(draft: ReviewDraft | null): draft is ReviewDraft 
     Boolean(draft.newBuilding?.address.trim() || draft.newBuilding?.name.trim()) ||
     draft.occupancyDuration !== "" ||
     draft.wouldLiveAgain !== "" ||
+    Boolean(draft.landlordOnSite) ||
     hasRating(draft.propertyRatings) ||
     hasRating(draft.landlordRatings)
   );

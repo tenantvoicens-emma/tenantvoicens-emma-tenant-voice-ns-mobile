@@ -17,6 +17,11 @@ import RemoveWordsDialog, {
 } from "@/components/admin/RemoveWordsDialog";
 import { formatCategory, OVERALL_CATEGORY } from "@/lib/ratings";
 import { isModeratorEmail } from "@/lib/moderator";
+import {
+  isSmallRentalKind,
+  landlordOnSiteOptions,
+  rentalKindLabels,
+} from "@/lib/rental-kind";
 import { supabase } from "@/lib/supabase";
 import { refreshPendingCount } from "@/lib/use-account-status";
 
@@ -31,7 +36,10 @@ type PendingReview = {
   review_text: string;
   occupancy_duration: string;
   would_live_again: string;
-  created_at: string;
+  landlord_on_site: string | null;
+  // Exact time, from get_review_submitted_at (the public reviews table
+  // shows only published_on). Missing if that lookup failed.
+  submitted_at?: string;
   // Words were removed by the moderator; the original is kept privately.
   moderator_edited: boolean;
   properties: {
@@ -40,6 +48,8 @@ type PendingReview = {
     address: string;
     city: string;
     is_listed: boolean;
+    rental_kind: string | null;
+    is_small_rental: boolean;
   } | null;
   property_ratings: RatingRow[];
   landlord_ratings: RatingRow[];
@@ -148,10 +158,11 @@ export default function AdminPage() {
       const { data, error } = await supabase
         .from("reviews")
         .select(
-          "id, review_text, occupancy_duration, would_live_again, created_at, moderator_edited, properties(name, slug, address, city, is_listed), property_ratings(id, category, score), landlord_ratings(id, category, score)"
+          "id, review_text, occupancy_duration, would_live_again, landlord_on_site, moderator_edited, properties(name, slug, address, city, is_listed, rental_kind, is_small_rental), property_ratings(id, category, score), landlord_ratings(id, category, score)"
         )
         .eq("status", reviewStatus)
-        .order("created_at", { ascending: reviewStatus === "pending" });
+        // Reviews are numbered in the order they were submitted.
+        .order("id", { ascending: reviewStatus === "pending" });
 
       if (error) {
         throw error;
@@ -163,6 +174,25 @@ export default function AdminPage() {
           ? review.properties[0] ?? null
           : review.properties,
       })) as PendingReview[];
+
+      if (normalizedReviews.length > 0) {
+        const { data: times, error: timesError } = await supabase.rpc(
+          "get_review_submitted_at",
+          { p_review_ids: normalizedReviews.map((review) => review.id) }
+        );
+        if (timesError) {
+          console.error("Could not load submission times.", timesError.code);
+        } else {
+          const timeByReview = new Map(
+            ((times ?? []) as { review_id: number; submitted_at: string }[]).map(
+              (row) => [row.review_id, row.submitted_at]
+            )
+          );
+          for (const review of normalizedReviews) {
+            review.submitted_at = timeByReview.get(review.id);
+          }
+        }
+      }
 
       // Pending reviews have no decisions yet, so only decided ones need
       // their history. A failure here still shows the reviews.
@@ -474,6 +504,19 @@ export default function AdminPage() {
                             approving this review publishes the building too.
                           </p>
                         )}
+                        {review.properties?.is_small_rental && (
+                          <p className="mb-2 rounded-2xl bg-[#FBF5E6] px-3 py-2 text-sm text-[#4A4030]">
+                            <span className="font-semibold">
+                              Private rental
+                              {review.properties.rental_kind &&
+                              isSmallRentalKind(review.properties.rental_kind)
+                                ? ` · ${rentalKindLabels[review.properties.rental_kind as keyof typeof rentalKindLabels]}`
+                                : ""}
+                            </span>
+                            . Its landlord may know who wrote this: remove anything that
+                            identifies the writer, the landlord, their family or roommates.
+                          </p>
+                        )}
                         <h3 className="text-xl font-bold text-[#294B3A]">
                           {review.properties?.name ?? "Unknown property"}
                         </h3>
@@ -485,7 +528,10 @@ export default function AdminPage() {
                           <p className="text-[#4A5A52]">{review.properties.city}</p>
                         )}
                         <p className="text-sm text-[#66706B]">
-                          Submitted {new Date(review.created_at).toLocaleString()}
+                          Submitted{" "}
+                          {review.submitted_at
+                            ? new Date(review.submitted_at).toLocaleString()
+                            : "(time unavailable)"}
                         </p>
                       </header>
 
@@ -498,6 +544,16 @@ export default function AdminPage() {
                           label="Would live here again"
                           value={capitalize(review.would_live_again)}
                         />
+                        {review.landlord_on_site && (
+                          <ReviewDetail
+                            label="Landlord lived there too"
+                            value={
+                              landlordOnSiteOptions.find(
+                                (option) => option.value === review.landlord_on_site
+                              )?.label ?? review.landlord_on_site
+                            }
+                          />
+                        )}
                       </div>
 
                       {review.moderator_edited && (

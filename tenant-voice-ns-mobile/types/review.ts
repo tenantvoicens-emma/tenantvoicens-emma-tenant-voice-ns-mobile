@@ -16,7 +16,15 @@ export type Review = {
   // A moderator removed words that broke the guidelines.
   moderatorEdited?: boolean;
 
-  createdAt?: string;
+  // The date shown publicly (reviews.published_on, YYYY-MM-DD). For small
+  // rentals it's January 1 of the year written, and only the year is shown.
+  publishedOn?: string;
+
+  yearOnly?: boolean;
+
+  // Small rentals: whether the landlord lived there too ("yes", "no",
+  // "unsure").
+  landlordOnSite?: string | null;
 
   propertyName?: string;
 

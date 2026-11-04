@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   FileText,
   HeartHandshake,
+  House,
   Mail,
   MapPin,
   MessagesSquare,
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 // Change this whenever the policies below change.
-const LAST_UPDATED = "November 3, 2026";
+const LAST_UPDATED = "November 4, 2026";
 
 export default function PoliciesPage() {
   return (
@@ -250,6 +251,33 @@ export default function PoliciesPage() {
             </p>
           </section>
 
+          <section id="private-rentals" className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+            <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
+              <IconTile icon={House} />
+              Houses, rooms and other private rentals
+            </h2>
+            <p className="text-gray-700">
+              You can review a house, a basement or backyard suite, a room in a
+              shared home, a unit in a duplex or small building, or a condo
+              rented from its owner. These are often where renters run into
+              the worst problems, and other renters deserve to know.
+            </p>
+            <p className="text-gray-700">
+              With only a few tenants, the landlord may be able to tell who
+              wrote a review. If you still live there, you may want to wait
+              until you&apos;ve moved out. That choice is yours.
+            </p>
+            <p className="text-gray-700">
+              To help protect you, a private rental&apos;s page shows the street
+              address but never a unit number, calls the landlord
+              &ldquo;Private landlord&rdquo; and never shows their name, and
+              shows only the year each review was written. Its reviews
+              aren&apos;t included in Recent reviews on the Discover page. The
+              moderator removes names and details that could identify you,
+              your roommates, or the landlord&apos;s family.
+            </p>
+          </section>
+
           <section id="data-sources" className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
             <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
               <IconTile icon={MapPin} />
@@ -259,9 +287,10 @@ export default function PoliciesPage() {
               The rental buildings you can review come from the Halifax
               Regional Municipality&apos;s Residential Rental Registry, used with
               credit under its open data licence, so for now the list covers the
-              Halifax region. Only buildings with four or
-              more registered rental units are listed, so a review can&apos;t
-              single out the one or two tenants of a house or duplex.
+              Halifax region. Buildings with four or more registered rental
+              units are listed. Houses, suites, rooms and duplexes from the
+              registry aren&apos;t shown as a list. Each one appears only once
+              a review for it is approved.
             </p>
             <p className="text-gray-700">
               Building names, where we have them, come from{" "}
@@ -275,10 +304,10 @@ export default function PoliciesPage() {
               Licence. Buildings without a name are listed by street address.
             </p>
             <p className="text-gray-700">
-              If your building isn&apos;t listed, including anywhere else in
-              Nova Scotia, you can add it when you write a review. The moderator
-              checks every added building, and it appears on the site only once
-              a review for it is approved.
+              If the place you rented isn&apos;t listed, including anywhere else
+              in Nova Scotia, you can add it when you write a review. The
+              moderator checks every added address, and it appears on the site
+              only once a review for it is approved.
             </p>
           </section>
 

@@ -25,4 +25,6 @@ export const landlordRatingGuide: RatingGuideEntry[] = [
   { value: "professionalism", label: "Professionalism", high: "respectful and reliable", low: "disrespectful or unreliable" },
   { value: "lease_transparency", label: "Lease transparency", high: "clear terms, no surprises", low: "unclear terms or surprise costs" },
   { value: "move_in_experience", label: "Move-in experience", high: "unit ready and as described", low: "not ready, or not as described" },
+  { value: "privacy", label: "Privacy", high: "gave proper notice before coming in", low: "came in without notice" },
+  { value: "deposit_handling", label: "Deposit handling", high: "deposit handled fairly and returned on time", low: "deposit kept or returned late without a fair reason" },
 ];

@@ -1,6 +1,12 @@
 import { createHmac } from "node:crypto";
 import { isIP } from "node:net";
 import { createClient } from "@supabase/supabase-js";
+import {
+  isLandlordOnSite,
+  isRentalKind,
+  type LandlordOnSite,
+  type RentalKind,
+} from "@/lib/rental-kind";
 import { expandStreetType } from "@/lib/street-address";
 import { checkRequestOrigin } from "@/lib/server/request-origin";
 
@@ -23,6 +29,8 @@ const landlordRatingCategories = new Set([
   "professionalism",
   "lease_transparency",
   "move_in_experience",
+  "privacy",
+  "deposit_handling",
 ]);
 
 const occupancyDurations = new Set([
@@ -38,13 +46,16 @@ type RatingInput = {
   score: string;
 };
 
-// A building the renter couldn't find, added when they review it. It
+// A property the renter couldn't find, added when they review it. It
 // stays hidden until the moderator approves the review.
 type NewPropertyInput = {
   address: string;
   city: string;
   name?: string;
-  hasFourOrMoreUnits: true;
+  rentalKind?: RentalKind;
+  // Sent instead of rentalKind by review forms opened before November 4,
+  // 2026, which asked the renter to confirm the building had 4+ units.
+  hasFourOrMoreUnits?: true;
 };
 
 type ReviewRequest = {
@@ -54,6 +65,7 @@ type ReviewRequest = {
   reviewText: string;
   occupancyDuration: string;
   wouldLiveAgain: string;
+  landlordOnSite?: LandlordOnSite;
   propertyRatings: RatingInput[];
   landlordRatings: RatingInput[];
 };
@@ -237,6 +249,9 @@ export async function POST(request: Request) {
           p_address: expandStreetType(body.newProperty.address),
           p_city: body.newProperty.city,
           p_name: body.newProperty.name ?? null,
+          p_rental_kind:
+            body.newProperty.rentalKind ??
+            (body.newProperty.hasFourOrMoreUnits ? "building" : null),
         }
       );
       if (suggestError || typeof suggestedId !== "number") {
@@ -257,6 +272,7 @@ export async function POST(request: Request) {
       p_property_ratings: body.propertyRatings,
       p_landlord_ratings: body.landlordRatings,
       p_user_id: userId,
+      p_landlord_on_site: body.landlordOnSite ?? null,
     });
 
     if (error) {
@@ -297,6 +313,7 @@ function isReviewRequest(value: unknown): value is ReviewRequest {
     typeof body.occupancyDuration === "string" &&
     occupancyDurations.has(body.occupancyDuration) &&
     ["yes", "no", "unsure"].includes(String(body.wouldLiveAgain)) &&
+    (body.landlordOnSite === undefined || isLandlordOnSite(body.landlordOnSite)) &&
     isRatingArray(body.propertyRatings, propertyRatingCategories) &&
     isRatingArray(body.landlordRatings, landlordRatingCategories)
   );
@@ -318,7 +335,8 @@ function isNewProperty(value: unknown): value is NewPropertyInput {
     input.city.length <= 60 &&
     (input.name === undefined ||
       (typeof input.name === "string" && input.name.length <= 80)) &&
-    input.hasFourOrMoreUnits === true
+    (isRentalKind(input.rentalKind) ||
+      (input.rentalKind === undefined && input.hasFourOrMoreUnits === true))
   );
 }
 

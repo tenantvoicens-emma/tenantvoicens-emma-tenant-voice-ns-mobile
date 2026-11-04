@@ -30,7 +30,7 @@ type DiscoverReviewRow = {
   review_text: string | null;
   occupancy_duration: string | null;
   would_live_again: string | null;
-  created_at: string;
+  published_on: string;
   moderator_edited: boolean | null;
   properties:
     | { name: string; slug: string }
@@ -344,10 +344,13 @@ async function loadRecentReviews(): Promise<Review[]> {
   const { data, error } = await supabase
     .from("reviews")
     .select(
-      "id, review_text, occupancy_duration, would_live_again, created_at, moderator_edited, properties(name, slug), property_ratings(id, category, score), landlord_ratings(id, category, score)"
+      "id, review_text, occupancy_duration, would_live_again, published_on, moderator_edited, properties!inner(name, slug), property_ratings(id, category, score), landlord_ratings(id, category, score)"
     )
     .eq("status", "approved")
-    .order("created_at", { ascending: false })
+    // Small rentals are left out: being near the top of this list would
+    // show roughly when a review was written, which their pages don't.
+    .eq("properties.is_small_rental", false)
+    .order("id", { ascending: false })
     .limit(5);
   if (error) {
     throw new Error(`Recent reviews failed to load (${error.code}).`);
@@ -389,7 +392,7 @@ function mapDiscoverReview(row: DiscoverReviewRow): Review {
     reviewText: row.review_text ?? "",
     wouldLiveAgain: formatWouldLiveAgain(row.would_live_again),
     moderatorEdited: row.moderator_edited === true,
-    createdAt: row.created_at,
+    publishedOn: row.published_on,
     propertyRatings: mapDiscoverRatings(row.property_ratings, propertySlug),
     landlordRatings: mapDiscoverRatings(row.landlord_ratings, propertySlug),
     propertyOverall: overallScore(row.property_ratings),

@@ -1,3 +1,4 @@
+import { rentalKindOptions } from "@/lib/rental-kind";
 import { NewBuilding } from "@/lib/review-draft";
 
 type NewBuildingFieldsProps = {
@@ -9,7 +10,7 @@ type NewBuildingFieldsProps = {
 
 const labelClassName = "block text-lg font-medium text-[#4A5A52]";
 
-// Lets a renter add the building they lived in when search can't find it.
+// Lets a renter add the place they rented when search can't find it.
 export default function NewBuildingFields({
   building,
   onChange,
@@ -24,7 +25,7 @@ export default function NewBuildingFields({
   return (
     <div className="space-y-4">
       <p className="text-[#4A5A52]">
-        Add the building you lived in. We check every new building before it
+        Add the place you rented. We check every new address before it
         appears on the site, and it&apos;s published together with your review.
       </p>
 
@@ -83,31 +84,33 @@ export default function NewBuildingFields({
         />
       </div>
 
-      <label className="flex items-start gap-3 rounded-2xl bg-[#F6F6EE] p-4">
-        <input
-          type="checkbox"
-          required
-          checked={building.hasFourOrMoreUnits}
-          onChange={(event) =>
-            update({ hasFourOrMoreUnits: event.target.checked })
-          }
-          className="mt-1 h-5 w-5 shrink-0 accent-[#08873A]"
-        />
-        <span className="text-[#1F2A24]">
-          This building has 4 or more rental units.
-          <span className="mt-1 block text-sm text-[#66706B]">
-            Reviews of houses and duplexes could identify you to your landlord,
-            so we only list larger buildings.
-          </span>
-        </span>
-      </label>
+      <fieldset className="space-y-2">
+        <legend className={`${labelClassName} mb-2`}>What did you rent?</legend>
+        {rentalKindOptions.map((option) => (
+          <label
+            key={option.value}
+            className="flex items-start gap-3 rounded-2xl bg-[#F6F6EE] p-4"
+          >
+            <input
+              type="radio"
+              name="new-building-rental-kind"
+              required
+              value={option.value}
+              checked={building.rentalKind === option.value}
+              onChange={() => update({ rentalKind: option.value })}
+              className="mt-1 h-5 w-5 shrink-0 accent-[#08873A]"
+            />
+            <span className="text-[#1F2A24]">{option.label}</span>
+          </label>
+        ))}
+      </fieldset>
 
       <button
         type="button"
         onClick={onCancel}
         className="font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4"
       >
-        Search the listed buildings instead
+        Search the listed places instead
       </button>
     </div>
   );

@@ -13,12 +13,15 @@ Reads:
         Make the same change in the live database: properties.name)
 
 Writes, next to this script:
-    buildings.json   one entry per building to import
-    report.txt       what was kept, skipped and matched, for review
+    buildings.json       one entry per building with 4 or more units
+    small-rentals.json   one entry per house, suite, room, duplex or condo
+                         with 1 to 3 units, and what kind of rental it is
+    report.txt           what was kept, skipped and matched, for review
 
-Only buildings with 4 or more registered units are kept. Houses, duplexes
-and room-by-room rentals are skipped: with so few tenants, a review would
-identify its writer to the landlord.
+Buildings with 4 or more units are listed on the site. Small rentals are
+imported hidden: a renter who types the address reviews that entry, and
+its page appears only once the moderator approves a review for it. This
+way the site never shows thousands of home addresses as a list.
 """
 
 import csv
@@ -146,6 +149,22 @@ def split_address(raw: str):
     return number_text, first_number, normalize_street(match.group(2)), city, postal
 
 
+def small_rental_kind(building) -> str:
+    """What kind of small rental the registry says this is."""
+    types, unit_types = building["types"], building["unit_types"] - {"", "OTHER"}
+    if unit_types and unit_types <= {"BEDROOM ONLY"}:
+        return "room"
+    if "BACKYARD SUITE" in types or (unit_types and unit_types <= {"BASEMENT APARTMENT"}):
+        return "suite"
+    if unit_types and unit_types <= {"CONDO"}:
+        return "condo"
+    if types & {"SEMI-DETACHED / DUPLEX HOUSE", "MULTI-UNIT BUILDING (3 UNITS OR LESS)"}:
+        return "small_building"
+    if "ENTIRE HOUSE" in unit_types or types & {"SINGLE DETACHED HOUSE", "TOWN HOUSE / ROW HOUSE"}:
+        return "house"
+    return "small_building"
+
+
 def mercator_to_lat_lon(x: float, y: float):
     lon = math.degrees(x / 6378137.0)
     lat = math.degrees(2 * math.atan(math.exp(y / 6378137.0)) - math.pi / 2)
@@ -196,14 +215,18 @@ def main():
             pass
 
     kept = []
+    small = []
     skipped = defaultdict(int)
     for building in buildings.values():
         if building["units"] < MIN_UNITS:
             skipped["fewer than 4 units"] += 1
+            small.append(building)
         elif not building["types"] & KEEP_BUILDING_TYPES:
             skipped["house, duplex or small building"] += 1
+            small.append(building)
         elif building["unit_types"] <= {"BEDROOM ONLY", "OTHER"}:
             skipped["rented by the room"] += 1
+            small.append(building)
         else:
             kept.append(building)
     report.append(f"Buildings: {len(buildings)}; kept {len(kept)}; skipped {dict(skipped)}")
@@ -269,9 +292,34 @@ def main():
             report.append(f"  name [{how}] {name!r} -> {address}, {city}")
 
     json.dump(output, open(HERE / "buildings.json", "w"), indent=0, ensure_ascii=False)
+
+    # Small rentals: no names (a house's OSM name is usually the owner's
+    # business, if anything), and slugs that can't clash with the listed
+    # buildings above.
+    small_output = []
+    kinds = defaultdict(int)
+    for building in sorted(small, key=lambda b: (b["city"], b["street"], int(re.match(r"\d+", b["number"]).group(0)))):
+        address = f"{building['number']} {title_case(building['street'])}"
+        city = title_case(building["city"])
+        slug = base = slugify(f"{address} {city}")
+        suffix = 2
+        while slug in used_slugs:
+            slug = f"{base}-{suffix}"
+            suffix += 1
+        used_slugs.add(slug)
+        kind = small_rental_kind(building)
+        kinds[kind] += 1
+        small_output.append({
+            "slug": slug, "name": address, "address": address, "city": city,
+            "postal_code": building["postal"] or None,
+            "registered_units": building["units"],
+            "rental_kind": kind,
+        })
+    report.insert(3, f"Small rentals (imported hidden): {len(small_output)} {dict(sorted(kinds.items()))}")
+    json.dump(small_output, open(HERE / "small-rentals.json", "w"), indent=0, ensure_ascii=False)
     (HERE / "report.txt").write_text("\n".join(report) + "\n")
     print("\n".join(report[:4]))
-    print(f"Wrote {len(output)} buildings")
+    print(f"Wrote {len(output)} buildings and {len(small_output)} small rentals")
 
 
 if __name__ == "__main__":

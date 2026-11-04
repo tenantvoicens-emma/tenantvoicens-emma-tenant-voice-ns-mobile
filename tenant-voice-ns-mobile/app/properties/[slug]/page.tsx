@@ -37,7 +37,8 @@ type SupabaseReviewRow = {
   review_text: string | null;
   occupancy_duration: string | null;
   would_live_again: string | null;
-  created_at: string;
+  published_on: string;
+  landlord_on_site: string | null;
   moderator_edited: boolean | null;
   property_ratings: SupabaseRatingRow[] | null;
   landlord_ratings: SupabaseRatingRow[] | null;
@@ -105,11 +106,13 @@ async function PropertyContent({ params }: PropertyPageProps) {
   const { data: reviewData, error: reviewError } = await supabase
     .from("reviews")
     .select(
-      "id, review_text, occupancy_duration, would_live_again, created_at, moderator_edited, property_ratings(id, category, score), landlord_ratings(id, category, score)"
+      "id, review_text, occupancy_duration, would_live_again, published_on, landlord_on_site, moderator_edited, property_ratings(id, category, score), landlord_ratings(id, category, score)"
     )
     .eq("property_id", property.id)
     .eq("status", "approved")
-    .order("created_at", { ascending: false });
+    // Newest first. Reviews are numbered in the order they were written,
+    // and small rentals' dates show only the year.
+    .order("id", { ascending: false });
 
   if (reviewError) {
     await waitForRealVisit();
@@ -124,7 +127,9 @@ async function PropertyContent({ params }: PropertyPageProps) {
     reviewText: review.review_text ?? "",
     wouldLiveAgain: formatWouldLiveAgain(review.would_live_again),
     moderatorEdited: review.moderator_edited === true,
-    createdAt: review.created_at,
+    publishedOn: review.published_on,
+    yearOnly: data.is_small_rental === true,
+    landlordOnSite: review.landlord_on_site,
     propertyRatings: mapRatings([review], "property_ratings", slug),
     landlordRatings: mapRatings([review], "landlord_ratings", slug),
     propertyOverall: overallScore(review.property_ratings),
@@ -157,6 +162,7 @@ async function PropertyContent({ params }: PropertyPageProps) {
           <PropertyHeader
             property={property}
             reviewCount={reviews.length}
+            rentalKind={data.rental_kind}
           />
           <PropertySnapshot
             propertyRating={propertyRatingSummary}
