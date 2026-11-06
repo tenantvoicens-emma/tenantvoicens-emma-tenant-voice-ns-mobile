@@ -5,11 +5,9 @@ import TopNavigation, {
   TopNavigationFallback,
 } from "@/components/navigation/TopNavigation";
 import { UnfinishedReviewDialogProvider } from "@/components/navigation/UnfinishedReviewDialog";
+import { sharedOpenGraph, siteDescription as description } from "@/lib/page-metadata";
 import { siteUrl } from "@/lib/site-url";
 import "./globals.css";
-
-const description =
-  "Honest, moderated reviews of rental buildings and landlords from Nova Scotia renters. Read what it's like to live there, or share your own experience anonymously.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
@@ -26,9 +24,7 @@ export const metadata: Metadata = {
     statusBarStyle: "default",
   },
   openGraph: {
-    type: "website",
-    siteName: "Tenant Voice NS",
-    locale: "en_CA",
+    ...sharedOpenGraph,
     title: "Tenant Voice NS",
     description,
   },
