@@ -229,6 +229,12 @@ export default function PoliciesPage() {
               To stop spam, we keep a one-way fingerprint of your IP address
               (not the address itself) for about 48 hours.
             </p>
+            <p className="text-gray-700">
+              We count visits to each page with Vercel Web Analytics, from our
+              hosting provider. It doesn&apos;t use cookies, doesn&apos;t
+              follow you to other sites, and shows us only totals, such as how
+              many people viewed a page and which site linked to it.
+            </p>
           </section>
 
           <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">

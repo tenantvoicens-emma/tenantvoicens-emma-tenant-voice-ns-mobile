@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import BrandHeader from "@/components/navigation/BrandHeader";
 import TopNavigation, {
   TopNavigationFallback,
@@ -91,6 +92,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </footer>
           </div>
         </UnfinishedReviewDialogProvider>
+        {/* Counts page visits (Vercel Web Analytics: no cookies, no
+            personal data). It sits in its own Suspense boundary, so pages
+            are still built on the server. */}
+        <Analytics />
       </body>
     </html>
   );
