@@ -55,14 +55,16 @@ export default function TopNavigation({
 }
 
 // "Sign In" for visitors and "Account" once signed in. For the moderator
-// it's "Moderation" with the number of reviews waiting, and goes straight
+// it's "Moderation" with the number of reviews and reports waiting, and goes straight
 // to the moderation queue.
 function AccountLink({ pathname }: { pathname: string }) {
-  const { signedIn, isModerator, pendingCount } = useAccountStatus();
+  const { signedIn, isModerator, pendingCount, openReportCount } =
+    useAccountStatus();
 
   if (isModerator) {
     const isCurrent = pathname === "/admin";
-    const waiting = pendingCount ?? 0;
+    // Reviews waiting for a decision, plus open reports.
+    const waiting = (pendingCount ?? 0) + (openReportCount ?? 0);
     return (
       <Link
         href="/admin"
@@ -78,7 +80,7 @@ function AccountLink({ pathname }: { pathname: string }) {
           >
             {waiting}
             <span className="sr-only">
-              {waiting === 1 ? " review waiting" : " reviews waiting"}
+              {waiting === 1 ? " item waiting" : " items waiting"}
             </span>
           </span>
         )}

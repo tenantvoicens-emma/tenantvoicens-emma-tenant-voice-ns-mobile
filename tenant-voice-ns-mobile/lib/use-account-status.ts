@@ -11,12 +11,15 @@ export type AccountStatus = {
   // Reviews waiting for moderation; null unless the moderator is signed
   // in and the count has loaded.
   pendingCount: number | null;
+  // Open reports on published reviews, for the moderator; null otherwise.
+  openReportCount: number | null;
 };
 
 const signedOut: AccountStatus = {
   signedIn: false,
   isModerator: false,
   pendingCount: null,
+  openReportCount: null,
 };
 
 // One copy shared by every component that asks (the header and footer
@@ -36,16 +39,29 @@ async function loadPendingCount() {
   if (!session || !isModeratorEmail(session.user.email)) {
     return;
   }
-  const { count, error } = await supabase
-    .from("reviews")
-    .select("id", { count: "exact", head: true })
-    .eq("status", "pending");
-  if (error) {
-    console.error("Could not count pending reviews.", error.code);
-    return;
+  const [pending, reports] = await Promise.all([
+    supabase
+      .from("reviews")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
+    supabase.rpc("count_open_review_reports"),
+  ]);
+  if (pending.error) {
+    console.error("Could not count pending reviews.", pending.error.code);
+  }
+  if (reports.error) {
+    console.error("Could not count open reports.", reports.error.code);
   }
   if (session && isModeratorEmail(session.user.email)) {
-    setStatus({ ...status, pendingCount: count ?? 0 });
+    setStatus({
+      ...status,
+      pendingCount: pending.error ? status.pendingCount : pending.count ?? 0,
+      openReportCount: reports.error
+        ? status.openReportCount
+        : typeof reports.data === "number"
+          ? reports.data
+          : 0,
+    });
   }
 }
 
@@ -60,6 +76,7 @@ function applySession(next: Session | null) {
     signedIn: true,
     isModerator,
     pendingCount: isModerator ? status.pendingCount : null,
+    openReportCount: isModerator ? status.openReportCount : null,
   });
   void loadPendingCount();
 }
@@ -91,7 +108,8 @@ export function useAccountStatus() {
   return useSyncExternalStore(subscribe, () => status, () => signedOut);
 }
 
-// Call after approving or rejecting a review so the badge updates.
+// Call after approving or rejecting a review, or closing reports, so the
+// badge updates.
 export function refreshPendingCount() {
   void loadPendingCount();
 }
