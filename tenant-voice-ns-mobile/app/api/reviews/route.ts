@@ -1,5 +1,3 @@
-import { createHmac } from "node:crypto";
-import { isIP } from "node:net";
 import { createClient } from "@supabase/supabase-js";
 import {
   isLandlordOnSite,
@@ -8,6 +6,11 @@ import {
   type RentalKind,
 } from "@/lib/rental-kind";
 import { expandStreetType } from "@/lib/street-address";
+import {
+  getClientIp,
+  ipFingerprint,
+  verifyTurnstile,
+} from "@/lib/server/form-security";
 import { checkRequestOrigin } from "@/lib/server/request-origin";
 
 const propertyRatingCategories = new Set([
@@ -123,11 +126,6 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid sign-in session." }, { status: 401 });
   }
 
-  const verificationBody = new URLSearchParams({
-    secret: turnstileSecret,
-    response: body.turnstileToken,
-  });
-
   try {
     let userId: string | null = null;
 
@@ -150,54 +148,14 @@ export async function POST(request: Request) {
       userId = data.user.id;
     }
 
-    const verificationResponse = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        body: verificationBody,
-        cache: "no-store",
-      }
-    );
-
-    if (!verificationResponse.ok) {
-      throw new Error("Turnstile verification request failed.");
-    }
-
-    const verification = (await verificationResponse.json()) as {
-      success?: boolean;
-      action?: string;
-      hostname?: string;
-      "error-codes"?: string[];
-    };
-
-    if (!verification.success) {
-      console.warn(
-        "Turnstile rejected a review submission.",
-        verification["error-codes"] ?? []
-      );
-      return Response.json(
-        { error: "The security check could not be verified. Please try again." },
-        { status: 400 }
-      );
-    }
-
-    if (verification.action !== "review_submit") {
-      console.warn("Turnstile review action did not match.");
-      return Response.json(
-        { error: "The security check did not match this form. Please refresh and try again." },
-        { status: 400 }
-      );
-    }
-
-    if (
-      !verification.hostname ||
-      !allowedHostnames.includes(verification.hostname.toLowerCase())
-    ) {
-      console.warn("Turnstile hostname did not match the allowed request origin.");
-      return Response.json(
-        { error: "The security check did not match this site. Please refresh and try again." },
-        { status: 400 }
-      );
+    const turnstile = await verifyTurnstile({
+      secret: turnstileSecret,
+      token: body.turnstileToken,
+      action: "review_submit",
+      allowedHostnames,
+    });
+    if (!turnstile.ok) {
+      return Response.json({ error: turnstile.error }, { status: turnstile.status });
     }
 
     const clientIp = getClientIp(request);
@@ -216,12 +174,9 @@ export async function POST(request: Request) {
       },
     });
 
-    const ipFingerprint = createHmac("sha256", serviceRoleKey)
-      .update(clientIp)
-      .digest("hex");
     const { data: isWithinRateLimit, error: rateLimitError } =
       await adminClient.rpc("consume_review_submission_limit", {
-        p_ip_fingerprint: ipFingerprint,
+        p_ip_fingerprint: ipFingerprint(clientIp, serviceRoleKey),
       });
 
     if (rateLimitError) {
@@ -338,22 +293,6 @@ function isNewProperty(value: unknown): value is NewPropertyInput {
     (isRentalKind(input.rentalKind) ||
       (input.rentalKind === undefined && input.hasFourOrMoreUnits === true))
   );
-}
-
-// Only headers that Vercel sets itself, overwriting anything the browser
-// sent. (cf-connecting-ip is not one of them on Vercel: a browser could
-// send a new made-up value with every request to dodge the rate limit.)
-function getClientIp(request: Request) {
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  const candidates = [
-    request.headers.get("x-vercel-forwarded-for"),
-    forwardedFor?.split(",")[0],
-    request.headers.get("x-real-ip"),
-  ];
-
-  return candidates
-    .map((candidate) => candidate?.trim())
-    .find((candidate): candidate is string => Boolean(candidate && isIP(candidate)));
 }
 
 function isRatingArray(

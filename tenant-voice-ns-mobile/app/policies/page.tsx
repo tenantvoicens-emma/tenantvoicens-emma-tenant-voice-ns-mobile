@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 };
 
 // Change this whenever the policies below change.
-const LAST_UPDATED = "November 4, 2026";
+const LAST_UPDATED = "November 6, 2026";
 
 export default function PoliciesPage() {
   return (
@@ -147,16 +147,26 @@ export default function PoliciesPage() {
               they were rejected, for recordkeeping and appeals, and then
               deleted automatically.
             </p>
+            <h3 id="reporting" className="scroll-mt-6 font-semibold text-[#294B3A]">
+              Reporting a review
+            </h3>
             <p className="text-gray-700">
-              To appeal a moderation decision, or to report a published review,
-              email us (see Contact below) with the building&apos;s name and what
-              the review says.
+              Anyone, including a landlord or property manager, can report a
+              published review with the &ldquo;Report this review&rdquo; link
+              under it. Choose a reason and add details if you like. Only the
+              moderator sees reports. A reported review stays up while the
+              moderator checks it against these guidelines, then keeps it up,
+              removes the part that breaks them, or unpublishes it. A report
+              does not automatically remove a review.
             </p>
             <p className="text-gray-700">
-              A landlord, property manager, or other affected person may contact
-              Tenant Voice NS to request a review of published content. A request
-              does not automatically remove a review; it will be considered by the
-              moderator.
+              Adding your email to a report is optional, and it&apos;s used only
+              to reply to you about it. Reports are kept privately and deleted
+              24 months after the moderator has dealt with them.
+            </p>
+            <p className="text-gray-700">
+              To appeal a moderation decision, email us (see Contact below) with
+              the building&apos;s name and what the review says.
             </p>
             <h3 id="moderator-edits" className="scroll-mt-6 font-semibold text-[#294B3A]">
               Moderator edits

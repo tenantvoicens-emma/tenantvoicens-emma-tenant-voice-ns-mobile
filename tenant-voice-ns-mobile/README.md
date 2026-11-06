@@ -28,11 +28,16 @@ Before pushing, run `npm run lint` and `npm run build`.
   key. Row-level security only exposes approved reviews and listed
   buildings.
 - **Writes go through the server**: `app/api/reviews` (submit a review:
-  Cloudflare Turnstile check, rate limit, validation) and `app/api/account`
+  Cloudflare Turnstile check, rate limit, validation),
+  `app/api/review-reports` (report a published review: the same checks,
+  with its own rate limit) and `app/api/account`
   (delete your account). Both use the Supabase service role key, which
   must never reach the browser.
 - **Moderation** is limited to one account (`lib/moderator.ts`); the
   database enforces the same address in its policies and functions.
+  Reports on published reviews are kept in `private.review_reports` and
+  shown on the moderation page's Reports tab; a reported review stays up
+  until the moderator decides.
 - **Database changes** are SQL files in `supabase/migrations/`, applied in
   order. A nightly `pg_cron` job deletes rejected reviews after 24 months.
 - **Building list**: the Halifax Regional Municipality Residential Rental

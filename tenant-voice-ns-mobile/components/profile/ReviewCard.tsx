@@ -3,6 +3,7 @@ import Link from "next/link";
 import RatingMeter from "@/components/profile/RatingMeter";
 import LabeledRating from "@/components/profile/LabeledRating";
 import ClampedReviewText from "@/components/profile/ClampedReviewText";
+import ReportReviewButton from "@/components/profile/ReportReviewButton";
 import { getPropertyHref } from "@/lib/navigation";
 import { Review } from "@/types/review";
 import { MODERATOR_EDIT_NOTICE } from "@/lib/moderator-edit";
@@ -120,6 +121,11 @@ export default function ReviewCard({
               overall={review.landlordOverall ?? null}
               ratings={review.landlordRatings ?? []}
             />
+            {Number.isSafeInteger(Number(review.id)) && (
+              <footer className="-mb-2 border-t border-[#EEECE6] pt-1">
+                <ReportReviewButton reviewId={Number(review.id)} />
+              </footer>
+            )}
           </>
         )}
       </article>

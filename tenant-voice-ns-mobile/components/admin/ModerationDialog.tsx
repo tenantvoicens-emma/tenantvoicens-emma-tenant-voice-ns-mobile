@@ -8,8 +8,12 @@ export type ModerationActionKind =
   | "unpublish"
   | "approve-after-all";
 
-export type ModerationAction = {
-  kind: ModerationActionKind;
+// The Reports tab also asks before closing reports and keeping the
+// review up as it is.
+export type DialogActionKind = ModerationActionKind | "keep-up";
+
+export type ModerationAction<Kind extends DialogActionKind = ModerationActionKind> = {
+  kind: Kind;
   reviewId: number;
   propertyName: string;
 };
@@ -18,7 +22,7 @@ const NOTE_LIMIT = 500;
 
 // Approving a pending review doesn't confirm, so it has no copy here.
 const actionCopy: Record<
-  Exclude<ModerationActionKind, "approve">,
+  Exclude<DialogActionKind, "approve">,
   {
     title: string;
     body: (propertyName: string) => string;
@@ -50,10 +54,18 @@ const actionCopy: Record<
     placeholder: "e.g. Appeal upheld after edits",
     tone: "primary",
   },
+  "keep-up": {
+    title: "Keep this review up?",
+    body: (name) =>
+      `Its reports will be closed and the review stays on the page for ${name} as it is.`,
+    confirm: "Keep it up",
+    placeholder: "e.g. Opinion about repairs, within the guidelines",
+    tone: "primary",
+  },
 };
 
 type ModerationDialogProps = {
-  action: ModerationAction | null;
+  action: ModerationAction<DialogActionKind> | null;
   isSaving: boolean;
   onConfirm: (note: string) => void;
   onCancel: () => void;
