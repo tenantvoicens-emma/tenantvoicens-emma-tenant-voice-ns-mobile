@@ -10,3 +10,18 @@ export const getPropertyBySlug = cache(async (slug: string) =>
     .eq("slug", slug)
     .maybeSingle()
 );
+
+// A property's approved reviews with their ratings, newest first. Shared
+// by the page and its title and description, which mention how many
+// reviews there are and the average ratings. Reviews are numbered in the
+// order they were written, and small rentals' dates show only the year.
+export const getApprovedReviews = cache(async (propertyId: number) =>
+  supabase
+    .from("reviews")
+    .select(
+      "id, review_text, occupancy_duration, would_live_again, published_on, landlord_on_site, moderator_edited, property_ratings(id, category, score), landlord_ratings(id, category, score)"
+    )
+    .eq("property_id", propertyId)
+    .eq("status", "approved")
+    .order("id", { ascending: false })
+);

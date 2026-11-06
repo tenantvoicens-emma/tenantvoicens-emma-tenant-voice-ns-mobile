@@ -20,8 +20,11 @@ import {
   overallScore,
   parseRatingScore,
 } from "@/lib/ratings";
-import { getPropertyBySlug } from "@/lib/server/property-lookup";
-import { supabase } from "@/lib/supabase";
+import { pageMetadata } from "@/lib/page-metadata";
+import {
+  getApprovedReviews,
+  getPropertyBySlug,
+} from "@/lib/server/property-lookup";
 import { PropertyListing } from "@/types/property";
 import { Rating } from "@/types/rating";
 import { Review } from "@/types/review";
@@ -59,12 +62,47 @@ export async function generateMetadata({
     // Not found, or the lookup failed: the page itself explains which.
     return { title: "Property" };
   }
-  const location = [data.address, data.city].filter(Boolean).join(", ");
+
+  // "Macdonald Apartments, 5885 Cunard Street, Halifax", or just the
+  // address and town when the building has no name of its own. People
+  // search by address, so it goes in the title.
+  const place = [
+    data.name,
+    data.address && data.address !== data.name ? data.address : null,
+    data.city,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  const { data: reviewData, error: reviewError } = await getApprovedReviews(data.id);
+  const reviewRows = (reviewData ?? []) as SupabaseReviewRow[];
+  const count = reviewRows.length;
+  const propertyRating = summarizeRatings(reviewRows, "property_ratings").average;
+  const landlordRating = summarizeRatings(reviewRows, "landlord_ratings").average;
+  const ratings = [
+    propertyRating !== null ? `building ${propertyRating}/5` : null,
+    landlordRating !== null ? `landlord ${landlordRating}/5` : null,
+  ].filter(Boolean);
+
+  const description = reviewError
+    ? `Renter reviews and ratings for ${place}, from Nova Scotia tenants on Tenant Voice NS.`
+    : count === 0
+      ? `No reviews yet for ${place}. Lived there? Share your experience anonymously on Tenant Voice NS.`
+      : `${count} ${count === 1 ? "renter review" : "renter reviews"} of ${place}${
+          ratings.length > 0 ? `. Average ratings: ${ratings.join(", ")}` : ""
+        }. Honest, moderated reviews from Nova Scotia tenants.`;
+
   return {
-    title: data.name,
-    description: `Renter reviews and ratings for ${data.name}${
-      location && location !== data.name ? `, ${location}` : ""
-    }, from Nova Scotia tenants on Tenant Voice NS.`,
+    ...pageMetadata({
+      title: `${place}: tenant reviews`,
+      description,
+      path: `/properties/${data.slug}`,
+    }),
+    // A page with no reviews yet has little to offer a search, and many
+    // of them would make Google rate the whole site lower. It becomes
+    // searchable once its first review is approved (it's added to the
+    // sitemap then too). Visitors can still open and review it.
+    ...(!reviewError && count === 0 ? { robots: { index: false, follow: true } } : {}),
   };
 }
 
@@ -103,16 +141,7 @@ async function PropertyContent({ params }: PropertyPageProps) {
     city: data.city ?? "",
   };
 
-  const { data: reviewData, error: reviewError } = await supabase
-    .from("reviews")
-    .select(
-      "id, review_text, occupancy_duration, would_live_again, published_on, landlord_on_site, moderator_edited, property_ratings(id, category, score), landlord_ratings(id, category, score)"
-    )
-    .eq("property_id", property.id)
-    .eq("status", "approved")
-    // Newest first. Reviews are numbered in the order they were written,
-    // and small rentals' dates show only the year.
-    .order("id", { ascending: false });
+  const { data: reviewData, error: reviewError } = await getApprovedReviews(property.id);
 
   if (reviewError) {
     await waitForRealVisit();

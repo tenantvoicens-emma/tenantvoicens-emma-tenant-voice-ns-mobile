@@ -20,12 +20,14 @@ import {
   type RatingGuideEntry,
 } from "@/lib/rating-guide";
 import PageContainer from "@/components/ui/PageContainer";
+import { pageMetadata } from "@/lib/page-metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Policies and review guidelines",
   description:
     "How Tenant Voice NS moderates reviews, protects renters' privacy, calculates ratings and handles concerns from landlords.",
-};
+  path: "/policies",
+});
 
 // Change this whenever the policies below change.
 const LAST_UPDATED = "November 6, 2026";
