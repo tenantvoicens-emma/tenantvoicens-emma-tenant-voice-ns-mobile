@@ -12,6 +12,9 @@ import FormMessages from "@/components/ui/FormMessages";
 import PageContainer from "@/components/ui/PageContainer";
 import SegmentedControl from "@/components/ui/SegmentedControl";
 import EvidenceViewer from "@/components/admin/EvidenceViewer";
+import LegalHoldControl, {
+  type LegalHold,
+} from "@/components/admin/LegalHoldControl";
 import ModerationChecklist from "@/components/admin/ModerationChecklist";
 import ReportsQueue from "@/components/admin/ReportsQueue";
 import RemoveWordsDialog, {
@@ -106,6 +109,7 @@ export default function AdminPage() {
   // The writer's original words for reviews the moderator has edited.
   const [originals, setOriginals] = useState<Record<number, string>>({});
   const [evidenceCounts, setEvidenceCounts] = useState<Record<number, number>>({});
+  const [holds, setHolds] = useState<Record<number, LegalHold>>({});
   const [removeTarget, setRemoveTarget] = useState<RemoveWordsTarget | null>(
     null
   );
@@ -261,11 +265,28 @@ export default function AdminPage() {
         }
       }
 
+      // Reviews on a legal hold.
+      const holdsByReview: Record<number, LegalHold> = {};
+      if (normalizedReviews.length > 0) {
+        const { data: holdRows, error: holdsError } = await supabase.rpc(
+          "get_review_legal_holds",
+          { p_review_ids: normalizedReviews.map((review) => review.id) }
+        );
+        if (holdsError) {
+          console.error("Could not load legal holds.", holdsError.code);
+        } else {
+          for (const row of (holdRows ?? []) as (LegalHold & { review_id: number })[]) {
+            holdsByReview[row.review_id] = { placed_at: row.placed_at, note: row.note };
+          }
+        }
+      }
+
       if (isActive) {
         setReviews(normalizedReviews);
         setHistory(historyByReview);
         setOriginals(originalsByReview);
         setEvidenceCounts(countsByReview);
+        setHolds(holdsByReview);
         setLoadedQueueKey(activeKey);
         setErrorMessage("");
       }
@@ -626,6 +647,23 @@ export default function AdminPage() {
                             reviewId={review.id}
                             count={evidenceCounts[review.id] ?? 0}
                           />
+                          {reviewStatus !== "pending" && (
+                            <LegalHoldControl
+                              reviewId={review.id}
+                              hold={holds[review.id]}
+                              onChange={(reviewId, hold) =>
+                                setHolds((current) => {
+                                  const next = { ...current };
+                                  if (hold) {
+                                    next[reviewId] = hold;
+                                  } else {
+                                    delete next[reviewId];
+                                  }
+                                  return next;
+                                })
+                              }
+                            />
+                          )}
                           {review.moderator_edited && originals[review.id] !== undefined && (
                             <details className="rounded-2xl bg-[#F6F6EE] p-4 text-sm">
                               <summary className="cursor-pointer font-medium text-[#4A5A52]">

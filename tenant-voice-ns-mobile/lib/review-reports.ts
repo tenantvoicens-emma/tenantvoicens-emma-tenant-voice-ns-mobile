@@ -33,6 +33,14 @@ export type ReportReason = (typeof reportReasons)[number]["value"];
 
 export const REPORT_DETAILS_LIMIT = 1000;
 
+// A "Legal concern" report hides the review at once, so it has to come with
+// an email address and a short explanation. The database checks the same.
+export const LEGAL_CONCERN_MIN_DETAILS = 20;
+
+export function isLegalConcern(reason: string) {
+  return reason === "legal_concern";
+}
+
 export function isReportReason(value: unknown): value is ReportReason {
   return reportReasons.some((reason) => reason.value === value);
 }

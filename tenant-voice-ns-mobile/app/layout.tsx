@@ -81,7 +81,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 </p>
                 <p className="mt-3 text-sm leading-relaxed text-[#66706B]">
                   Building list from the Halifax Regional Municipality Residential
-                  Rental Registry. Building names ©{" "}
+                  Rental Registry. Contains information licenced under the{" "}
+                  <a
+                    href="https://data-hrm.hub.arcgis.com/pages/open-data-licence"
+                    className="underline underline-offset-2"
+                  >
+                    Open Government Licence—Halifax
+                  </a>
+                  . Tenant Voice NS isn&apos;t affiliated with or endorsed by
+                  Halifax Regional Municipality. Building names ©{" "}
                   <a
                     href="https://www.openstreetmap.org/copyright"
                     className="underline underline-offset-2"

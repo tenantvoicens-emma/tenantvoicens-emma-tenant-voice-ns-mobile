@@ -6,7 +6,9 @@ import {
 } from "@/lib/server/form-security";
 import { checkRequestOrigin } from "@/lib/server/request-origin";
 import {
+  isLegalConcern,
   isReportReason,
+  LEGAL_CONCERN_MIN_DETAILS,
   looksLikeEmail,
   REPORT_DETAILS_LIMIT,
   type ReportReason,
@@ -147,6 +149,13 @@ function isReportRequest(value: unknown): value is ReportRequest {
         body.details.trim().length <= REPORT_DETAILS_LIMIT)) &&
     (body.contactEmail === undefined ||
       (typeof body.contactEmail === "string" &&
-        (body.contactEmail.trim() === "" || looksLikeEmail(body.contactEmail.trim()))))
+        (body.contactEmail.trim() === "" || looksLikeEmail(body.contactEmail.trim())))) &&
+    // A legal concern hides the review at once, so it needs a way to reply
+    // and an explanation.
+    (!isLegalConcern(body.reason as string) ||
+      (typeof body.contactEmail === "string" &&
+        looksLikeEmail(body.contactEmail.trim()) &&
+        typeof body.details === "string" &&
+        body.details.trim().length >= LEGAL_CONCERN_MIN_DETAILS))
   );
 }

@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import EvidenceViewer from "@/components/admin/EvidenceViewer";
+import LegalHoldControl, {
+  type LegalHold,
+} from "@/components/admin/LegalHoldControl";
 import ModerationDialog, {
   type ModerationAction,
 } from "@/components/admin/ModerationDialog";
@@ -61,6 +64,7 @@ export default function ReportsQueue({ accessToken }: Props) {
   const [rows, setRows] = useState<ReportRow[]>([]);
   const [originals, setOriginals] = useState<Record<number, string>>({});
   const [evidenceCounts, setEvidenceCounts] = useState<Record<number, number>>({});
+  const [holds, setHolds] = useState<Record<number, LegalHold>>({});
   const [pendingAction, setPendingAction] = useState<
     ModerationAction<"keep-up" | "unpublish" | "approve-after-all"> | null
   >(null);
@@ -131,10 +135,27 @@ export default function ReportsQueue({ accessToken }: Props) {
         }
       }
 
+      // Reviews on a legal hold.
+      const holdsByReview: Record<number, LegalHold> = {};
+      if (reviewIds.length > 0) {
+        const { data: holdRows, error: holdsError } = await supabase.rpc(
+          "get_review_legal_holds",
+          { p_review_ids: reviewIds }
+        );
+        if (holdsError) {
+          console.error("Could not load legal holds.", holdsError.code);
+        } else {
+          for (const row of (holdRows ?? []) as (LegalHold & { review_id: number })[]) {
+            holdsByReview[row.review_id] = { placed_at: row.placed_at, note: row.note };
+          }
+        }
+      }
+
       if (isActive) {
         setRows(reportRows);
         setOriginals(originalsByReview);
         setEvidenceCounts(countsByReview);
+        setHolds(holdsByReview);
         setLoadedKey(key);
         setErrorMessage("");
       }
@@ -433,6 +454,22 @@ export default function ReportsQueue({ accessToken }: Props) {
                 <EvidenceViewer
                   reviewId={group.reviewId}
                   count={evidenceCounts[group.reviewId] ?? 0}
+                />
+
+                <LegalHoldControl
+                  reviewId={group.reviewId}
+                  hold={holds[group.reviewId]}
+                  onChange={(reviewId, hold) =>
+                    setHolds((current) => {
+                      const next = { ...current };
+                      if (hold) {
+                        next[reviewId] = hold;
+                      } else {
+                        delete next[reviewId];
+                      }
+                      return next;
+                    })
+                  }
                 />
 
                 <section className="space-y-3 rounded-2xl bg-[#FBEDE9]/60 p-4">

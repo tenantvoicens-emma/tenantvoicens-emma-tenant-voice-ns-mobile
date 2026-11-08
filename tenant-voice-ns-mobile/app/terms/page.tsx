@@ -15,6 +15,7 @@ import {
 import IconTile from "@/components/ui/IconTile";
 import PageContainer from "@/components/ui/PageContainer";
 import { pageMetadata } from "@/lib/page-metadata";
+import { TERMS_LAST_UPDATED } from "@/lib/terms";
 
 export const metadata: Metadata = pageMetadata({
   title: "Terms of Service",
@@ -23,8 +24,9 @@ export const metadata: Metadata = pageMetadata({
   path: "/terms",
 });
 
-// Change this whenever the terms below change.
-const LAST_UPDATED = "November 8, 2026";
+// Change TERMS_VERSION and TERMS_LAST_UPDATED (lib/terms) whenever the terms
+// below, or the Policies page, change in a way that matters.
+const LAST_UPDATED = TERMS_LAST_UPDATED;
 
 // A draft of these terms should be read by a lawyer before launch. The
 // Policies page explains how moderation, privacy and ratings work in more
@@ -74,6 +76,10 @@ export default function TermsPage() {
           </TermsSection>
 
           <TermsSection icon={FilePenLine} title="Your reviews">
+            <p>
+              You must be old enough to agree to these terms under the law
+              where you live, or have a parent or guardian&apos;s permission.
+            </p>
             <p>
               When you submit a review, you confirm that it describes your own
               direct experience of the property, that it is true to the best of
@@ -125,7 +131,9 @@ export default function TermsPage() {
               Every review is checked before it is published. We may reject,
               edit by removing words, hide, or remove any review or picture at
               our discretion, including to follow the law or to protect people.
-              We aren&apos;t obliged to publish any review. How moderation works,
+              We aren&apos;t obliged to publish any review. We may also keep
+              records, and give information to others, where the law or a
+              court order requires it. How moderation works,
               and how to appeal a decision, is explained in our{" "}
               <Link href="/policies#moderation" className="font-medium text-[#2F4F46] underline">
                 Policies
@@ -146,8 +154,12 @@ export default function TermsPage() {
               The moderator then decides whether to restore it or keep it down.
               Hiding a review this way is not a finding that it is wrong or
               unlawful. Please use it for genuine legal concerns and include an
-              email address so we can reply. Reports of other kinds leave the
-              review up while the moderator checks it.
+              email address and a short explanation so we can reply. Reports of
+              other kinds leave the review up while the moderator checks it.
+            </p>
+            <p>
+              If you believe something on the site infringes your copyright,
+              email us with what it is and where it appears.
             </p>
             <p>
               You can also write to us at{" "}

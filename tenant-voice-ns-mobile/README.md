@@ -44,8 +44,9 @@ Before pushing, run `npm run lint` and `npm run build`.
   restores it or keeps it down.
 - **Database changes** are SQL files in `supabase/migrations/`, applied in
   order. Apply a migration before deploying the app release that needs it:
-  `20261108120000_property_only_reviews.sql` changes `submit_review`'s
-  arguments, so the previous app release can't submit reviews after it. A nightly `pg_cron` job deletes rejected reviews after 24 months.
+  `20261108120000_property_only_reviews.sql` and
+  `20261108140000_legal_protections.sql` change `submit_review`'s arguments,
+  so the previous app release can't submit reviews after them. A nightly `pg_cron` job deletes rejected reviews after 24 months.
 - **Building list**: the Halifax Regional Municipality Residential Rental
   Registry plus OpenStreetMap names (`scripts/registry-import/`). Buildings
   with 4 or more units are listed. Houses, suites, rooms, duplexes and
@@ -65,6 +66,12 @@ Before pushing, run `npm run lint` and `npm run build`.
   `private.review_evidence`, are never public, are readable only by the
   moderator through `get_review_evidence`, and are deleted with their
   review (including the 24-month cleanup of rejected reviews).
+- **Legal protections.** Each review stores the Terms version the reviewer
+  confirmed (`reviews.terms_version`, not public). A legal hold
+  (`private.legal_holds`, set from the Moderation page) stops the nightly
+  cleanups deleting a review and its records. A "Legal concern" report needs
+  an email and an explanation. `docs/legal-response-playbook.md` is the
+  moderator's checklist for when a notice arrives.
 - **Landlords are never named.** `public.landlords` can be read by anyone,
   so a landlord's name must never be stored there. If landlord pages are
   ever added, link them with IDs kept out of public view.

@@ -101,6 +101,9 @@ function ReviewForm() {
   const [submissionStatus, setSubmissionStatus] =
     useState<SubmissionStatus>(null);
   const [submissionError, setSubmissionError] = useState("");
+  // Must be ticked to submit. Never saved in the draft: a reviewer confirms
+  // each time.
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileError, setTurnstileError] = useState(false);
   const [turnstileResetKey, setTurnstileResetKey] = useState(0);
@@ -307,6 +310,13 @@ function ReviewForm() {
       );
       return;
     }
+    if (!acceptedTerms) {
+      setSubmissionStatus("error");
+      setSubmissionError(
+        "Please confirm that this is your own, honest experience of the property before you submit."
+      );
+      return;
+    }
     if (!turnstileToken) {
       setSubmissionStatus("error");
       setSubmissionError(
@@ -415,6 +425,7 @@ function ReviewForm() {
           reviewText,
           occupancyDuration,
           wouldLiveAgain,
+          acceptedTerms,
           issues,
           propertyRatings: toRatingRows(propertyRatings),
           ...(evidence.length > 0
@@ -443,6 +454,7 @@ function ReviewForm() {
 
       setSubmissionStatus("success");
       setEvidence([]);
+      setAcceptedTerms(false);
       writeDraft(null);
     } catch {
       setSubmissionStatus("error");
@@ -872,6 +884,29 @@ function ReviewForm() {
                   <li>We&apos;ll also check the building you added before it appears.</li>
                 )}
               </ul>
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[#E6E3DA] p-4 text-[#1F2A24] has-[:checked]:border-[#08873A] has-[:checked]:bg-[#F1F7EF]">
+                <input
+                  type="checkbox"
+                  checked={acceptedTerms}
+                  onChange={(event) => setAcceptedTerms(event.target.checked)}
+                  className="mt-1 h-5 w-5 shrink-0 accent-[#08873A]"
+                />
+                <span>
+                  I lived at this property, and this review describes my own
+                  experience of it. It&apos;s true to the best of my
+                  knowledge, and it doesn&apos;t name or describe anyone. I
+                  agree to the{" "}
+                  <Link href="/terms" target="_blank" className="font-medium text-[#2F4F46] underline">
+                    Terms of Service
+                  </Link>{" "}
+                  and the{" "}
+                  <Link href="/policies#review-guidelines" target="_blank" className="font-medium text-[#2F4F46] underline">
+                    review guidelines
+                  </Link>
+                  .
+                </span>
+              </label>
 
               {turnstileSiteKey ? (
                 <Turnstile

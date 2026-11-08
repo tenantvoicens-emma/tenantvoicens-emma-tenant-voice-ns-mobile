@@ -22,6 +22,7 @@ import { reviewIssues } from "@/lib/review-issues";
 import { MAX_EVIDENCE_FILES } from "@/lib/review-evidence";
 import PageContainer from "@/components/ui/PageContainer";
 import { pageMetadata } from "@/lib/page-metadata";
+import { TERMS_LAST_UPDATED } from "@/lib/terms";
 
 export const metadata: Metadata = pageMetadata({
   title: "Policies and review guidelines",
@@ -30,8 +31,9 @@ export const metadata: Metadata = pageMetadata({
   path: "/policies",
 });
 
-// Change this whenever the policies below change.
-const LAST_UPDATED = "November 8, 2026";
+// Change TERMS_VERSION and TERMS_LAST_UPDATED (lib/terms) whenever the
+// policies below, or the Terms of Service, change in a way that matters.
+const LAST_UPDATED = TERMS_LAST_UPDATED;
 
 export default function PoliciesPage() {
   return (
@@ -78,6 +80,12 @@ export default function PoliciesPage() {
               its condition, and are shown on the page for its address. We
               don&apos;t rate landlords or property managers, and reviews
               shouldn&apos;t name them or anyone else.
+            </p>
+            <p className="text-gray-700">
+              Whether homes are safe, heated and kept in good repair is a
+              matter of public interest, and renters often have no other way
+              to learn what a place is really like before they sign a lease.
+              That is why this site exists.
             </p>
           </section>
 
@@ -196,8 +204,17 @@ export default function PoliciesPage() {
               down, and looks at hidden reviews as soon as they can. We do
               this so that a review someone says may be unlawful isn&apos;t
               left up while it&apos;s looked at. It is not a finding that the
-              review is wrong. Please use it for genuine legal concerns, and
-              add your email so the moderator can reply.
+              review is wrong. Because it takes a review down straight away, a
+              legal concern needs your email address and a short explanation
+              of which part of the review is the concern and why. Please use
+              it only for genuine legal concerns.
+            </p>
+            <p className="text-gray-700">
+              When we receive a legal concern, a court order or a legal threat,
+              we keep the related records for as long as needed to deal with
+              the matter. That includes a review that was taken down, its
+              history, the reports about it and any proof pictures, even past
+              the usual 24 months.
             </p>
             <p className="text-gray-700">
               Adding your email to a report is optional, and it&apos;s used only
@@ -280,6 +297,32 @@ export default function PoliciesPage() {
               are kept privately and are not available to the public.
             </p>
             <p className="text-gray-700">
+              <span className="font-medium text-gray-800">Where information is kept.</span>{" "}
+              Our database is hosted by Supabase in the United States. The
+              site is hosted by Vercel, and Cloudflare Turnstile checks that
+              submissions come from people; both may process technical
+              information in other countries. Because information is stored
+              outside Canada, it can be subject to the laws and legal
+              processes of those places.
+            </p>
+            <p className="text-gray-700">
+              <span className="font-medium text-gray-800">Court orders.</span>{" "}
+              If a court orders us to hand over information we hold, such as
+              the email on an account linked to a review, we may have to
+              comply. We hold very little: we don&apos;t keep IP addresses
+              (only the one-way fingerprint below), and a review submitted
+              without signing in isn&apos;t linked to any account. Our hosting
+              providers keep their own technical logs, which we don&apos;t
+              control.
+            </p>
+            <p className="text-gray-700">
+              <span className="font-medium text-gray-800">Your choices.</span>{" "}
+              To ask what we hold about you, to correct it, or to have it
+              deleted, email us (see Contact below). If you sent a review
+              without signing in, we can&apos;t tell which one is yours, so
+              tell us the property and what it says.
+            </p>
+            <p className="text-gray-700">
               To stop spam, we keep a one-way fingerprint of your IP address
               (not the address itself) for about 48 hours.
             </p>
@@ -298,7 +341,8 @@ export default function PoliciesPage() {
             </h2>
             <p className="text-gray-700">
               Reviews represent individual contributors’ experiences and opinions.
-              Tenant Voice NS does not independently verify every statement. A
+              They are the views of the renters who wrote them, not of Tenant
+              Voice NS. We do not independently verify every statement. A
               review or rating is not a legal finding, and information on this
               site is not legal advice or a guarantee of future conditions.
             </p>
@@ -356,9 +400,18 @@ export default function PoliciesPage() {
             </h2>
             <p className="text-gray-700">
               The rental buildings you can review come from the Halifax
-              Regional Municipality&apos;s Residential Rental Registry, used with
-              credit under its open data licence, so for now the list covers the
-              Halifax region. Buildings with four or more registered rental
+              Regional Municipality&apos;s Residential Rental Registry, so for
+              now the list covers the Halifax region. Contains information
+              licenced under the{" "}
+              <Link
+                href="https://data-hrm.hub.arcgis.com/pages/open-data-licence"
+                className="font-medium text-[#2F4F46] underline"
+              >
+                Open Government Licence—Halifax
+              </Link>
+              . Tenant Voice NS isn&apos;t affiliated with or endorsed by
+              Halifax Regional Municipality, and the registry is a list of
+              registered rentals, not a finding about any property. Buildings with four or more registered rental
               units are listed. Houses, suites, rooms and duplexes from the
               registry aren&apos;t shown as a list. Each one appears only once
               a review for it is approved.
@@ -396,6 +449,12 @@ export default function PoliciesPage() {
                 hello@tenantvoicens.ca
               </Link>
               . Please do not include passwords, sign-in links, or other secrets.
+            </p>
+            <p className="text-gray-700">
+              If any part of the site is hard to use or read, tell us at the
+              same address and we&apos;ll work on it. If you believe a picture
+              or text on the site infringes your copyright, email us with what
+              it is and where it appears.
             </p>
           </section>
 

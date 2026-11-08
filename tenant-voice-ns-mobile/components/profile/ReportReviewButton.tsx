@@ -7,6 +7,8 @@ import { Turnstile } from "@marsidev/react-turnstile";
 
 import { FLEXIBLE_TURNSTILE_STYLE } from "@/lib/turnstile";
 import {
+  isLegalConcern,
+  LEGAL_CONCERN_MIN_DETAILS,
   looksLikeEmail,
   REPORT_DETAILS_LIMIT,
   reportReasons,
@@ -74,6 +76,18 @@ export default function ReportReviewButton({ reviewId }: { reviewId: number }) {
       return;
     }
     const email = contactEmail.trim();
+    if (isLegalConcern(reason)) {
+      if (!email || !looksLikeEmail(email)) {
+        setErrorMessage("A legal concern needs a valid email address so the moderator can reply.");
+        return;
+      }
+      if (details.trim().length < LEGAL_CONCERN_MIN_DETAILS) {
+        setErrorMessage(
+          "Please explain the concern in a sentence or two: which part of the review, and why."
+        );
+        return;
+      }
+    }
     if (email && !looksLikeEmail(email)) {
       setErrorMessage("Please check the email address, or leave it blank.");
       return;
@@ -214,7 +228,10 @@ export default function ReportReviewButton({ reviewId }: { reviewId: number }) {
 
             <div className="space-y-2">
               <label htmlFor={`report-details-${reviewId}`} className="block font-medium text-[#294B3A]">
-                Details <span className="font-normal text-[#66706B]">(optional)</span>
+                Details{" "}
+                <span className="font-normal text-[#66706B]">
+                  {isLegalConcern(reason) ? "(required)" : "(optional)"}
+                </span>
               </label>
               <textarea
                 id={`report-details-${reviewId}`}
@@ -222,7 +239,11 @@ export default function ReportReviewButton({ reviewId }: { reviewId: number }) {
                 onChange={(event) => setDetails(event.target.value)}
                 maxLength={REPORT_DETAILS_LIMIT}
                 rows={4}
-                placeholder="e.g. Which part of the review, and why"
+                placeholder={
+                  isLegalConcern(reason)
+                    ? "Which part of the review is the concern, and why?"
+                    : "e.g. Which part of the review, and why"
+                }
                 className="w-full rounded-2xl border border-[#D9D6CE] bg-white p-3 focus:border-[#08873A]"
               />
               <p className="text-right text-sm text-[#66706B]">
@@ -232,7 +253,10 @@ export default function ReportReviewButton({ reviewId }: { reviewId: number }) {
 
             <div className="space-y-2">
               <label htmlFor={`report-email-${reviewId}`} className="block font-medium text-[#294B3A]">
-                Your email <span className="font-normal text-[#66706B]">(optional)</span>
+                Your email{" "}
+                <span className="font-normal text-[#66706B]">
+                  {isLegalConcern(reason) ? "(required)" : "(optional)"}
+                </span>
               </label>
               <input
                 id={`report-email-${reviewId}`}
@@ -245,7 +269,9 @@ export default function ReportReviewButton({ reviewId }: { reviewId: number }) {
                 className="w-full rounded-2xl border border-[#D9D6CE] bg-white p-3 focus:border-[#08873A]"
               />
               <p className="text-sm text-[#66706B]">
-                Only if you&apos;d like a reply. Never shown publicly.
+                {isLegalConcern(reason)
+                  ? "So the moderator can reply. Never shown publicly."
+                  : "Only if you&apos;d like a reply. Never shown publicly."}
               </p>
             </div>
 

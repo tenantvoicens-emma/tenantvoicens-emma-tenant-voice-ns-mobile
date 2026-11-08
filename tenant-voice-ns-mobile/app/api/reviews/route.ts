@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { isRentalKind, type RentalKind } from "@/lib/rental-kind";
+import { TERMS_VERSION } from "@/lib/terms";
 import { isReviewIssue, MAX_REVIEW_ISSUES } from "@/lib/review-issues";
 import {
   EVIDENCE_MIME_TYPE,
@@ -68,6 +69,9 @@ type ReviewRequest = {
   reviewText: string;
   occupancyDuration: string;
   wouldLiveAgain: string;
+  // The reviewer ticked the box confirming this is their own, honest
+  // experience of the property and agreeing to the Terms.
+  acceptedTerms: true;
   issues?: string[];
   propertyRatings: RatingInput[];
   evidence?: EvidenceInput[];
@@ -240,6 +244,8 @@ export async function POST(request: Request) {
       p_user_id: userId,
       p_issues: [...new Set(body.issues ?? [])],
       p_evidence: body.evidence ?? [],
+      // The version the server is running, not one the browser claims.
+      p_terms_version: TERMS_VERSION,
     });
 
     if (error) {
@@ -279,6 +285,7 @@ function isReviewRequest(value: unknown): value is ReviewRequest {
     typeof body.occupancyDuration === "string" &&
     occupancyDurations.has(body.occupancyDuration) &&
     ["yes", "no", "unsure"].includes(String(body.wouldLiveAgain)) &&
+    body.acceptedTerms === true &&
     (body.issues === undefined || isIssueList(body.issues)) &&
     isRatingArray(body.propertyRatings, propertyRatingCategories) &&
     (body.evidence === undefined || isEvidenceList(body.evidence)) &&

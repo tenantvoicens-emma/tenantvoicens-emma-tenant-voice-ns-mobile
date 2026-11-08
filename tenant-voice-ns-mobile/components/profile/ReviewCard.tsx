@@ -89,7 +89,7 @@ export default function ReviewCard({
         {issues.length > 0 && (
           <div>
             <p className="mb-1.5 text-sm font-semibold uppercase tracking-wide text-[#66706B]">
-              Reported problems
+              Problems this reviewer reported
             </p>
             <ul className="flex flex-wrap gap-2">
               {issues.map((issue) => (
