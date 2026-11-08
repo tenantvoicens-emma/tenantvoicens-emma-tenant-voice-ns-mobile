@@ -66,9 +66,10 @@ request arrives:
 
 - Put a legal hold on the review straight away and keep everything.
 - Give it to your lawyer. Don't comply, and don't refuse, on your own.
-- What the site can hold about a reviewer is limited: the account email, only if
-  they were signed in when they submitted (reviews submitted without signing in
-  have no link); a one-way IP fingerprint kept for about 48 hours (not
+- What the site can hold about a reviewer is limited. New reviews are never
+  linked to an account, even when the reviewer was signed in. Reviews submitted
+  while signed in before November 8, 2026 may still be linked to an account
+  email. Beyond that: a one-way IP fingerprint kept for about 48 hours (not
   reversible to an address); any email given in a report; and proof pictures
   (the browser removes location data before upload). The hosting providers
   (Supabase, Vercel, Cloudflare) keep their own technical logs.

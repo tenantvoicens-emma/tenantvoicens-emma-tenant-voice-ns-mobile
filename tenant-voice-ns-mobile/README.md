@@ -46,14 +46,18 @@ Before pushing, run `npm run lint` and `npm run build`.
   order. Apply a migration before deploying the app release that needs it:
   `20261108120000_property_only_reviews.sql` and
   `20261108140000_legal_protections.sql` change `submit_review`'s arguments,
-  so the previous app release can't submit reviews after them. A nightly `pg_cron` job deletes rejected reviews after 24 months.
+  so the previous app release can't submit reviews after them.
+  `20261108150000_private_rentals_need_two_reviews.sql` also delists any
+  private rental that is live now with fewer than two approved reviews. A
+  nightly `pg_cron` job deletes rejected reviews after 24 months, skipping
+  any on a legal hold.
 - **Building list**: the Halifax Regional Municipality Residential Rental
   Registry plus OpenStreetMap names (`scripts/registry-import/`). Buildings
   with 4 or more units are listed. Houses, suites, rooms, duplexes and
   condos (`properties.rental_kind`, `is_small_rental`) are kept hidden
-  until a review for one is approved, as are places renters add. Small
-  rentals show "Private landlord" and only the year of each review
-  (`reviews.published_on`); the exact time is readable only by the
+  until two reviews for one are approved; places renters add (larger
+  buildings) appear after one. Small rentals show only the year of each
+  review (`reviews.published_on`); the exact time is readable only by the
   moderator.
 - **Property only.** Reviews carry a star rating, optional detailed
   property ratings, ticked problems (`reviews.issues`, the list in
@@ -66,6 +70,12 @@ Before pushing, run `npm run lint` and `npm run build`.
   `private.review_evidence`, are never public, are readable only by the
   moderator through `get_review_evidence`, and are deleted with their
   review (including the 24-month cleanup of rejected reviews).
+- **No account link, and two reviews for private rentals.** New reviews are
+  never linked to an account (`p_user_id` is always null), so there's nothing
+  tying a review to an identity. A private rental is listed only once it has
+  two approved reviews: triggers on `properties` and `reviews` enforce it,
+  and the public read policy on reviews hides approved reviews of unlisted
+  properties (`20261108150000_private_rentals_need_two_reviews.sql`).
 - **Legal protections.** Each review stores the Terms version the reviewer
   confirmed (`reviews.terms_version`, not public). A legal hold
   (`private.legal_holds`, set from the Moderation page) stops the nightly

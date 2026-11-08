@@ -240,9 +240,9 @@ export default function AccountClient() {
         <h1 className="text-4xl font-bold leading-tight tracking-tight text-[#294B3A]">Your account</h1>
         <div className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6">
           <p className="text-lg text-[#4A5A52]">
-            You’re signed in. Reviews you choose to submit while signed in can be
-            privately linked to your account for future account features. Your
-            account identity is not shown on public reviews.
+            You’re signed in. Reviews are never linked to your account, even
+            when you’re signed in, and your account identity is not shown on
+            public reviews.
           </p>
           {isAdmin && (
             <Link

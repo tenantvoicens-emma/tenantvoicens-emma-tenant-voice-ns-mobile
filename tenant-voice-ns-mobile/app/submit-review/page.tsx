@@ -399,17 +399,10 @@ function ReviewForm() {
         .map(([category, score]) => ({ category, score }));
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-      };
-      if (sessionData.session?.access_token) {
-        headers.Authorization = `Bearer ${sessionData.session.access_token}`;
-      }
-
+      // No sign-in token is sent: reviews are never linked to an account.
       const response = await fetch("/api/reviews", {
         method: "POST",
-        headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           turnstileToken,
           ...(selectedProperty
@@ -481,9 +474,9 @@ function ReviewForm() {
           </p>
 
           <p className="text-sm text-[#66706B]">
-            You can submit anonymously. If you sign in, your review can be privately
-            linked to your account for future account features; your identity is
-            never shown publicly. <Link className="font-medium text-[#2F4F46] underline" href="/account">Sign in or create an account</Link>.
+            You don&apos;t need an account, and it makes no difference: a review is
+            never linked to an account, even if you&apos;re signed in. Your name
+            is never shown publicly.
           </p>
           </>
         )}
@@ -495,6 +488,7 @@ function ReviewForm() {
               (newBuilding?.name.trim() || newBuilding?.address.trim() || "your building")
             }
             propertySlug={selectedProperty?.slug ?? null}
+            isSmallRental={isSmallRental}
           />
         ) : (
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -878,7 +872,7 @@ function ReviewForm() {
               </dl>
 
               <ul className="list-disc space-y-1 pl-5 text-[#4A5A52]">
-                <li>Your name is never shown publicly, even if you&apos;re signed in.</li>
+                <li>Your review isn&apos;t linked to your account, even if you&apos;re signed in, and your name is never shown.</li>
                 <li>We check every review before it goes up, usually within a day.</li>
                 {newBuilding && (
                   <li>We&apos;ll also check the building you added before it appears.</li>
@@ -1160,6 +1154,11 @@ function SmallRentalNotice() {
         To help, we show only the year your review was written, and never a
         unit number. Leave out anything that could identify you, your
         roommates or anyone else, including your landlord.
+      </p>
+      <p>
+        A private rental&apos;s page appears only once two reviews for it are
+        approved, so that no one can tell who wrote a lone review. Yours will
+        wait for a second one.
       </p>
     </div>
   );

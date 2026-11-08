@@ -11,6 +11,8 @@ type ReviewSubmittedProps = {
   // Null for a building the renter added: it has no page until approved,
   // so sharing points at the home page instead.
   propertySlug: string | null;
+  // A private rental appears only once two of its reviews are approved.
+  isSmallRental?: boolean;
 };
 
 type ShareStatus = "" | "copied" | "failed";
@@ -20,6 +22,7 @@ type ShareStatus = "" | "copied" | "failed";
 export default function ReviewSubmitted({
   buildingName,
   propertySlug,
+  isSmallRental = false,
 }: ReviewSubmittedProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const [shareStatus, setShareStatus] = useState<ShareStatus>("");
@@ -77,6 +80,13 @@ export default function ReviewSubmitted({
               ? ` Once it’s approved, it will appear on the page for ${buildingName}.`
               : ` Once it’s approved, ${buildingName} will be added to the site with your review.`}
           </p>
+          {isSmallRental && (
+            <p className="text-[#4A5A52]">
+              Because this is a private rental, it appears on the site only
+              once a second review for it is approved. That protects the
+              anonymity of the people who write about it.
+            </p>
+          )}
         </div>
       </Card>
 

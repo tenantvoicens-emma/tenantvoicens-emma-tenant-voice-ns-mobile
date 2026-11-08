@@ -125,10 +125,9 @@ export async function POST(request: Request) {
 
   const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!turnstileSecret || !supabaseUrl || !supabaseAnonKey || !serviceRoleKey) {
+  if (!turnstileSecret || !supabaseUrl || !serviceRoleKey) {
     console.error("Review submission server configuration is incomplete.");
     return Response.json(
       { error: "Review submission is temporarily unavailable." },
@@ -136,34 +135,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const authorization = request.headers.get("authorization");
-  const accessToken = authorization?.match(/^Bearer\s+(.+)$/i)?.[1] ?? null;
-  if (authorization && !accessToken) {
-    return Response.json({ error: "Invalid sign-in session." }, { status: 401 });
-  }
-
   try {
-    let userId: string | null = null;
-
-    if (accessToken) {
-      const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      });
-      const { data, error } = await authClient.auth.getUser(accessToken);
-
-      if (error || !data.user) {
-        return Response.json(
-          { error: "Your sign-in expired. Please sign in again and retry." },
-          { status: 401 }
-        );
-      }
-
-      userId = data.user.id;
-    }
-
     const turnstile = await verifyTurnstile({
       secret: turnstileSecret,
       token: body.turnstileToken,
@@ -241,7 +213,9 @@ export async function POST(request: Request) {
       p_occupancy_duration: body.occupancyDuration,
       p_would_live_again: body.wouldLiveAgain,
       p_property_ratings: body.propertyRatings,
-      p_user_id: userId,
+      // Reviews are never linked to an account, even when the reviewer is
+      // signed in, so there is nothing that ties a review to an identity.
+      p_user_id: null,
       p_issues: [...new Set(body.issues ?? [])],
       p_evidence: body.evidence ?? [],
       // The version the server is running, not one the browser claims.

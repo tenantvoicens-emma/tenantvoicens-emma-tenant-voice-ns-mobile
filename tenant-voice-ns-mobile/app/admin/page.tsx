@@ -568,13 +568,15 @@ export default function AdminPage() {
                           className="space-y-4 rounded-3xl border border-[#E6E3DA] bg-white p-6"
                         >
                           <header className="space-y-1">
-                            {review.properties && !review.properties.is_listed && (
-                              <p className="mb-2 rounded-2xl bg-[#FFF4D6] px-3 py-2 text-sm text-[#6B4E00]">
-                                <span className="font-semibold">New building</span>, added by
-                                this reviewer and not yet on the site. Check the address:
-                                approving this review publishes the building too.
-                              </p>
-                            )}
+                            {review.properties &&
+                              !review.properties.is_listed &&
+                              !review.properties.is_small_rental && (
+                                <p className="mb-2 rounded-2xl bg-[#FFF4D6] px-3 py-2 text-sm text-[#6B4E00]">
+                                  <span className="font-semibold">New building</span>, added by
+                                  this reviewer and not yet on the site. Check the address:
+                                  approving this review publishes the building too.
+                                </p>
+                              )}
                             {review.properties?.is_small_rental && (
                               <p className="mb-2 rounded-2xl bg-[#FBF5E6] px-3 py-2 text-sm text-[#4A4030]">
                                 <span className="font-semibold">
@@ -586,6 +588,8 @@ export default function AdminPage() {
                                 </span>
                                 . Its landlord may know who wrote this: remove anything that
                                 identifies the writer, the landlord, their family or roommates.
+                                {!review.properties.is_listed &&
+                                  " It stays off the site until a second review for it is approved."}
                               </p>
                             )}
                             <h3 className="text-xl font-bold text-[#294B3A]">

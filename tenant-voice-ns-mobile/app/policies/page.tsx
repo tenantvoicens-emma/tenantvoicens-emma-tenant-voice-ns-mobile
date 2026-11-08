@@ -268,11 +268,12 @@ export default function PoliciesPage() {
               resets, and is never shown publicly.
             </p>
             <p className="text-gray-700">
-              Reviews you submit while signed in are privately linked to your
-              account. That link is never shown publicly or to other visitors,
-              but it is stored. If you&apos;d rather there be no connection at
-              all between your email address and a review, submit it without
-              signing in.
+              Reviews are never linked to an account, even when you&apos;re
+              signed in, so nothing we store ties a review to your email
+              address. Reviews submitted while signed in before{" "}
+              {TERMS_LAST_UPDATED} were privately linked to the account; that
+              link was never shown publicly, and it is removed if you delete
+              your account.
             </p>
             <p className="text-gray-700">
               You can delete your account at any time from the Account page.
@@ -307,13 +308,12 @@ export default function PoliciesPage() {
             </p>
             <p className="text-gray-700">
               <span className="font-medium text-gray-800">Court orders.</span>{" "}
-              If a court orders us to hand over information we hold, such as
-              the email on an account linked to a review, we may have to
-              comply. We hold very little: we don&apos;t keep IP addresses
-              (only the one-way fingerprint below), and a review submitted
-              without signing in isn&apos;t linked to any account. Our hosting
-              providers keep their own technical logs, which we don&apos;t
-              control.
+              If a court orders us to hand over information we hold, we may
+              have to comply. We hold very little: we don&apos;t keep IP
+              addresses (only the one-way fingerprint below), new reviews
+              aren&apos;t linked to any account, and an email given in a
+              report is kept only for replying. Our hosting providers keep
+              their own technical logs, which we don&apos;t control.
             </p>
             <p className="text-gray-700">
               <span className="font-medium text-gray-800">Your choices.</span>{" "}
@@ -391,6 +391,13 @@ export default function PoliciesPage() {
               details that could identify you, your roommates, the landlord
               or the landlord&apos;s family.
             </p>
+            <p className="text-gray-700">
+              A private rental&apos;s page appears only once two of its
+              reviews are approved. With a single review, the owner could
+              often tell who wrote it. If a review is later taken down and
+              fewer than two remain, the page is taken down until there are
+              two again.
+            </p>
           </section>
 
           <section id="data-sources" className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
@@ -414,7 +421,7 @@ export default function PoliciesPage() {
               registered rentals, not a finding about any property. Buildings with four or more registered rental
               units are listed. Houses, suites, rooms and duplexes from the
               registry aren&apos;t shown as a list. Each one appears only once
-              a review for it is approved.
+              two of its reviews are approved.
             </p>
             <p className="text-gray-700">
               Building names, where we have them, come from{" "}
@@ -431,7 +438,9 @@ export default function PoliciesPage() {
               If the place you rented isn&apos;t listed, including anywhere else
               in Nova Scotia, you can add it when you write a review. The
               moderator checks every added address, and it appears on the site
-              only once a review for it is approved.
+              only once a review for it is approved. A house, suite, room,
+              duplex or condo appears only once two of its reviews are
+              approved, so that no one can tell who wrote a lone review.
             </p>
           </section>
 
