@@ -50,9 +50,11 @@ export default async function Home() {
         Renting is personal. Your research should be, too.
       </h1>
       <p className="text-lg text-[#66706B]">
-        Explore renter experiences across Nova Scotia. Our building list
-        starts with the Halifax region. Renting somewhere else? Add your
-        building when you write a review.
+        Explore renter experiences across Nova Scotia, the good as well as
+        the bad. Great places to rent deserve to be found, and so do the
+        problems worth knowing about. Our building list starts with the
+        Halifax region. Renting somewhere else? Add your building when you
+        write a review.
       </p>
     </div>
   );
@@ -157,7 +159,7 @@ function ReviewCountInvite({ count }: { count: number }) {
       {count.toLocaleString("en-CA")} {count === 1 ? "review" : "reviews"} from
       Nova Scotia renters so far.{" "}
       <StartReviewLink className="font-medium text-[#2F4F46] underline decoration-[#2F4F46]/30 underline-offset-4">
-        Add yours
+        Good or bad, add yours
       </StartReviewLink>
       .
     </p>

@@ -48,7 +48,7 @@ export default function PoliciesPage() {
               Trust is part of the product.
             </h1>
             <p className="text-lg text-[#66706B]">
-              Tenant Voice NS should protect honest feedback while treating
+              Tenant Voice NS should protect fair, first-hand feedback while treating
               renters and property owners fairly. See also our{" "}
               <Link href="/terms" className="font-medium text-[#2F4F46] underline">
                 Terms of Service
@@ -87,6 +87,11 @@ export default function PoliciesPage() {
               to learn what a place is really like before they sign a lease.
               That is why this site exists.
             </p>
+            <p className="text-gray-700">
+              That includes places that get it right. Good rentals deserve to
+              be found, so a review of a place that works well is as welcome
+              and as useful as a review about a problem.
+            </p>
           </section>
 
           <section id="review-guidelines" className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
@@ -104,7 +109,15 @@ export default function PoliciesPage() {
               You may discuss repairs and maintenance, heat and hot water,
               building condition, pests, safety, noise, shared spaces,
               amenities, and other relevant parts of the property. Positive and
-              negative experiences are both welcome.
+              negative experiences are equally welcome. If you&apos;re happy
+              where you live, please say so: it helps other renters find good
+              places to rent.
+            </p>
+            <p className="text-gray-700">
+              We don&apos;t ask for, pay for or reward reviews of any kind, and
+              we don&apos;t accept reviews written to promote a property or to
+              harm one. Please don&apos;t review a property you own, manage or
+              are paid to promote, or one you haven&apos;t lived in.
             </p>
             <p className="font-medium text-gray-800">
               Do not name or describe any person, including a landlord, property
@@ -349,7 +362,9 @@ export default function PoliciesPage() {
             <p className="text-gray-700">
               Make housing decisions using your own judgement and other reliable
               sources. Ratings are summaries of submitted experiences, not proof
-              that a claim is true or false.
+              that a claim is true or false. A positive review is one
+              renter&apos;s opinion, not an endorsement: Tenant Voice NS
+              doesn&apos;t certify, rank or recommend any property or owner.
             </p>
           </section>
 

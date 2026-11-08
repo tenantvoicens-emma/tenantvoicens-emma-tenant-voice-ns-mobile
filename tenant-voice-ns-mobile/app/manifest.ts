@@ -9,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Tenant Voice NS",
     short_name: "Tenant Voice",
     description:
-      "Honest, moderated reviews of rental properties from Nova Scotia renters.",
+      "Moderated reviews of rental properties from Nova Scotia renters.",
     id: "/",
     start_url: "/",
     scope: "/",

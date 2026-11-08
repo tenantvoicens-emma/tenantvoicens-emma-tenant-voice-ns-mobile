@@ -12,8 +12,8 @@ export default function LeaveReviewCTA({ propertySlug }: LeaveReviewCTAProps) {
       </h2>
 
       <p className="text-lg text-[#66706B]">
-        Help future renters by sharing
-        your experience.
+        Whether it was a great place or a rough one, your experience helps
+        future renters. Good rentals deserve to be found.
       </p>
 
       <StartReviewLink

@@ -470,7 +470,9 @@ function ReviewForm() {
           <>
           <p className="text-lg text-[#66706B]">
             A guided review helps other renters understand what day-to-day life
-            can be like.
+            can be like. Happy where you live? Please say so: reviews of places
+            that work well help renters find them, and they&apos;re just as
+            welcome as reviews about problems.
           </p>
 
           <p className="text-sm text-[#66706B]">
@@ -704,7 +706,7 @@ function ReviewForm() {
 
               <div className="space-y-2">
                 <label htmlFor="review-text" className="block text-lg font-medium text-[#4A5A52]">
-                  Anything else other renters should know about the property?{" "}
+                  What&apos;s the property like, good or bad? Anything else other renters should know?{" "}
                   <span className="font-normal text-[#66706B]">(optional)</span>
                 </label>
                 <div id="review-text-tips" className="space-y-2 text-[#66706B]">

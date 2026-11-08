@@ -97,8 +97,8 @@ export default function ReviewSubmitted({
           </h2>
           <p className="text-[#4A5A52]">
             {propertySlug
-              ? "The people in your building know it best. Send them the link so they can add their own review."
-              : "The people in your building know it best. Send them the link so they can add their own reviews too."}
+              ? "The people in your building know it best. Send them the link so they can add their own review, in their own words, good or bad."
+              : "The people in your building know it best. Send them the link so they can add their own reviews too, in their own words, good or bad."}
           </p>
           <button
             type="button"

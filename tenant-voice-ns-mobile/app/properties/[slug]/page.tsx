@@ -87,10 +87,10 @@ export async function generateMetadata({
   const description = reviewError
     ? `Renter reviews and ratings for ${place}, from Nova Scotia tenants on Tenant Voice NS.`
     : count === 0
-      ? `No reviews yet for ${place}. Lived there? Share your experience anonymously on Tenant Voice NS.`
+      ? `No reviews yet for ${place}. Lived there? Whether it was a good place or a rough one, share your experience anonymously on Tenant Voice NS.`
       : `${count} ${count === 1 ? "renter review" : "renter reviews"} of ${place}${
           ratings.length > 0 ? `. Average ratings: ${ratings.join(", ")}` : ""
-        }. Honest, moderated reviews from Nova Scotia tenants.`;
+        }. Moderated reviews from Nova Scotia tenants.`;
 
   return {
     ...pageMetadata({
@@ -200,7 +200,10 @@ async function PropertyContent({ params }: PropertyPageProps) {
           {reviewError ? (
             <RefreshLoadError message="Reviews for this property couldn't be loaded. Check your connection and try again." />
           ) : reviews.length === 0 ? (
-            <p className="text-gray-600">No reviews yet.</p>
+            <p className="text-gray-600">
+              No reviews yet. If you&apos;ve lived here, good or bad, your
+              experience helps the next renter.
+            </p>
           ) : (
             reviews.map((review) => <ReviewCard key={review.id} review={review} />)
           )}

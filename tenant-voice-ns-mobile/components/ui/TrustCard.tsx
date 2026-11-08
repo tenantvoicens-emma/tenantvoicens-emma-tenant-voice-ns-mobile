@@ -13,7 +13,8 @@ export default function TrustCard() {
           </h2>
 
           <p className="text-lg text-[#4A5A52]">
-            Anonymous to the public. Thoughtful moderation. Real experiences,
+            Anonymous to the public. Every review checked against our
+            guidelines before it goes up. Renters&apos; own experiences,
             presented with context.
           </p>
 

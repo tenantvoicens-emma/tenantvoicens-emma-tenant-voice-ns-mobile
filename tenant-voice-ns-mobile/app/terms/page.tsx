@@ -65,13 +65,17 @@ export default function TermsPage() {
             </p>
             <p>
               Reviews are about properties, not people. We don&apos;t rate or
-              name landlords or property managers.
+              name landlords or property managers. Good experiences and bad
+              ones are both welcome: reviews of places that work well help
+              renters find them.
             </p>
             <p>
               Reviews are individual renters&apos; experiences and opinions. We
               don&apos;t verify every statement. Nothing on the site is legal
               advice, a legal finding, an inspection, or a guarantee of what a
-              property is or will be like.
+              property is or will be like. A positive review is one
+              renter&apos;s opinion. We don&apos;t endorse, certify, rank or
+              recommend any property or owner.
             </p>
           </TermsSection>
 
@@ -110,6 +114,10 @@ export default function TermsPage() {
               <li>
                 Post anything false, fabricated, duplicated, or written about
                 a property you haven&apos;t lived in.
+              </li>
+              <li>
+                Post a review in return for payment or a reward, or as the
+                owner, manager or agent of the property, or for someone who is.
               </li>
               <li>
                 Post threats, harassment, discriminatory content, private
