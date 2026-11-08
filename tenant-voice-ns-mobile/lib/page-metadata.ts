@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 // The site's own description: the home page and anywhere without one.
 export const siteDescription =
-  "Honest, moderated reviews of rental buildings and landlords from Nova Scotia renters. Read what it's like to live there, or share your own experience anonymously.";
+  "Honest, moderated reviews of rental properties from Nova Scotia renters. Read what it's like to live there, or share your own experience anonymously.";
 
 // The parts of a share preview that are the same on every page. A page
 // that sets its own openGraph replaces the site-wide one completely, and

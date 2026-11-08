@@ -44,7 +44,7 @@ const actionCopy: Record<
     body: (name) =>
       `It will be removed from the page for ${name} straight away. You can approve it again later from the Rejected tab.`,
     confirm: "Unpublish",
-    placeholder: "e.g. Landlord takedown request: names a tenant",
+    placeholder: "e.g. Legal concern raised: names a person",
     tone: "danger",
   },
   "approve-after-all": {

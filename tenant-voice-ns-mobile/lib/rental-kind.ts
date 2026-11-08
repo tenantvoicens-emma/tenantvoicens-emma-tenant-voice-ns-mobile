@@ -37,15 +37,3 @@ export function isRentalKind(value: unknown): value is RentalKind {
 export function isSmallRentalKind(kind: string | null | undefined) {
   return isRentalKind(kind) && kind !== "building";
 }
-
-export const landlordOnSiteOptions = [
-  { value: "yes", label: "Yes" },
-  { value: "no", label: "No" },
-  { value: "unsure", label: "Not sure" },
-] as const;
-
-export type LandlordOnSite = (typeof landlordOnSiteOptions)[number]["value"];
-
-export function isLandlordOnSite(value: unknown): value is LandlordOnSite {
-  return landlordOnSiteOptions.some((option) => option.value === value);
-}

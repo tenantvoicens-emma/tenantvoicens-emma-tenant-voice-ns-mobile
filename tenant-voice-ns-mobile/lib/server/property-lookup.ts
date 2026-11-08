@@ -19,7 +19,7 @@ export const getApprovedReviews = cache(async (propertyId: number) =>
   supabase
     .from("reviews")
     .select(
-      "id, review_text, occupancy_duration, would_live_again, published_on, landlord_on_site, moderator_edited, property_ratings(id, category, score), landlord_ratings(id, category, score)"
+      "id, review_text, occupancy_duration, would_live_again, published_on, moderator_edited, issues, property_ratings(id, category, score)"
     )
     .eq("property_id", propertyId)
     .eq("status", "approved")

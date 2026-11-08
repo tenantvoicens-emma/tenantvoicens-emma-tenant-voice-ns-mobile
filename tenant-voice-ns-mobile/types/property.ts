@@ -20,7 +20,6 @@ export type PropertyListing = Omit<
   id: number;
   reviewCount?: number;
   propertyRating?: number | null;
-  landlordRating?: number | null;
   // A house, suite, room, duplex or condo rented from its owner. Unknown
   // until loaded (search results don't include it).
   isSmallRental?: boolean;

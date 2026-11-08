@@ -21,6 +21,7 @@ export const reportReasons = [
   {
     value: "legal_concern",
     label: "Legal concern",
+    hint: "The review is hidden right away while the moderator looks at it",
   },
   {
     value: "other",

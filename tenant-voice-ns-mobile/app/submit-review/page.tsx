@@ -3,13 +3,12 @@
 import { Turnstile } from "@marsidev/react-turnstile";
 import { useEffect, useState, type FormEvent } from "react";
 import {
-  landlordRatingGuide,
   propertyRatingGuide,
   type RatingGuideEntry,
 } from "@/lib/rating-guide";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronDown, Star } from "lucide-react";
+import { ChevronDown, ImagePlus, Star, X } from "lucide-react";
 
 import { propertyLocation } from "@/lib/property-display";
 import NewBuildingFields from "@/components/review/NewBuildingFields";
@@ -24,11 +23,13 @@ import {
   writeDraft,
   type NewBuilding,
 } from "@/lib/review-draft";
+import { isSmallRentalKind } from "@/lib/rental-kind";
+import { reviewIssues } from "@/lib/review-issues";
 import {
-  isLandlordOnSite,
-  isSmallRentalKind,
-  landlordOnSiteOptions,
-} from "@/lib/rental-kind";
+  MAX_EVIDENCE_FILES,
+  prepareEvidenceImage,
+  type EvidenceUpload,
+} from "@/lib/review-evidence";
 import { OVERALL_CATEGORY } from "@/lib/ratings";
 import { usePropertySearch } from "@/lib/use-property-search";
 import { supabase } from "@/lib/supabase";
@@ -43,7 +44,9 @@ type RatingCategory = RatingGuideEntry;
 type SubmissionStatus = "success" | "error" | null;
 
 const propertyRatingCategories: RatingCategory[] = propertyRatingGuide;
-const landlordRatingCategories: RatingCategory[] = landlordRatingGuide;
+
+// A picture attached as optional evidence, with a local preview.
+type EvidenceItem = EvidenceUpload & { id: number; preview: string };
 
 const starRatings = [1, 2, 3, 4, 5] as const;
 const ratingLabels: Record<number, string> = {
@@ -82,15 +85,15 @@ function ReviewForm() {
   const [newBuilding, setNewBuilding] = useState<NewBuilding | null>(null);
   const [occupancyDuration, setOccupancyDuration] = useState("");
   const [wouldLiveAgain, setWouldLiveAgain] = useState("");
-  // Only asked, and only sent, for small rentals.
-  const [landlordOnSite, setLandlordOnSite] = useState("");
   const [reviewText, setReviewText] = useState("");
+  const [issues, setIssues] = useState<string[]>([]);
   const [propertyRatings, setPropertyRatings] = useState<Record<string, string>>(
     {}
   );
-  const [landlordRatings, setLandlordRatings] = useState<Record<string, string>>(
-    {}
-  );
+  // Optional proof. Kept in memory only: pictures aren't saved in the draft.
+  const [evidence, setEvidence] = useState<EvidenceItem[]>([]);
+  const [evidenceError, setEvidenceError] = useState("");
+  const [isPreparingEvidence, setIsPreparingEvidence] = useState(false);
   // Null until the renter opens or closes the detailed ratings; until then
   // they show only if a restored draft already has some.
   const [detailsOpen, setDetailsOpen] = useState<boolean | null>(null);
@@ -166,10 +169,9 @@ function ReviewForm() {
             setNewBuilding(restoreNewBuilding(draft.newBuilding));
             setOccupancyDuration(draft.occupancyDuration);
             setWouldLiveAgain(draft.wouldLiveAgain);
-            setLandlordOnSite(draft.landlordOnSite ?? "");
             setReviewText(draft.reviewText);
+            setIssues(draft.issues ?? []);
             setPropertyRatings(draft.propertyRatings);
-            setLandlordRatings(draft.landlordRatings);
           } else if (requestedProperty) {
             setSelectedProperty(requestedProperty);
             setSearchTerm(requestedProperty.name);
@@ -208,10 +210,9 @@ function ReviewForm() {
       searchTerm,
       occupancyDuration,
       wouldLiveAgain,
-      landlordOnSite,
       reviewText,
+      issues,
       propertyRatings,
-      landlordRatings,
     });
   }, [
     selectedProperty,
@@ -219,10 +220,9 @@ function ReviewForm() {
     searchTerm,
     occupancyDuration,
     wouldLiveAgain,
-    landlordOnSite,
     reviewText,
+    issues,
     propertyRatings,
-    landlordRatings,
     submissionStatus,
     isDraftReady,
   ]);
@@ -269,8 +269,14 @@ function ReviewForm() {
     : isSmallRentalKind(newBuilding?.rentalKind);
   const showSuggestions =
     search.status !== "idle" && !isLoadingProperties && !propertyLoadError;
-  const hasDetailedRatings = [...Object.entries(propertyRatings), ...Object.entries(landlordRatings)]
-    .some(([category, value]) => category !== OVERALL_CATEGORY && value !== "");
+  const hasDetailedRatings = Object.entries(propertyRatings).some(
+    ([category, value]) => category !== OVERALL_CATEGORY && value !== ""
+  );
+  // A review needs something to say: some text, a ticked problem or a rating.
+  const hasContent =
+    reviewText.trim() !== "" ||
+    issues.length > 0 ||
+    Object.values(propertyRatings).some((value) => value !== "" && value !== "na");
   const showDetails = detailsOpen ?? hasDetailedRatings;
   const buildingLabel = selectedProperty
     ? selectedProperty.name
@@ -294,6 +300,13 @@ function ReviewForm() {
       );
       return;
     }
+    if (!hasContent) {
+      setSubmissionStatus("error");
+      setSubmissionError(
+        "Add a rating, tick a problem, or write a few words about the property before you submit."
+      );
+      return;
+    }
     if (!turnstileToken) {
       setSubmissionStatus("error");
       setSubmissionError(
@@ -304,16 +317,61 @@ function ReviewForm() {
     void submitReview();
   }
 
-  function updateRating(
-    group: "property" | "landlord",
-    category: string,
-    value: string
-  ) {
-    const setRatings = group === "property" ? setPropertyRatings : setLandlordRatings;
-    setRatings((currentRatings) => ({
+  function updateRating(category: string, value: string) {
+    setPropertyRatings((currentRatings) => ({
       ...currentRatings,
       [category]: value,
     }));
+  }
+
+  function toggleIssue(issue: string) {
+    setIssues((current) =>
+      current.includes(issue)
+        ? current.filter((value) => value !== issue)
+        : [...current, issue]
+    );
+  }
+
+  async function addEvidence(files: FileList | null) {
+    if (!files || files.length === 0) {
+      return;
+    }
+    setEvidenceError("");
+    setIsPreparingEvidence(true);
+    try {
+      const room = MAX_EVIDENCE_FILES - evidence.length;
+      const chosen = Array.from(files).slice(0, Math.max(room, 0));
+      if (files.length > chosen.length) {
+        setEvidenceError(`You can attach up to ${MAX_EVIDENCE_FILES} pictures.`);
+      }
+      const prepared: EvidenceItem[] = [];
+      for (const file of chosen) {
+        try {
+          const upload = await prepareEvidenceImage(file);
+          prepared.push({
+            ...upload,
+            id: Date.now() + prepared.length + Math.random(),
+            preview: `data:${upload.mimeType};base64,${upload.data}`,
+          });
+        } catch (error) {
+          setEvidenceError(
+            error instanceof Error ? error.message : "We couldn’t attach that picture."
+          );
+        }
+      }
+      if (prepared.length > 0) {
+        setEvidence((current) =>
+          [...current, ...prepared].slice(0, MAX_EVIDENCE_FILES)
+        );
+      }
+    } finally {
+      setIsPreparingEvidence(false);
+    }
+  }
+
+  function removeEvidence(id: number) {
+    setEvidence((current) => current.filter((item) => item.id !== id));
+    setEvidenceError("");
   }
 
   async function submitReview() {
@@ -357,11 +415,16 @@ function ReviewForm() {
           reviewText,
           occupancyDuration,
           wouldLiveAgain,
-          ...(isSmallRental && isLandlordOnSite(landlordOnSite)
-            ? { landlordOnSite }
-            : {}),
+          issues,
           propertyRatings: toRatingRows(propertyRatings),
-          landlordRatings: toRatingRows(landlordRatings),
+          ...(evidence.length > 0
+            ? {
+                evidence: evidence.map(({ mimeType, data }) => ({
+                  mimeType,
+                  data,
+                })),
+              }
+            : {}),
         }),
       });
 
@@ -379,6 +442,7 @@ function ReviewForm() {
       }
 
       setSubmissionStatus("success");
+      setEvidence([]);
       writeDraft(null);
     } catch {
       setSubmissionStatus("error");
@@ -593,75 +657,71 @@ function ReviewForm() {
                 </select>
               </div>
 
-              {isSmallRental && (
-                <div className="space-y-2">
-                  <label htmlFor="landlord-on-site" className="block text-lg font-medium text-[#4A5A52]">
-                    Did the landlord live there too?{" "}
-                    <span className="font-normal text-[#66706B]">(optional)</span>
-                  </label>
-                  <select
-                    id="landlord-on-site"
-                    value={landlordOnSite}
-                    onChange={(event) => setLandlordOnSite(event.target.value)}
-                    className={formField}
-                  >
-                    <option value="">Choose an answer</option>
-                    {landlordOnSiteOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
               <p id="overall-scale" className="text-[#66706B]">
                 1 is poor and 5 is excellent. Choose N/A if it doesn&apos;t apply,
                 or skip it.
               </p>
               <StarRatingField
                 name="property-overall"
-                label="Overall, how would you rate the building?"
+                label="Overall, how would you rate the property?"
                 value={propertyRatings[OVERALL_CATEGORY] ?? ""}
-                onChange={(value) => updateRating("property", OVERALL_CATEGORY, value)}
-                describedBy="overall-scale"
-                emphasis
-              />
-              <StarRatingField
-                name="landlord-overall"
-                label="Overall, how would you rate the landlord or property manager?"
-                value={landlordRatings[OVERALL_CATEGORY] ?? ""}
-                onChange={(value) => updateRating("landlord", OVERALL_CATEGORY, value)}
+                onChange={(value) => updateRating(OVERALL_CATEGORY, value)}
                 describedBy="overall-scale"
                 emphasis
               />
 
+              <fieldset className="space-y-2">
+                <legend className="block text-lg font-medium text-[#4A5A52]">
+                  Did you have any of these problems at the property?{" "}
+                  <span className="font-normal text-[#66706B]">(optional)</span>
+                </legend>
+                <p className="text-[#66706B]">
+                  Tick everything that applies during the time you lived there.
+                </p>
+                <div className="space-y-1">
+                  {reviewIssues.map((issue) => (
+                    <label
+                      key={issue.value}
+                      className="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl px-1 text-[#1F2A24]"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={issues.includes(issue.value)}
+                        onChange={() => toggleIssue(issue.value)}
+                        className="h-5 w-5 shrink-0 accent-[#08873A]"
+                      />
+                      <span>{issue.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
               <div className="space-y-2">
                 <label htmlFor="review-text" className="block text-lg font-medium text-[#4A5A52]">
-                  What would you like other renters to know?
+                  Anything else other renters should know about the property?{" "}
+                  <span className="font-normal text-[#66706B]">(optional)</span>
                 </label>
                 <div id="review-text-tips" className="space-y-2 text-[#66706B]">
                   <p>
-                    You might mention repairs and maintenance, heat and hot water,
-                    noise, pests, safety, and how management handled problems.
+                    Describe the property and what you saw: its condition,
+                    repairs and maintenance, heat and hot water, noise, pests
+                    and safety.
                   </p>
                   <p className="font-medium text-[#4A5A52]">
-                    Describe what happened, not who did it: say
-                    &ldquo;management&rdquo; rather than singling out a staff
-                    member, and share your experience rather than accusations.
-                    Don&apos;t include names, unit numbers or other personal
-                    details. We can&apos;t publish reviews that do, and we
-                    can&apos;t contact you to ask for changes.
+                    This site reviews places, not people. Don&apos;t name or
+                    describe your landlord, a property manager, staff, other
+                    tenants or anyone else, and don&apos;t include unit numbers
+                    or other personal details. Stick to what happened at the
+                    property. We can&apos;t publish reviews that name people,
+                    and we can&apos;t contact you to ask for changes.
                   </p>
                   <p>
-                    For example: &ldquo;Repairs often took weeks, and management
-                    stopped answering my emails after I complained about the
-                    heat.&rdquo;
+                    For example: &ldquo;The heat didn&apos;t work for most of
+                    January, and the repair took about three weeks.&rdquo;
                   </p>
                 </div>
                 <textarea
                   id="review-text"
-                  required
                   value={reviewText}
                   onChange={(event) => setReviewText(event.target.value)}
                   aria-describedby="review-text-tips"
@@ -678,9 +738,9 @@ function ReviewForm() {
                 <span className="font-normal text-[#66706B]">(optional)</span>
               </h2>
               <p className="text-[#4A5A52]">
-                Rate things like cleanliness, safety, repair speed and
-                communication. It takes about a minute and helps other renters
-                compare buildings.
+                Rate things like cleanliness, safety, noise and building
+                condition. It takes about a minute and helps other renters
+                compare properties.
               </p>
               <button
                 type="button"
@@ -703,23 +763,74 @@ function ReviewForm() {
                 description="Rate the building and shared spaces. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
                 categories={propertyRatingCategories}
                 values={propertyRatings}
-                onChange={(category, value) =>
-                  updateRating("property", category, value)
-                }
+                onChange={updateRating}
                 idPrefix="property-rating"
               />
-
-              <RatingGroup
-                title="Landlord ratings"
-                description="Rate the property manager or landlord. Choose N/A if a category doesn’t apply or you’re not sure, or just skip it."
-                categories={landlordRatingCategories}
-                values={landlordRatings}
-                onChange={(category, value) =>
-                  updateRating("landlord", category, value)
-                }
-                idPrefix="landlord-rating"
-              />
             </div>
+
+            <section className={formCard} aria-labelledby="evidence-heading">
+              <h2 id="evidence-heading" className="text-xl font-bold text-[#294B3A]">
+                Add proof{" "}
+                <span className="font-normal text-[#66706B]">(optional)</span>
+              </h2>
+              <p className="text-[#4A5A52]">
+                You can attach up to {MAX_EVIDENCE_FILES} photos or screenshots,
+                such as a picture of the problem. Proof is never shown
+                publicly. Only the moderator can see it, to check a review if
+                it&apos;s challenged, and it&apos;s deleted along with the
+                review.
+              </p>
+              <p className="text-sm text-[#66706B]">
+                Cover or crop out names, faces, phone numbers and unit numbers
+                first. Pictures are resized here in your browser, which also
+                removes location and camera details.
+              </p>
+              {evidence.length > 0 && (
+                <ul className="grid grid-cols-3 gap-3">
+                  {evidence.map((item, index) => (
+                    <li key={item.id} className="relative">
+                      {/* A local preview of the picture being attached. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.preview}
+                        alt={`Attached picture ${index + 1}`}
+                        className="aspect-square w-full rounded-2xl border border-[#E6E3DA] object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeEvidence(item.id)}
+                        aria-label={`Remove attached picture ${index + 1}`}
+                        className="absolute right-1 top-1 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#294B3A] shadow"
+                      >
+                        <X className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {evidence.length < MAX_EVIDENCE_FILES && (
+                <label className="flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-[#2F4F46] py-3 text-lg font-medium text-[#2F4F46]">
+                  <ImagePlus className="h-5 w-5" aria-hidden="true" />
+                  {isPreparingEvidence ? "Preparing picture…" : "Attach a picture"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={isPreparingEvidence}
+                    onChange={(event) => {
+                      void addEvidence(event.target.files);
+                      event.target.value = "";
+                    }}
+                    className="sr-only"
+                  />
+                </label>
+              )}
+              {evidenceError && (
+                <p className="text-red-700" role="alert">
+                  {evidenceError}
+                </p>
+              )}
+            </section>
 
             <section className={formCard} aria-labelledby="submit-heading">
               <h2 id="submit-heading" className="text-xl font-bold text-[#294B3A]">
@@ -736,26 +847,21 @@ function ReviewForm() {
                   label="Would live there again"
                   value={getWouldLiveAgainLabel(wouldLiveAgain)}
                 />
-                {isSmallRental && (
-                  <SummaryRow
-                    label="Landlord lived there too"
-                    value={
-                      landlordOnSiteOptions.find((option) => option.value === landlordOnSite)
-                        ?.label ?? "Not answered"
-                    }
-                  />
-                )}
                 <SummaryRow
-                  label="Building overall"
+                  label="Property overall"
                   value={overallLabel(propertyRatings[OVERALL_CATEGORY])}
                 />
                 <SummaryRow
-                  label="Landlord overall"
-                  value={overallLabel(landlordRatings[OVERALL_CATEGORY])}
+                  label="Problems ticked"
+                  value={issues.length === 0 ? "None" : String(issues.length)}
                 />
                 <SummaryRow
                   label="Detailed ratings"
-                  value={detailedLabel(propertyRatings, landlordRatings)}
+                  value={detailedLabel(propertyRatings)}
+                />
+                <SummaryRow
+                  label="Pictures attached"
+                  value={evidence.length === 0 ? "None" : String(evidence.length)}
                 />
               </dl>
 
@@ -970,16 +1076,11 @@ function overallLabel(value: string | undefined) {
   return value ? `${value} out of 5` : "Skipped";
 }
 
-function detailedLabel(
-  propertyValues: Record<string, string>,
-  landlordValues: Record<string, string>
-) {
-  const answered = (values: Record<string, string>, categories: RatingCategory[]) =>
-    categories.filter((category) => values[category.value]).length;
-  const total = propertyRatingCategories.length + landlordRatingCategories.length;
-  const count =
-    answered(propertyValues, propertyRatingCategories) +
-    answered(landlordValues, landlordRatingCategories);
+function detailedLabel(propertyValues: Record<string, string>) {
+  const total = propertyRatingCategories.length;
+  const count = propertyRatingCategories.filter(
+    (category) => propertyValues[category.value]
+  ).length;
   return count === 0 ? "None (optional)" : `${count} of ${total} answered`;
 }
 
@@ -1021,9 +1122,9 @@ function SmallRentalNotice() {
         you&apos;ve moved out. It&apos;s your choice.
       </p>
       <p>
-        To help, we show only the year your review was written, never the
-        landlord&apos;s name, and never a unit number. Leave out anything that
-        could identify you, your roommates or the landlord&apos;s family.
+        To help, we show only the year your review was written, and never a
+        unit number. Leave out anything that could identify you, your
+        roommates or anyone else, including your landlord.
       </p>
     </div>
   );

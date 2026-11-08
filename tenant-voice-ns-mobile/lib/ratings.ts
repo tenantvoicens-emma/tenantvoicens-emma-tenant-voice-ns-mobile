@@ -1,5 +1,5 @@
-// Each review can carry an "overall" star rating for the building and for
-// the landlord, stored alongside the detailed categories.
+// Each review can carry an "overall" star rating for the property, stored
+// alongside the detailed categories.
 export const OVERALL_CATEGORY = "overall";
 
 type StoredRating = {

@@ -31,6 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     { url: `${base}/submit-review`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${base}/policies`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/terms`, changeFrequency: "monthly", priority: 0.3 },
     ...[...buildings].map(([slug, lastModified]) => ({
       url: `${base}/properties/${slug}`,
       // The date of its newest review, so search engines know to look

@@ -40,10 +40,9 @@ export default function PropertyPreviewCard({
             <ChevronRight className="h-6 w-6 shrink-0 text-[#2F4F46]" aria-hidden="true" />
           </div>
 
-          {(property.propertyRating !== undefined || property.landlordRating !== undefined) && (
+          {property.propertyRating !== undefined && (
             <div className="space-y-1.5">
               <LabeledRating label="Property" score={property.propertyRating ?? null} />
-              <LabeledRating label="Landlord" score={property.landlordRating ?? null} />
             </div>
           )}
 

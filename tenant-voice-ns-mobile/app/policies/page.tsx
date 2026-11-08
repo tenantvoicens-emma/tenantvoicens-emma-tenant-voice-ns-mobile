@@ -15,22 +15,23 @@ import {
 
 import IconTile from "@/components/ui/IconTile";
 import {
-  landlordRatingGuide,
   propertyRatingGuide,
   type RatingGuideEntry,
 } from "@/lib/rating-guide";
+import { reviewIssues } from "@/lib/review-issues";
+import { MAX_EVIDENCE_FILES } from "@/lib/review-evidence";
 import PageContainer from "@/components/ui/PageContainer";
 import { pageMetadata } from "@/lib/page-metadata";
 
 export const metadata: Metadata = pageMetadata({
   title: "Policies and review guidelines",
   description:
-    "How Tenant Voice NS moderates reviews, protects renters' privacy, calculates ratings and handles concerns from landlords.",
+    "How Tenant Voice NS moderates reviews of properties, protects renters' privacy, calculates ratings and handles concerns about a review.",
   path: "/policies",
 });
 
 // Change this whenever the policies below change.
-const LAST_UPDATED = "November 6, 2026";
+const LAST_UPDATED = "November 8, 2026";
 
 export default function PoliciesPage() {
   return (
@@ -46,7 +47,11 @@ export default function PoliciesPage() {
             </h1>
             <p className="text-lg text-[#66706B]">
               Tenant Voice NS should protect honest feedback while treating
-              renters and housing providers fairly.
+              renters and property owners fairly. See also our{" "}
+              <Link href="/terms" className="font-medium text-[#2F4F46] underline">
+                Terms of Service
+              </Link>
+              .
             </p>
             <p className="text-sm text-[#66706B]">
               Last updated {LAST_UPDATED}.
@@ -60,8 +65,8 @@ export default function PoliciesPage() {
             </h2>
             <p className="text-gray-700">
               Tenant Voice NS helps Nova Scotia renters understand what it may be
-              like to live in a property by sharing structured tenant experiences
-              and information about property management.
+              like to live in a property by sharing structured tenant
+              experiences of the property itself.
             </p>
             <p className="text-gray-700">
               Tenant Voice NS is an independent, volunteer-run project based in
@@ -69,9 +74,10 @@ export default function PoliciesPage() {
               manager, or government.
             </p>
             <p className="text-gray-700">
-              Properties are the primary way to search. Property-condition ratings
-              and landlord or management ratings are kept separate because a
-              building and the people managing it can offer different experiences.
+              We review properties, not people. Reviews are about a place and
+              its condition, and are shown on the page for its address. We
+              don&apos;t rate landlords or property managers, and reviews
+              shouldn&apos;t name them or anyone else.
             </p>
           </section>
 
@@ -81,20 +87,28 @@ export default function PoliciesPage() {
               Review guidelines
             </h2>
             <p className="text-gray-700">
-              Reviews should describe your own direct rental experience. Focus on
-              specific events and observations, and write respectfully. Do not
-              present rumours, assumptions, or another person’s account as your
-              own experience.
+              Reviews should describe your own direct experience of the
+              property. Focus on specific events and observations about the
+              place, and write respectfully. Do not present rumours,
+              assumptions, or another person’s account as your own experience.
             </p>
             <p className="text-gray-700">
-              You may discuss maintenance, communication, building condition,
-              safety, noise, shared spaces, amenities, and other relevant parts of
-              renting. Positive and negative experiences are both welcome.
+              You may discuss repairs and maintenance, heat and hot water,
+              building condition, pests, safety, noise, shared spaces,
+              amenities, and other relevant parts of the property. Positive and
+              negative experiences are both welcome.
             </p>
             <p className="font-medium text-gray-800">
-              Do not include threats, harassment, discriminatory content, personal
-              attacks, private contact details, information identifying another
-              tenant, or material unrelated to renting.
+              Do not name or describe any person, including a landlord, property
+              manager or staff member. Do not include threats, harassment,
+              discriminatory content, personal attacks, private contact
+              details, information identifying another tenant, or material
+              unrelated to the property.
+            </p>
+            <p className="text-gray-700">
+              Instead of writing about a person, write about what happened at
+              the property: &ldquo;The heat didn&apos;t work for most of
+              January and the repair took about three weeks.&rdquo;
             </p>
           </section>
 
@@ -104,11 +118,10 @@ export default function PoliciesPage() {
               How ratings work
             </h2>
             <p className="text-gray-700">
-              Each review can give one overall star rating for the building
-              and one for the landlord or property manager. A building&apos;s
-              overall scores are the average of its reviews. If a reviewer
-              skipped an overall rating, the average of their detailed ratings
-              is used instead.
+              Each review can give one overall star rating for the property. A
+              property&apos;s overall score is the average of its reviews. If
+              a reviewer skipped an overall rating, the average of their
+              detailed ratings is used instead.
             </p>
             <p className="text-gray-700">
               Detailed ratings are optional. Choose N/A if a category
@@ -122,8 +135,18 @@ export default function PoliciesPage() {
             </p>
             <h3 className="font-semibold text-[#294B3A]">Detailed property ratings</h3>
             <RatingGuideList entries={propertyRatingGuide} />
-            <h3 className="font-semibold text-[#294B3A]">Detailed landlord ratings</h3>
-            <RatingGuideList entries={landlordRatingGuide} />
+            <h3 className="font-semibold text-[#294B3A]">Problems reviewers can tick</h3>
+            <p className="text-gray-700">
+              Instead of, or as well as, writing about it, a reviewer can tick
+              problems they had at the property. A property&apos;s page shows
+              how many reviewers ticked each one. These are renters&apos; own
+              reports, not inspections or findings.
+            </p>
+            <ul className="list-disc space-y-1 pl-6 text-gray-700">
+              {reviewIssues.map((issue) => (
+                <li key={issue.value}>{issue.label}</li>
+              ))}
+            </ul>
             <p className="text-gray-700">
               Summary scores use approved reviews with numeric ratings. Each
               review contributes its average numeric score for that rating group;
@@ -132,7 +155,7 @@ export default function PoliciesPage() {
             </p>
           </section>
 
-          <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+          <section id="moderation" className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
             <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
               <IconTile icon={ShieldCheck} />
               Moderation
@@ -147,7 +170,9 @@ export default function PoliciesPage() {
               Rejected reviews and their ratings are never shown publicly. They
               are kept privately in the moderation area for 24 months after
               they were rejected, for recordkeeping and appeals, and then
-              deleted automatically.
+              deleted automatically, along with any proof pictures attached to
+              them. A published review that is taken down is treated the same
+              way unless it is put back.
             </p>
             <h3 id="reporting" className="scroll-mt-6 font-semibold text-[#294B3A]">
               Reporting a review
@@ -158,8 +183,21 @@ export default function PoliciesPage() {
               under it. Choose a reason and add details if you like. Only the
               moderator sees reports. A reported review stays up while the
               moderator checks it against these guidelines, then keeps it up,
-              removes the part that breaks them, or unpublishes it. A report
-              does not automatically remove a review.
+              removes the part that breaks them, or unpublishes it. Most
+              reports do not remove a review by themselves.
+            </p>
+            <h3 id="legal-concerns" className="scroll-mt-6 font-semibold text-[#294B3A]">
+              Legal concerns
+            </h3>
+            <p className="text-gray-700">
+              If you choose the reason &ldquo;Legal concern&rdquo;, the review
+              is hidden from the site right away, before anyone has checked
+              it. The moderator then decides whether to put it back or keep it
+              down, and looks at hidden reviews as soon as they can. We do
+              this so that a review someone says may be unlawful isn&apos;t
+              left up while it&apos;s looked at. It is not a finding that the
+              review is wrong. Please use it for genuine legal concerns, and
+              add your email so the moderator can reply.
             </p>
             <p className="text-gray-700">
               Adding your email to a report is optional, and it&apos;s used only
@@ -187,7 +225,7 @@ export default function PoliciesPage() {
             </p>
           </section>
 
-          <section className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
+          <section id="privacy" className="scroll-mt-6 space-y-3 rounded-3xl border border-[#E6E3DA] bg-white p-6">
             <h2 className="flex items-center gap-4 text-xl font-bold text-[#294B3A]">
               <IconTile icon={UserCheck} />
               Privacy and anonymity
@@ -224,6 +262,22 @@ export default function PoliciesPage() {
               That deletes your email address and password straight away. Your
               published reviews stay on the site, still anonymous, but are no
               longer linked to you.
+            </p>
+            <p className="text-gray-700">
+              You can attach up to {MAX_EVIDENCE_FILES} pictures to a review as
+              proof, such as a photo of the problem. This is optional. Pictures
+              are never shown publicly. They are stored privately and only the
+              moderator can see them, to check a review if it&apos;s
+              challenged. They&apos;re resized in your browser before they are
+              sent, which also removes location and camera details, but a
+              picture can still show names, faces or unit numbers, so cover or
+              crop those first. A picture is deleted when its review is
+              deleted.
+            </p>
+            <p className="text-gray-700">
+              Earlier reviews could include a rating of the landlord or property
+              manager. Those ratings are no longer shown or collected. They
+              are kept privately and are not available to the public.
             </p>
             <p className="text-gray-700">
               To stop spam, we keep a one-way fingerprint of your IP address
@@ -287,12 +341,11 @@ export default function PoliciesPage() {
             </p>
             <p className="text-gray-700">
               To help protect you, a private rental&apos;s page shows the street
-              address but never a unit number, calls the landlord
-              &ldquo;Private landlord&rdquo; and never shows their name, and
-              shows only the year each review was written. Its reviews
-              aren&apos;t included in Recent reviews on the Discover page. The
-              moderator removes names and details that could identify you,
-              your roommates, or the landlord&apos;s family.
+              address but never a unit number, and shows only the year each
+              review was written. Its reviews aren&apos;t included in Recent
+              reviews on the Discover page. The moderator removes names and
+              details that could identify you, your roommates, the landlord
+              or the landlord&apos;s family.
             </p>
           </section>
 

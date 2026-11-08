@@ -5,13 +5,14 @@ import LabeledRating from "@/components/profile/LabeledRating";
 import ClampedReviewText from "@/components/profile/ClampedReviewText";
 import ReportReviewButton from "@/components/profile/ReportReviewButton";
 import { getPropertyHref } from "@/lib/navigation";
+import { reviewIssueLabel } from "@/lib/review-issues";
 import { Review } from "@/types/review";
 import { MODERATOR_EDIT_NOTICE } from "@/lib/moderator-edit";
 
 type ReviewCardProps = {
   review: Review;
   // Compact cards swap the per-category breakdown for one overall
-  // property score and one landlord score.
+  // property score.
   compact?: boolean;
 };
 
@@ -32,7 +33,8 @@ export default function ReviewCard({
           timeZone: "UTC",
         }).format(reviewDate)
     : null;
-  const landlordLivedThere = review.landlordOnSite === "yes";
+  const issues = review.issues ?? [];
+  const hasText = review.reviewText.trim().length > 0;
 
   const occupancyPeriod = UNANSWERED.includes(review.occupancyPeriod)
     ? null
@@ -69,7 +71,7 @@ export default function ReviewCard({
           </p>
         </header>
 
-        {(occupancyPeriod || wouldLiveAgain || landlordLivedThere) && (
+        {(occupancyPeriod || wouldLiveAgain) && (
           <div className="flex flex-wrap gap-2">
             {occupancyPeriod && (
               <ReviewDetail label="Lived here" value={occupancyPeriod} />
@@ -81,19 +83,32 @@ export default function ReviewCard({
                 tone={wouldLiveAgain === "Yes" ? "positive" : wouldLiveAgain === "No" ? "negative" : "neutral"}
               />
             )}
-            {landlordLivedThere && (
-              <ReviewDetail label="Landlord lived on site" value="" />
-            )}
           </div>
         )}
 
-        {compact ? (
-          <ClampedReviewText text={review.reviewText} />
-        ) : (
-          <p className="whitespace-pre-line leading-relaxed text-gray-800">
-            {review.reviewText}
-          </p>
+        {issues.length > 0 && (
+          <div>
+            <p className="mb-1.5 text-sm font-semibold uppercase tracking-wide text-[#66706B]">
+              Reported problems
+            </p>
+            <ul className="flex flex-wrap gap-2">
+              {issues.map((issue) => (
+                <li key={issue}>
+                  <ReviewDetail label={reviewIssueLabel(issue)} value="" tone="negative" />
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
+
+        {hasText &&
+          (compact ? (
+            <ClampedReviewText text={review.reviewText} />
+          ) : (
+            <p className="whitespace-pre-line leading-relaxed text-gray-800">
+              {review.reviewText}
+            </p>
+          ))}
 
         {review.moderatorEdited && (
           <p className="text-sm text-[#66706B]">
@@ -105,7 +120,6 @@ export default function ReviewCard({
         {compact ? (
           <div className="space-y-1.5 border-t border-[#DEDCD5] pt-3">
             <LabeledRating label="Property" score={review.propertyOverall ?? null} />
-            <LabeledRating label="Landlord" score={review.landlordOverall ?? null} />
           </div>
         ) : (
           <>
@@ -114,12 +128,6 @@ export default function ReviewCard({
               headingLevel={review.propertyName ? "h4" : "h3"}
               overall={review.propertyOverall ?? null}
               ratings={review.propertyRatings ?? []}
-            />
-            <ReviewRatingGroup
-              title="Landlord"
-              headingLevel={review.propertyName ? "h4" : "h3"}
-              overall={review.landlordOverall ?? null}
-              ratings={review.landlordRatings ?? []}
             />
             {Number.isSafeInteger(Number(review.id)) && (
               <footer className="-mb-2 border-t border-[#EEECE6] pt-1">

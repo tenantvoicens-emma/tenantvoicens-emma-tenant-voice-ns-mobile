@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+import EvidenceViewer from "@/components/admin/EvidenceViewer";
 import ModerationDialog, {
   type ModerationAction,
 } from "@/components/admin/ModerationDialog";
@@ -51,14 +52,17 @@ type Props = {
 
 // The Reports tab on the moderation page: reports visitors sent about
 // published reviews. Reported reviews stay up until the moderator decides
-// here: keep it up, remove words, or unpublish it.
+// here (keep it up, remove words, or unpublish it), except a "Legal concern"
+// report, which hides the review at once. Those wait here to be restored or
+// kept down.
 export default function ReportsQueue({ accessToken }: Props) {
   const [view, setView] = useState<View>("open");
   const [loadedKey, setLoadedKey] = useState<string | null>(null);
   const [rows, setRows] = useState<ReportRow[]>([]);
   const [originals, setOriginals] = useState<Record<number, string>>({});
+  const [evidenceCounts, setEvidenceCounts] = useState<Record<number, number>>({});
   const [pendingAction, setPendingAction] = useState<
-    ModerationAction<"keep-up" | "unpublish"> | null
+    ModerationAction<"keep-up" | "unpublish" | "approve-after-all"> | null
   >(null);
   const [removeTarget, setRemoveTarget] = useState<RemoveWordsTarget | null>(null);
   const [savingReviewId, setSavingReviewId] = useState<number | null>(null);
@@ -107,9 +111,30 @@ export default function ReportsQueue({ accessToken }: Props) {
         }
       }
 
+      // How many proof pictures each reported review has.
+      const countsByReview: Record<number, number> = {};
+      const reviewIds = [...new Set(reportRows.map((row) => row.review_id))];
+      if (reviewIds.length > 0) {
+        const { data: countRows, error: countsError } = await supabase.rpc(
+          "get_review_evidence_counts",
+          { p_review_ids: reviewIds }
+        );
+        if (countsError) {
+          console.error("Could not load evidence counts.", countsError.code);
+        } else {
+          for (const row of (countRows ?? []) as {
+            review_id: number;
+            evidence_count: number;
+          }[]) {
+            countsByReview[row.review_id] = row.evidence_count;
+          }
+        }
+      }
+
       if (isActive) {
         setRows(reportRows);
         setOriginals(originalsByReview);
+        setEvidenceCounts(countsByReview);
         setLoadedKey(key);
         setErrorMessage("");
       }
@@ -154,7 +179,10 @@ export default function ReportsQueue({ accessToken }: Props) {
     return true;
   }
 
-  async function confirmAction(action: ModerationAction<"keep-up" | "unpublish">, note: string) {
+  async function confirmAction(
+    action: ModerationAction<"keep-up" | "unpublish" | "approve-after-all">,
+    note: string
+  ) {
     if (isSaving) {
       return;
     }
@@ -178,6 +206,22 @@ export default function ReportsQueue({ accessToken }: Props) {
           "The review was unpublished, but its reports couldn't be closed. Use “Close reports” to try again."
         );
         markUnpublished(action.reviewId);
+      }
+    } else if (action.kind === "approve-after-all") {
+      const { error } = await supabase.rpc("moderate_review", {
+        p_review_id: action.reviewId,
+        p_status: "approved",
+        p_note: note.trim() || null,
+      });
+      if (error) {
+        console.error("Could not restore review.", error.code);
+        setErrorMessage("That review could not be restored. Please try again.");
+      } else if (await closeReports(action.reviewId, "dismissed", note)) {
+        setMessage("Review restored and published again. Its reports are closed.");
+      } else {
+        setErrorMessage(
+          "The review was restored, but its reports couldn't be closed. Please reload and close them."
+        );
       }
     } else if (await closeReports(action.reviewId, "dismissed", note)) {
       setMessage("Reports closed. The review stays up.");
@@ -263,7 +307,10 @@ export default function ReportsQueue({ accessToken }: Props) {
     });
   }
 
-  function ask(kind: "keep-up" | "unpublish", group: ReportedReview) {
+  function ask(
+    kind: "keep-up" | "unpublish" | "approve-after-all",
+    group: ReportedReview
+  ) {
     setMessage("");
     setErrorMessage("");
     setPendingAction({
@@ -293,7 +340,7 @@ export default function ReportsQueue({ accessToken }: Props) {
 
       <p className="text-[#66706B]">
         {view === "open"
-          ? "Reported reviews stay up until you decide. Check each against the guidelines: keep it up, remove the words that break them, or unpublish it."
+          ? "Reported reviews stay up until you decide, except a legal concern: that hides the review at once. Check each against the guidelines: keep it up, remove the words that break them, or unpublish it. For a hidden review, restore it or keep it down."
           : "The 200 most recently closed reports. Closed reports are deleted 24 months after they were closed."}
       </p>
 
@@ -316,6 +363,11 @@ export default function ReportsQueue({ accessToken }: Props) {
           {grouped.map((group) => {
             const review = group.first;
             const isPublished = review.review_status === "approved";
+            // A legal-concern report took this review down automatically.
+            const wasAutoHidden =
+              !isPublished &&
+              review.review_status === "rejected" &&
+              group.reports.some((report) => report.reason === "legal_concern");
             return (
               <article
                 key={group.reviewId}
@@ -360,9 +412,28 @@ export default function ReportsQueue({ accessToken }: Props) {
                   </p>
                 </header>
 
-                <p className="whitespace-pre-wrap leading-relaxed text-gray-800">
-                  {review.review_text}
-                </p>
+                {wasAutoHidden && view === "open" && (
+                  <p className="rounded-2xl bg-[#FBEDE9] px-4 py-3 text-sm text-[#8A3B2B]" role="status">
+                    <span className="font-semibold">Hidden automatically.</span>{" "}
+                    A legal concern was reported, so this review came down
+                    straight away. Restore it or keep it down.
+                  </p>
+                )}
+
+                {review.review_text.trim() ? (
+                  <p className="whitespace-pre-wrap leading-relaxed text-gray-800">
+                    {review.review_text}
+                  </p>
+                ) : (
+                  <p className="text-[#66706B]">
+                    No written review. Ratings and ticked problems only.
+                  </p>
+                )}
+
+                <EvidenceViewer
+                  reviewId={group.reviewId}
+                  count={evidenceCounts[group.reviewId] ?? 0}
+                />
 
                 <section className="space-y-3 rounded-2xl bg-[#FBEDE9]/60 p-4">
                   <h4 className="text-sm font-semibold uppercase tracking-wide text-[#8A3B2B]">
@@ -449,11 +520,23 @@ export default function ReportsQueue({ accessToken }: Props) {
                         </p>
                         <button
                           type="button"
-                          onClick={() => void closeAfterDecision(group.reviewId)}
+                          onClick={() => ask("approve-after-all", group)}
                           disabled={isSaving}
                           className="min-h-12 flex-1 rounded-full bg-[#08873A] px-5 text-lg font-medium text-white disabled:opacity-60"
                         >
-                          {savingReviewId === group.reviewId ? "Saving..." : "Close reports"}
+                          Restore review
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => void closeAfterDecision(group.reviewId)}
+                          disabled={isSaving}
+                          className="min-h-12 flex-1 rounded-full border border-[#E0C4BC] bg-white px-5 text-lg font-medium text-[#8A3B2B] disabled:opacity-60"
+                        >
+                          {savingReviewId === group.reviewId
+                            ? "Saving..."
+                            : wasAutoHidden
+                              ? "Keep it down"
+                              : "Close reports"}
                         </button>
                       </>
                     )}

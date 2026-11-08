@@ -10,6 +10,9 @@ import HighlightLinkedReview from "@/components/profile/HighlightLinkedReview";
 import LeaveReviewCTA from "@/components/profile/LeaveReviewCTA";
 import PropertyHeader from "@/components/profile/PropertyHeader";
 import PropertySnapshot from "@/components/profile/PropertySnapshot";
+import ReportedIssues, {
+  type IssueCount,
+} from "@/components/profile/ReportedIssues";
 import ReviewCard from "@/components/profile/ReviewCard";
 import ReviewsSection from "@/components/profile/ReviewsSection";
 import PageContainer from "@/components/ui/PageContainer";
@@ -41,10 +44,9 @@ type SupabaseReviewRow = {
   occupancy_duration: string | null;
   would_live_again: string | null;
   published_on: string;
-  landlord_on_site: string | null;
   moderator_edited: boolean | null;
+  issues: string[] | null;
   property_ratings: SupabaseRatingRow[] | null;
-  landlord_ratings: SupabaseRatingRow[] | null;
 };
 
 type PropertyPageProps = {
@@ -77,11 +79,9 @@ export async function generateMetadata({
   const { data: reviewData, error: reviewError } = await getApprovedReviews(data.id);
   const reviewRows = (reviewData ?? []) as SupabaseReviewRow[];
   const count = reviewRows.length;
-  const propertyRating = summarizeRatings(reviewRows, "property_ratings").average;
-  const landlordRating = summarizeRatings(reviewRows, "landlord_ratings").average;
+  const propertyRating = summarizeRatings(reviewRows).average;
   const ratings = [
-    propertyRating !== null ? `building ${propertyRating}/5` : null,
-    landlordRating !== null ? `landlord ${landlordRating}/5` : null,
+    propertyRating !== null ? `property ${propertyRating}/5` : null,
   ].filter(Boolean);
 
   const description = reviewError
@@ -158,29 +158,14 @@ async function PropertyContent({ params }: PropertyPageProps) {
     moderatorEdited: review.moderator_edited === true,
     publishedOn: review.published_on,
     yearOnly: data.is_small_rental === true,
-    landlordOnSite: review.landlord_on_site,
-    propertyRatings: mapRatings([review], "property_ratings", slug),
-    landlordRatings: mapRatings([review], "landlord_ratings", slug),
+    issues: review.issues ?? [],
+    propertyRatings: mapRatings([review], slug),
     propertyOverall: overallScore(review.property_ratings),
-    landlordOverall: overallScore(review.landlord_ratings),
   }));
 
-  const propertyCategoryAverages = averageByCategory(
-    reviewRows,
-    "property_ratings"
-  );
-  const landlordCategoryAverages = averageByCategory(
-    reviewRows,
-    "landlord_ratings"
-  );
-  const propertyRatingSummary = summarizeRatings(
-    reviewRows,
-    "property_ratings"
-  );
-  const landlordRatingSummary = summarizeRatings(
-    reviewRows,
-    "landlord_ratings"
-  );
+  const propertyCategoryAverages = averageByCategory(reviewRows);
+  const propertyRatingSummary = summarizeRatings(reviewRows);
+  const issueCounts = countIssues(reviewRows);
 
   return (
     <PageContainer width="wide">
@@ -193,14 +178,15 @@ async function PropertyContent({ params }: PropertyPageProps) {
             reviewCount={reviews.length}
             rentalKind={data.rental_kind}
           />
-          <PropertySnapshot
-            propertyRating={propertyRatingSummary}
-            landlordRating={landlordRatingSummary}
+          <PropertySnapshot propertyRating={propertyRatingSummary} />
+
+          <ReportedIssues
+            issueCounts={issueCounts}
+            reviewCount={reviews.length}
           />
 
           <CategoryRatings
             propertyAverages={propertyCategoryAverages}
-            landlordAverages={landlordCategoryAverages}
             reviewCount={reviews.length}
           />
 
@@ -289,11 +275,10 @@ function formatWouldLiveAgain(value: string | null) {
 
 function mapRatings(
   reviews: SupabaseReviewRow[],
-  ratingGroup: "property_ratings" | "landlord_ratings",
   propertySlug: string
 ): Rating[] {
   return reviews.flatMap((review) =>
-    detailedRatings(review[ratingGroup]).map((rating) => ({
+    detailedRatings(review.property_ratings).map((rating) => ({
       id: rating.id,
       propertySlug,
       category: formatCategory(rating.category),
@@ -302,12 +287,9 @@ function mapRatings(
   );
 }
 
-function summarizeRatings(
-  reviews: SupabaseReviewRow[],
-  ratingGroup: "property_ratings" | "landlord_ratings"
-) {
+function summarizeRatings(reviews: SupabaseReviewRow[]) {
   const reviewAverages = reviews.flatMap((review) => {
-    const score = overallScore(review[ratingGroup]);
+    const score = overallScore(review.property_ratings);
     return score === null ? [] : [score];
   });
 
@@ -327,14 +309,11 @@ function summarizeRatings(
 
 // Averages each category across reviews, skipping N/A and unanswered
 // scores; categories nobody scored are left out.
-function averageByCategory(
-  reviews: SupabaseReviewRow[],
-  ratingGroup: "property_ratings" | "landlord_ratings"
-): CategoryAverage[] {
+function averageByCategory(reviews: SupabaseReviewRow[]): CategoryAverage[] {
   const scoresByCategory = new Map<string, number[]>();
 
   for (const review of reviews) {
-    for (const rating of detailedRatings(review[ratingGroup])) {
+    for (const rating of detailedRatings(review.property_ratings)) {
       const score = parseRatingScore(rating.score);
       if (score === null) {
         continue;
@@ -357,4 +336,17 @@ function averageByCategory(
       ratingCount: scores.length,
     }))
     .sort((a, b) => a.category.localeCompare(b.category));
+}
+
+// How many reviews ticked each problem, most-reported first.
+function countIssues(reviews: SupabaseReviewRow[]): IssueCount[] {
+  const counts = new Map<string, number>();
+  for (const review of reviews) {
+    for (const issue of new Set(review.issues ?? [])) {
+      counts.set(issue, (counts.get(issue) ?? 0) + 1);
+    }
+  }
+  return [...counts]
+    .map(([issue, count]) => ({ issue, count }))
+    .sort((a, b) => b.count - a.count || a.issue.localeCompare(b.issue));
 }

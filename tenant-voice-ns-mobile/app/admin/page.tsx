@@ -11,6 +11,7 @@ import ModerationDialog, {
 import FormMessages from "@/components/ui/FormMessages";
 import PageContainer from "@/components/ui/PageContainer";
 import SegmentedControl from "@/components/ui/SegmentedControl";
+import EvidenceViewer from "@/components/admin/EvidenceViewer";
 import ModerationChecklist from "@/components/admin/ModerationChecklist";
 import ReportsQueue from "@/components/admin/ReportsQueue";
 import RemoveWordsDialog, {
@@ -18,11 +19,8 @@ import RemoveWordsDialog, {
 } from "@/components/admin/RemoveWordsDialog";
 import { formatCategory, OVERALL_CATEGORY } from "@/lib/ratings";
 import { isModeratorEmail } from "@/lib/moderator";
-import {
-  isSmallRentalKind,
-  landlordOnSiteOptions,
-  rentalKindLabels,
-} from "@/lib/rental-kind";
+import { isSmallRentalKind, rentalKindLabels } from "@/lib/rental-kind";
+import { reviewIssueLabel } from "@/lib/review-issues";
 import { supabase } from "@/lib/supabase";
 import {
   refreshPendingCount,
@@ -40,7 +38,8 @@ type PendingReview = {
   review_text: string;
   occupancy_duration: string;
   would_live_again: string;
-  landlord_on_site: string | null;
+  // Problems the reviewer ticked from the fixed list.
+  issues: string[];
   // Exact time, from get_review_submitted_at (the public reviews table
   // shows only published_on). Missing if that lookup failed.
   submitted_at?: string;
@@ -56,7 +55,6 @@ type PendingReview = {
     is_small_rental: boolean;
   } | null;
   property_ratings: RatingRow[];
-  landlord_ratings: RatingRow[];
 };
 
 type ModerationStatus = "approved" | "rejected";
@@ -107,6 +105,7 @@ export default function AdminPage() {
   );
   // The writer's original words for reviews the moderator has edited.
   const [originals, setOriginals] = useState<Record<number, string>>({});
+  const [evidenceCounts, setEvidenceCounts] = useState<Record<number, number>>({});
   const [removeTarget, setRemoveTarget] = useState<RemoveWordsTarget | null>(
     null
   );
@@ -164,7 +163,7 @@ export default function AdminPage() {
       const { data, error } = await supabase
         .from("reviews")
         .select(
-          "id, review_text, occupancy_duration, would_live_again, landlord_on_site, moderator_edited, properties(name, slug, address, city, is_listed, rental_kind, is_small_rental), property_ratings(id, category, score), landlord_ratings(id, category, score)"
+          "id, review_text, occupancy_duration, would_live_again, issues, moderator_edited, properties(name, slug, address, city, is_listed, rental_kind, is_small_rental), property_ratings(id, category, score)"
         )
         .eq("status", reviewStatus)
         // Reviews are numbered in the order they were submitted.
@@ -242,10 +241,31 @@ export default function AdminPage() {
         }
       }
 
+      // How many proof pictures each review has (the pictures themselves
+      // load only when the moderator asks to see them).
+      const countsByReview: Record<number, number> = {};
+      if (normalizedReviews.length > 0) {
+        const { data: countRows, error: countsError } = await supabase.rpc(
+          "get_review_evidence_counts",
+          { p_review_ids: normalizedReviews.map((review) => review.id) }
+        );
+        if (countsError) {
+          console.error("Could not load evidence counts.", countsError.code);
+        } else {
+          for (const row of (countRows ?? []) as {
+            review_id: number;
+            evidence_count: number;
+          }[]) {
+            countsByReview[row.review_id] = row.evidence_count;
+          }
+        }
+      }
+
       if (isActive) {
         setReviews(normalizedReviews);
         setHistory(historyByReview);
         setOriginals(originalsByReview);
+        setEvidenceCounts(countsByReview);
         setLoadedQueueKey(activeKey);
         setErrorMessage("");
       }
@@ -574,26 +594,38 @@ export default function AdminPage() {
                               label="Would live here again"
                               value={capitalize(review.would_live_again)}
                             />
-                            {review.landlord_on_site && (
-                              <ReviewDetail
-                                label="Landlord lived there too"
-                                value={
-                                  landlordOnSiteOptions.find(
-                                    (option) => option.value === review.landlord_on_site
-                                  )?.label ?? review.landlord_on_site
-                                }
-                              />
-                            )}
                           </div>
+
+                          {(review.issues ?? []).length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {review.issues.map((issue) => (
+                                <ReviewDetail
+                                  key={issue}
+                                  label="Problem"
+                                  value={reviewIssueLabel(issue)}
+                                />
+                              ))}
+                            </div>
+                          )}
 
                           {review.moderator_edited && (
                             <p className="inline-flex rounded-full bg-[#FFF4D6] px-3 py-1 text-sm font-medium text-[#6B4E00]">
                               Edited by a moderator
                             </p>
                           )}
-                          <p className="whitespace-pre-wrap leading-relaxed text-gray-800">
-                            {review.review_text}
-                          </p>
+                          {review.review_text.trim() ? (
+                            <p className="whitespace-pre-wrap leading-relaxed text-gray-800">
+                              {review.review_text}
+                            </p>
+                          ) : (
+                            <p className="text-[#66706B]">
+                              No written review. Ratings and ticked problems only.
+                            </p>
+                          )}
+                          <EvidenceViewer
+                            reviewId={review.id}
+                            count={evidenceCounts[review.id] ?? 0}
+                          />
                           {review.moderator_edited && originals[review.id] !== undefined && (
                             <details className="rounded-2xl bg-[#F6F6EE] p-4 text-sm">
                               <summary className="cursor-pointer font-medium text-[#4A5A52]">
@@ -608,10 +640,6 @@ export default function AdminPage() {
                           <RatingList
                             title="Property ratings"
                             ratings={review.property_ratings}
-                          />
-                          <RatingList
-                            title="Landlord ratings"
-                            ratings={review.landlord_ratings}
                           />
 
                           {reviewStatus !== "pending" && (

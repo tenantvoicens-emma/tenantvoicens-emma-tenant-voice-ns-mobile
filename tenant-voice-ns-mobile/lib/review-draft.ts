@@ -50,10 +50,13 @@ export type ReviewDraft = {
   occupancyDuration: string;
   wouldLiveAgain: string;
   reviewText: string;
-  // Older drafts don't have this.
-  landlordOnSite?: string;
+  // Problems ticked from the fixed list. Older drafts don't have this.
+  issues?: string[];
   propertyRatings: Record<string, string>;
-  landlordRatings: Record<string, string>;
+  // Drafts saved before reviews became property-only may still carry
+  // landlord answers. They're ignored and never sent.
+  landlordOnSite?: string;
+  landlordRatings?: Record<string, string>;
 };
 
 const DRAFT_KEY = "tv:review-draft";
@@ -92,9 +95,8 @@ export function hasUnsavedWork(draft: ReviewDraft | null): draft is ReviewDraft 
     Boolean(draft.newBuilding?.address.trim() || draft.newBuilding?.name.trim()) ||
     draft.occupancyDuration !== "" ||
     draft.wouldLiveAgain !== "" ||
-    Boolean(draft.landlordOnSite) ||
-    hasRating(draft.propertyRatings) ||
-    hasRating(draft.landlordRatings)
+    (draft.issues?.length ?? 0) > 0 ||
+    hasRating(draft.propertyRatings)
   );
 }
 

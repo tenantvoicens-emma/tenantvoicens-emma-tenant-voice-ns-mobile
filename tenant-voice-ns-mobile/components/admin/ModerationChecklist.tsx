@@ -3,27 +3,30 @@ import { ChevronDown, ListChecks } from "lucide-react";
 // What to approve and what to reject, kept next to the queue so decisions
 // stay consistent. Mirrors the review guidelines on the Policies page, plus
 // the main defamation risk: factual accusations the site can't support.
+// Reviews are about the property only, never about a person.
 const approve = [
-  "The writer's own experience or opinion of the building, landlord or management.",
-  "Criticism, even harsh, when it's framed as experience: “repairs took weeks”, “the hallways are usually a mess”.",
-  "Naming the landlord company, property manager or management company. Businesses are fair to name.",
+  "The writer's own experience of the property: its condition, repairs, heat and hot water, noise, pests, safety, shared spaces.",
+  "Criticism, even harsh, when it's about the property and framed as experience: “the heat didn't work for most of January”, “the hallways are usually a mess”.",
+  "Reviews that are mostly ratings and ticked problems, with little or no text. They're complete reviews.",
 ];
 
 const reject = [
-  "Names or identifies a private person: another tenant, a neighbour, or a staff member by name.",
-  "Private rentals (houses, suites, rooms, duplexes, condos): the landlord's name, or anything identifying their family, roommates or the writer. The landlord is always just “Private landlord”. Use “Remove words” where you can.",
+  "Names or identifies any person: another tenant, a neighbour, a staff member, a landlord or a property manager. Use “Remove words” where you can.",
+  "Names a landlord or management company, or is mostly about how a person behaved rather than the property's condition. Reviews are about the place, not the people.",
+  "Private rentals (houses, suites, rooms, duplexes, condos): anything identifying the landlord, their family, roommates or the writer.",
   "A specific accusation of illegal or dishonest conduct stated as fact (theft, fraud, illegal eviction, discrimination) that can't be backed up. A one-person role, like “the superintendent”, counts as identifying someone here.",
   "Details that could identify the writer or other tenants, like unit numbers or schedules.",
   "Threats, harassment, slurs, discriminatory content or personal attacks.",
   "Private contact details or personal information (phone numbers, emails, health details).",
-  "Not a genuine experience: spam, ads, about a different building, someone else's story retold, or reads as retaliation rather than an account of renting there.",
+  "Not a genuine experience: spam, ads, about a different property, someone else's story retold, or reads as retaliation rather than an account of living there.",
 ];
 
 const habits = [
   "Small violation in an otherwise good review? Use “Remove words” to take out only the problem words and approve. The review gets the “Edited by a moderator” label. If removing them would change the meaning or leave little behind, reject with a note instead.",
   "Not sure? Reject with a note saying why. The writer can submit again without the problem part.",
   "Always add a note when you reject or unpublish. It's your record if someone appeals or complains.",
-  "When a landlord raises a concern about a published review, look at it promptly. Unpublish factual accusations you can't support; opinions and experiences can stay.",
+  "A “Legal concern” report hides the review automatically. Open the Reports tab promptly: restore it or keep it down, and add a note either way. If a landlord raises a concern some other way, look at it promptly too. Unpublish factual accusations you can't support; opinions and experiences about the property can stay.",
+  "Some reviews have private proof pictures. They help you check a claim and are never public. Don't download, copy or share them.",
 ];
 
 export default function ModerationChecklist() {

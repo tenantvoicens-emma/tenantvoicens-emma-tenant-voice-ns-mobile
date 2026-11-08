@@ -4,7 +4,6 @@ import { formatRatingScore } from "@/lib/format-rating";
 
 type PropertySnapshotProps = {
   propertyRating: RatingSummary;
-  landlordRating: RatingSummary;
 };
 
 type RatingSummary = {
@@ -14,7 +13,6 @@ type RatingSummary = {
 
 export default function PropertySnapshot({
   propertyRating,
-  landlordRating,
 }: PropertySnapshotProps) {
   return (
     <section aria-labelledby="overall-ratings-heading">
@@ -26,10 +24,7 @@ export default function PropertySnapshot({
           >
             Overall ratings
           </h2>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <RatingSummary label="Property" summary={propertyRating} />
-            <RatingSummary label="Landlord" summary={landlordRating} />
-          </div>
+          <RatingSummary label="Property" summary={propertyRating} />
         </div>
       </Card>
     </section>

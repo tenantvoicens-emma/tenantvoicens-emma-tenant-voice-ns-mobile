@@ -11,7 +11,6 @@ export type CategoryAverage = {
 
 type CategoryRatingsProps = {
   propertyAverages: CategoryAverage[];
-  landlordAverages: CategoryAverage[];
   reviewCount: number;
 };
 
@@ -20,7 +19,6 @@ type CategoryRatingsProps = {
 // read as one person's review.
 export default function CategoryRatings({
   propertyAverages,
-  landlordAverages,
   reviewCount,
 }: CategoryRatingsProps) {
   return (
@@ -54,7 +52,6 @@ export default function CategoryRatings({
           </header>
 
           <AverageGroup title="Property" averages={propertyAverages} />
-          <AverageGroup title="Landlord" averages={landlordAverages} />
         </div>
       </Card>
     </section>

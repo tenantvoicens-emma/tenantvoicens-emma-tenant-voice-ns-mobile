@@ -1,10 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
+import { isRentalKind, type RentalKind } from "@/lib/rental-kind";
+import { isReviewIssue, MAX_REVIEW_ISSUES } from "@/lib/review-issues";
 import {
-  isLandlordOnSite,
-  isRentalKind,
-  type LandlordOnSite,
-  type RentalKind,
-} from "@/lib/rental-kind";
+  EVIDENCE_MIME_TYPE,
+  MAX_EVIDENCE_BYTES,
+  MAX_EVIDENCE_FILES,
+} from "@/lib/review-evidence";
 import { expandStreetType } from "@/lib/street-address";
 import {
   getClientIp,
@@ -23,17 +24,6 @@ const propertyRatingCategories = new Set([
   "amenities",
   "building_condition",
   "pet_friendliness",
-]);
-
-const landlordRatingCategories = new Set([
-  "overall",
-  "communication",
-  "repair_speed",
-  "professionalism",
-  "lease_transparency",
-  "move_in_experience",
-  "privacy",
-  "deposit_handling",
 ]);
 
 const occupancyDurations = new Set([
@@ -61,6 +51,16 @@ type NewPropertyInput = {
   hasFourOrMoreUnits?: true;
 };
 
+// A picture attached as optional proof: a JPEG the browser has already
+// shrunk, sent as base64.
+type EvidenceInput = {
+  mimeType: string;
+  data: string;
+};
+
+// Reviews are about the property only. Forms opened before that change may
+// still send landlord ratings or a landlord-on-site answer; those fields are
+// ignored and never stored.
 type ReviewRequest = {
   turnstileToken: string;
   propertyId?: number;
@@ -68,10 +68,16 @@ type ReviewRequest = {
   reviewText: string;
   occupancyDuration: string;
   wouldLiveAgain: string;
-  landlordOnSite?: LandlordOnSite;
+  issues?: string[];
   propertyRatings: RatingInput[];
-  landlordRatings: RatingInput[];
+  evidence?: EvidenceInput[];
 };
+
+// A review without pictures is tiny. With pictures it can reach about
+// 1.7 MB (3 pictures of up to 400 KB each, base64-encoded), still under
+// the 4.5 MB request limit on Vercel.
+const MAX_TEXT_REQUEST_BYTES = 20_000;
+const MAX_REQUEST_BYTES = 1_800_000;
 
 export async function POST(request: Request) {
   const originCheck = checkRequestOrigin(request);
@@ -81,7 +87,7 @@ export async function POST(request: Request) {
   const { allowedHostnames } = originCheck;
 
   const contentLength = Number(request.headers.get("content-length") ?? 0);
-  if (contentLength > 20_000) {
+  if (contentLength > MAX_REQUEST_BYTES) {
     return Response.json({ error: "Review is too large." }, { status: 413 });
   }
 
@@ -92,7 +98,8 @@ export async function POST(request: Request) {
     return Response.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  if (new TextEncoder().encode(rawBody).byteLength > 20_000) {
+  const rawBytes = new TextEncoder().encode(rawBody).byteLength;
+  if (rawBytes > MAX_REQUEST_BYTES) {
     return Response.json({ error: "Review is too large." }, { status: 413 });
   }
 
@@ -105,6 +112,11 @@ export async function POST(request: Request) {
 
   if (!isReviewRequest(body)) {
     return Response.json({ error: "Please check the review fields." }, { status: 400 });
+  }
+
+  // Only a review with pictures may be large.
+  if (!body.evidence?.length && rawBytes > MAX_TEXT_REQUEST_BYTES) {
+    return Response.json({ error: "Review is too large." }, { status: 413 });
   }
 
   const turnstileSecret = process.env.TURNSTILE_SECRET_KEY;
@@ -225,9 +237,9 @@ export async function POST(request: Request) {
       p_occupancy_duration: body.occupancyDuration,
       p_would_live_again: body.wouldLiveAgain,
       p_property_ratings: body.propertyRatings,
-      p_landlord_ratings: body.landlordRatings,
       p_user_id: userId,
-      p_landlord_on_site: body.landlordOnSite ?? null,
+      p_issues: [...new Set(body.issues ?? [])],
+      p_evidence: body.evidence ?? [],
     });
 
     if (error) {
@@ -263,15 +275,60 @@ function isReviewRequest(value: unknown): value is ReviewRequest {
       ? Number.isSafeInteger(body.propertyId) && (body.propertyId as number) > 0
       : body.propertyId === undefined && isNewProperty(body.newProperty)) &&
     typeof body.reviewText === "string" &&
-    body.reviewText.trim().length > 0 &&
     body.reviewText.length <= 5000 &&
     typeof body.occupancyDuration === "string" &&
     occupancyDurations.has(body.occupancyDuration) &&
     ["yes", "no", "unsure"].includes(String(body.wouldLiveAgain)) &&
-    (body.landlordOnSite === undefined || isLandlordOnSite(body.landlordOnSite)) &&
+    (body.issues === undefined || isIssueList(body.issues)) &&
     isRatingArray(body.propertyRatings, propertyRatingCategories) &&
-    isRatingArray(body.landlordRatings, landlordRatingCategories)
+    (body.evidence === undefined || isEvidenceList(body.evidence)) &&
+    // A review needs something in it: text, a ticked problem or a rating.
+    (body.reviewText.trim().length > 0 ||
+      (Array.isArray(body.issues) && body.issues.length > 0) ||
+      (body.propertyRatings as RatingInput[]).some(
+        (rating) => rating.score !== "na"
+      ))
   );
+}
+
+function isIssueList(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.length <= MAX_REVIEW_ISSUES &&
+    value.every(isReviewIssue)
+  );
+}
+
+// Only JPEGs, which the browser produced by re-encoding the picture. Each
+// is checked for size and for the JPEG signature, so the server never
+// stores anything else.
+function isEvidenceList(value: unknown): value is EvidenceInput[] {
+  if (!Array.isArray(value) || value.length > MAX_EVIDENCE_FILES) {
+    return false;
+  }
+  return value.every((item: unknown) => {
+    if (!item || typeof item !== "object") {
+      return false;
+    }
+    const input = item as Record<string, unknown>;
+    if (
+      input.mimeType !== EVIDENCE_MIME_TYPE ||
+      typeof input.data !== "string" ||
+      input.data.length === 0 ||
+      input.data.length > Math.ceil((MAX_EVIDENCE_BYTES * 4) / 3) + 8 ||
+      !/^[A-Za-z0-9+/]+={0,2}$/.test(input.data)
+    ) {
+      return false;
+    }
+    const bytes = Buffer.from(input.data, "base64");
+    return (
+      bytes.length > 3 &&
+      bytes.length <= MAX_EVIDENCE_BYTES &&
+      bytes[0] === 0xff &&
+      bytes[1] === 0xd8 &&
+      bytes[2] === 0xff
+    );
+  });
 }
 
 function isNewProperty(value: unknown): value is NewPropertyInput {

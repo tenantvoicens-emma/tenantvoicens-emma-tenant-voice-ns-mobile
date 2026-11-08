@@ -17,6 +17,9 @@ const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
 type Status = "editing" | "sending" | "sent";
 
+// A legal-concern report hides the review at once (see submit_review_report).
+const HIDES_REVIEW_REASON: ReportReason = "legal_concern";
+
 // "Report this review" under a published review. Opens a short form; the
 // report goes privately to the moderator, and the review stays up until
 // they've looked at it.
@@ -27,6 +30,8 @@ export default function ReportReviewButton({ reviewId }: { reviewId: number }) {
   const [details, setDetails] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [status, setStatus] = useState<Status>("editing");
+  // Whether the report that was just sent hid the review.
+  const [wasHidden, setWasHidden] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
   const [turnstileError, setTurnstileError] = useState(false);
@@ -38,6 +43,7 @@ export default function ReportReviewButton({ reviewId }: { reviewId: number }) {
       setReason("");
       setDetails("");
       setContactEmail("");
+      setWasHidden(false);
       setStatus("editing");
     }
     setErrorMessage("");
@@ -96,6 +102,7 @@ export default function ReportReviewButton({ reviewId }: { reviewId: number }) {
       });
       const result = (await response.json().catch(() => ({}))) as {
         error?: string;
+        hidden?: boolean;
       };
       if (!response.ok) {
         setErrorMessage(result.error ?? "We couldn’t send your report. Please try again.");
@@ -103,6 +110,7 @@ export default function ReportReviewButton({ reviewId }: { reviewId: number }) {
         resetTurnstile();
         return;
       }
+      setWasHidden(result.hidden === true);
       setStatus("sent");
       resetTurnstile();
     } catch {
@@ -145,7 +153,10 @@ export default function ReportReviewButton({ reviewId }: { reviewId: number }) {
               <Link href="/policies#review-guidelines" className="font-medium text-[#2F4F46] underline">
                 review guidelines
               </Link>
-              . It stays up while they do.
+              .{" "}
+              {wasHidden
+                ? "Because you reported a legal concern, the review has been hidden while they do."
+                : "It stays up while they do."}
               {contactEmail.trim() && " If they need to, they'll reply by email."}
             </p>
             <button
@@ -168,7 +179,9 @@ export default function ReportReviewButton({ reviewId }: { reviewId: number }) {
                 <Link href="/policies#review-guidelines" className="font-medium text-[#2F4F46] underline">
                   guidelines
                 </Link>
-                .
+                {reason === HIDES_REVIEW_REASON
+                  ? ", except that a legal concern hides it right away."
+                  : "."}
               </p>
             </div>
 

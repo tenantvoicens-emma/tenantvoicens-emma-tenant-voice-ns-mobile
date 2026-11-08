@@ -15,8 +15,8 @@ export default function PropertyHeader({
   reviewCount,
   rentalKind,
 }: PropertyHeaderProps) {
-  // Small rentals are labelled, and their landlord is always just "Private
-  // landlord": never a name.
+  // Small rentals are labelled as private rentals. Landlords are never named
+  // or rated: reviews are about the property.
   const smallRentalLabel = isSmallRentalKind(rentalKind)
     ? rentalKindLabels[rentalKind as keyof typeof rentalKindLabels]
     : null;
@@ -39,10 +39,7 @@ export default function PropertyHeader({
 
           <div className="flex flex-wrap gap-2">
             {smallRentalLabel ? (
-              <>
-                <Badge text={`Private rental · ${smallRentalLabel}`} />
-                <Badge text="Private landlord" />
-              </>
+              <Badge text={`Private rental · ${smallRentalLabel}`} />
             ) : (
               <Badge text="Property profile" />
             )}

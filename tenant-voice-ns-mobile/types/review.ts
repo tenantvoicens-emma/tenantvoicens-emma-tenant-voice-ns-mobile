@@ -1,5 +1,7 @@
 import { Rating } from "@/types/rating";
 
+// Reviews are about the property only. Landlords and property managers are
+// not rated or named, so there are no landlord fields here.
 export type Review = {
   id: string | number;
 
@@ -22,20 +24,15 @@ export type Review = {
 
   yearOnly?: boolean;
 
-  // Small rentals: whether the landlord lived there too ("yes", "no",
-  // "unsure").
-  landlordOnSite?: string | null;
-
   propertyName?: string;
 
-  // Detailed category ratings; the overall scores are kept separately.
-  propertyRatings?: Rating[];
+  // Problems the reviewer ticked from the fixed list (see lib/review-issues).
+  issues?: string[];
 
-  landlordRatings?: Rating[];
+  // Detailed category ratings; the overall score is kept separately.
+  propertyRatings?: Rating[];
 
   // The reviewer's overall stars, or the average of their detailed ratings
   // when they didn't give any (see lib/ratings).
   propertyOverall?: number | null;
-
-  landlordOverall?: number | null;
 };

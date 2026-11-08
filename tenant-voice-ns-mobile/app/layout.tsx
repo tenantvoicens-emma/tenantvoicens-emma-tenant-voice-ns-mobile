@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import BrandHeader from "@/components/navigation/BrandHeader";
@@ -70,6 +71,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                   <TopNavigation label="Footer navigation" />
                 </Suspense>
                 <p className="mt-4 text-sm leading-relaxed text-[#66706B]">
+                  <Link href="/terms" className="font-medium underline underline-offset-2">
+                    Terms of Service
+                  </Link>
+                  {" · "}
+                  <Link href="/policies" className="font-medium underline underline-offset-2">
+                    Policies
+                  </Link>
+                </p>
+                <p className="mt-3 text-sm leading-relaxed text-[#66706B]">
                   Building list from the Halifax Regional Municipality Residential
                   Rental Registry. Building names ©{" "}
                   <a

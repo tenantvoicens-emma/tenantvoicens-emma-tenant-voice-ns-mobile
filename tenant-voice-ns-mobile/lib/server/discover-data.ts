@@ -33,11 +33,7 @@ type DiscoverReviewRow = {
     category: string;
     score: string | number | null;
   }[] | null;
-  landlord_ratings: {
-    id: number;
-    category: string;
-    score: string | number | null;
-  }[] | null;
+  issues: string[] | null;
 };
 
 export async function loadRecentReviews(): Promise<Review[]> {
@@ -47,7 +43,7 @@ export async function loadRecentReviews(): Promise<Review[]> {
   const { data, error } = await supabase
     .from("reviews")
     .select(
-      "id, review_text, occupancy_duration, would_live_again, published_on, moderator_edited, properties!inner(name, slug), property_ratings(id, category, score), landlord_ratings(id, category, score)"
+      "id, review_text, occupancy_duration, would_live_again, published_on, moderator_edited, properties!inner(name, slug), issues, property_ratings(id, category, score)"
     )
     .eq("status", "approved")
     // Small rentals are left out: being near the top of this list would
@@ -67,7 +63,7 @@ export async function loadTopProperties(): Promise<PropertyListing[]> {
 
   const { data, error } = await supabase
     .from("discover_top_properties")
-    .select("id, slug, name, address, city, review_count, property_rating, landlord_rating")
+    .select("id, slug, name, address, city, review_count, property_rating")
     .order("review_count", { ascending: false })
     .order("name")
     .limit(5);
@@ -80,7 +76,6 @@ export async function loadTopProperties(): Promise<PropertyListing[]> {
     city: property.city ?? "",
     reviewCount: Number(property.review_count),
     propertyRating: parseRatingScore(property.property_rating),
-    landlordRating: parseRatingScore(property.landlord_rating),
   }));
 }
 
@@ -116,9 +111,8 @@ function mapDiscoverReview(row: DiscoverReviewRow): Review {
     moderatorEdited: row.moderator_edited === true,
     publishedOn: row.published_on,
     propertyRatings: mapDiscoverRatings(row.property_ratings, propertySlug),
-    landlordRatings: mapDiscoverRatings(row.landlord_ratings, propertySlug),
+    issues: row.issues ?? [],
     propertyOverall: overallScore(row.property_ratings),
-    landlordOverall: overallScore(row.landlord_ratings),
   };
 }
 

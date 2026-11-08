@@ -118,7 +118,11 @@ export async function POST(request: Request) {
       );
     }
 
-    return Response.json({ submitted: true }, { status: 201 });
+    // 'hidden': a legal-concern report, which takes the review down at once.
+    return Response.json(
+      { submitted: true, hidden: outcome === "hidden" },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Review report failed.", error);
     return Response.json({ error: UNAVAILABLE }, { status: 503 });
